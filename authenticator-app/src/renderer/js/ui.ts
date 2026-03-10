@@ -304,8 +304,15 @@ export function setupUI() {
 
     function updateSetupPinBtnState() {
         if (!btnSetupPin) return;
-        btnSetupPin.textContent = localStorage.getItem('vault_pin') ? 'Change PIN' : 'Set PIN';
-        btnSetupPin.style.background = localStorage.getItem('vault_pin') ? 'rgba(255, 255, 255, 0.1)' : '';
+        if (localStorage.getItem('vault_pin')) {
+            btnSetupPin.textContent = 'Change PIN';
+            btnSetupPin.classList.remove('btn-p');
+            btnSetupPin.style.background = ''; // Clear inline styles
+        } else {
+            btnSetupPin.textContent = 'Set PIN';
+            btnSetupPin.classList.add('btn-p');
+            btnSetupPin.style.background = ''; // Clear inline styles
+        }
     }
 
     updateSetupPinBtnState();
