@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keyra Authenticator</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+</head>
+
+<body class="theme-dark">
+
+    <!-- Custom Titlebar -->
+    <div class="titlebar">
+        <div class="titlebar-controls">
+            <button class="title-btn" id="btn-theme" title="Toggle Theme"><i data-lucide="sun-moon"></i></button>
+            <button class="title-btn" id="btn-minimize"><i data-lucide="minus"></i></button>
+            <button class="title-btn" id="btn-maximize"><i data-lucide="maximize-2"></i></button>
+            <button class="title-btn close" id="btn-close"><i data-lucide="x"></i></button>
+        </div>
+    </div>
+
+    <!-- iCompressor Fluid Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="brand">
+                <div class="logo-wrap"><i data-lucide="shield-check"></i></div>
+                <h1>Keyra</h1>
+            </div>
+
+            <!-- iCompressor Style Top-Right Tabs -->
+            <div class="header-nav-group">
+                <nav class="nav-tabs" id="view-tabs">
+                    <button class="tab-item active" data-view="vault"><i data-lucide="shield"></i>
+                        <span>Vault</span></button>
+                    <button class="tab-item" data-view="settings"><i data-lucide="settings"></i>
+                        <span>Settings</span></button>
+                    <button class="tab-item" data-view="about"><i data-lucide="help-circle"></i>
+                        <span>About</span></button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Floating Action Button (FAB) -->
+    <button class="btn-fab" id="btn-add" title="Secure New Account">
+        <i data-lucide="plus"></i>
+    </button>
+
+    <!-- Main Content Vessel -->
+    <main class="main">
+
+        <!-- Vault View -->
+        <div id="view-vault" class="view active">
+            <div class="content-inner">
+                <div class="toolbar">
+                    <div class="search-pill">
+                        <i data-lucide="search" style="color: var(--v-5);"></i>
+                        <input type="text" id="search-input" placeholder="Find an account..." autocomplete="off" />
+                    </div>
+                </div>
+
+                <div class="accounts-grid" id="accounts-list">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View (Enhanced) -->
+        <div id="view-settings" class="view">
+            <div class="content-inner">
+                <div class="settings-v2">
+                    <!-- Security Section -->
+                    <div class="s-section">
+                        <div class="s-header"><i data-lucide="lock"></i>
+                            <h3>Privacy & Security</h3>
+                        </div>
+                        <div class="s-card">
+                            <div class="s-item">
+                                <div class="s-item-info">
+                                    <strong>Master App PIN</strong>
+                                    <span>Require a PIN on app startup.</span>
+                                </div>
+                                <button class="btn btn-p" id="btn-setup-pin" style="height: 40px; padding: 0 16px;">Set
+                                    PIN</button>
+                            </div>
+                            <div class="s-item">
+                                <div class="s-item-info">
+                                    <strong>Auto-Lock Timeout</strong>
+                                    <span>Automatically lock the vault after inactivity.</span>
+                                </div>
+                                <select id="setting-autolock" class="s-select">
+                                    <option value="0">Disabled</option>
+                                    <option value="1">1 Minute</option>
+                                    <option value="5">5 Minutes</option>
+                                    <option value="10">10 Minutes</option>
+                                </select>
+                            </div>
+                            <div class="s-item">
+                                <div class="s-item-info">
+                                    <strong>Hide Codes</strong>
+                                    <span>Obfuscate OTP codes by default.</span>
+                                </div>
+                                <div class="toggle-wrap"><input type="checkbox" id="setting-hide" /><label
+                                        for="setting-hide"></label></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appearance Section -->
+                    <div class="s-section">
+                        <div class="s-header"><i data-lucide="palette"></i>
+                            <h3>Visual Identity</h3>
+                        </div>
+                        <div class="s-card">
+                            <div class="s-item">
+                                <div class="s-item-info">
+                                    <strong>Interface Theme</strong>
+                                    <span>Switch between Nightfall Bloom and Snowbloom.</span>
+                                </div>
+                                <select id="setting-theme" class="s-select">
+                                    <option value="theme-dark">Nightfall Bloom</option>
+                                    <option value="theme-light">Snowbloom</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Section -->
+                    <div class="s-section">
+                        <div class="s-header"><i data-lucide="database"></i>
+                            <h3>Vault Management</h3>
+                        </div>
+                        <div class="s-card">
+                            <div class="s-item">
+                                <div class="s-item-info">
+                                    <strong>Export Vault</strong>
+                                    <span>Download a backup of your secure accounts.</span>
+                                </div>
+                                <button class="btn" id="btn-export" style="height: 40px; padding: 0 16px;"><i
+                                        data-lucide="download"></i> Export</button>
+                            </div>
+                            <div class="s-item danger">
+                                <div class="s-item-info">
+                                    <strong>Purge All Data</strong>
+                                    <span>Permanently delete all accounts from this device.</span>
+                                </div>
+                                <button class="btn btn-danger" id="btn-purge-all"
+                                    style="height: 40px; padding: 0 16px;">Purge Vault</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About View -->
+        <div id="view-about" class="view">
+            <div class="content-inner">
+                <div class="about-card">
+                    <div class="about-hero">
+                        <div class="logo-wrap large"><i data-lucide="shield-check"></i></div>
+                        <h2>Keyra</h2>
+                        <span class="version-tag">iCompressor Edition v4.3.0</span>
+                    </div>
+
+                    <div class="about-grid">
+                        <div class="about-section">
+                            <h3>Aesthetic Vision</h3>
+                            <p>Crafted with the <strong>Nightfall Bloom</strong> design language, merging deep violets
+                                with high-blur glassmorphism for a modern, focused security experience.</p>
+                        </div>
+                        <div class="about-section">
+                            <h3>Technical Core</h3>
+                            <p>Built on Electron and Vanilla TypeScript. Featuring military-grade TOTP generation and
+                                localized zero-knowledge storage.</p>
+                        </div>
+                    </div>
+
+                    <div class="about-footer">
+                        <div class="credits">Created by <a href="#" target="_blank">MBVRK</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ═══════ MODALS & OVERLAYS ═══════ -->
+
+    <!-- Auto-Lock Screen -->
+    <div id="lock-screen" class="overlay hidden">
+        <div class="lock-vessel">
+            <div class="logo-wrap large"><i data-lucide="lock"></i></div>
+            <h2>Vault Locked</h2>
+            <p>Enter your PIN to restore session.</p>
+            <div class="pin-display" id="unlock-pin-dots">
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+            </div>
+            <input type="password" id="unlock-pin-input" class="visually-hidden" inputmode="numeric" pattern="[0-9]*"
+                maxlength="4" autocomplete="off" />
+            <p id="unlock-error"
+                style="color: #ff4757; opacity: 0; margin-top: 12px; font-size: 0.9rem; transition: 0.3s; height: 20px;">
+                Incorrect PIN</p>
+        </div>
+    </div>
+
+    <!-- Set PIN Modal -->
+    <div class="overlay hidden" id="modal-set-pin">
+        <div class="modal" style="text-align: center;">
+            <h3>Set Vault PIN</h3>
+            <p style="color: var(--t4); margin-bottom: 24px;">This 4-digit PIN will be required to unlock your vault
+                after inactivity.</p>
+            <div class="pin-display" id="setup-pin-dots">
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+            </div>
+            <input type="password" id="setup-pin-input" class="visually-hidden" inputmode="numeric" pattern="[0-9]*"
+                maxlength="4" autocomplete="off" />
+            <div style="display: flex; gap: 12px; margin-top: 32px;">
+                <button type="button" class="btn" id="btn-cancel-pin" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Account -->
+    <div class="overlay hidden" id="modal-add">
+        <div class="modal">
+            <h3>Secure Sync</h3>
+            <form id="form-add">
+                <input type="text" id="add-issuer" class="modal-input" placeholder="Service (e.g. GitHub)" required />
+                <input type="text" id="add-account" class="modal-input" placeholder="Identity (Email/User)" />
+                <input type="text" id="add-secret" class="modal-input" placeholder="Base32 Secret Key" required />
+                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                    <button type="button" class="btn" id="btn-scan-qr" style="flex: 1;">
+                        <i data-lucide="scan-line"></i>
+                        <span>Scan QR</span>
+                    </button>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="btn btn-close-modal" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-p" style="flex: 1.5;">Save Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Account -->
+    <div class="overlay hidden" id="modal-edit">
+        <div class="modal">
+            <h3>Modify Entry</h3>
+            <form id="form-edit">
+                <input type="text" id="edit-issuer" class="modal-input" placeholder="Service" required />
+                <input type="text" id="edit-account" class="modal-input" placeholder="Identity" />
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="btn btn-close-modal" style="flex: 1;">Dismiss</button>
+                    <button type="submit" class="btn btn-p" style="flex: 1.5;">Apply Bloom</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation -->
+    <div class="overlay hidden" id="modal-delete">
+        <div class="modal" style="text-align: center; width: 440px;">
+            <div style="margin-bottom: 24px; color: #ff4757;"><i data-lucide="alert-circle"
+                    style="width: 48px; height: 48px;"></i></div>
+            <h3>Purge Vault Entry?</h3>
+            <p style="color: var(--t4); margin-bottom: 32px;">This will remove <strong id="delete-account-label"
+                    style="color: #fff;"></strong> permanently from your local vault.</p>
+            <div style="display: flex; gap: 12px;">
+                <button type="button" class="btn btn-close-modal" style="flex: 1;">Keep it</button>
+                <button type="button" class="btn" id="btn-confirm-delete"
+                    style="flex: 1; background: #ff4757; border: none; color: #fff;">Delete Forever</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Scanner -->
+    <div class="overlay hidden" id="modal-qr">
+        <div class="modal" style="width: 500px;">
+            <h3>Scan Bloom QR</h3>
+            <div
+                style="position: relative; border-radius: 20px; overflow: hidden; background: #000; aspect-ratio: 1/1; margin-bottom: 24px; border: var(--border);">
+                <video id="qr-video" style="width: 100%; height: 100%; object-fit: cover;"></video>
+                <canvas id="qr-canvas" style="display: none;"></canvas>
+                <div
+                    style="position: absolute; inset: 40px; border: 2px solid var(--v-5); border-radius: 20px; opacity: 0.5; pointer-events: none; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);">
+                </div>
+            </div>
+            <button type="button" class="btn btn-close-modal" style="width: 100%;">Stop Scanning</button>
+        </div>
+    </div>
+
+    <div id="toasts"></div>
+
+    <script type="module" src="../../dist/renderer/renderer/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build Outputs & Compiled Code
+dist/
+out/
+build/
+release/
+*.tsbuildinfo
+*.js.map
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Sensitive Data & Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.cert
+secrets.json
+
+# Keyra Specific Data
+# Prevent accidental commits of exported vaults or local debugging accounts
+keyra_vault_export_*.json
+accounts.json
+auth-data.json
+
+# IDE / Editor Configurations
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.tmp
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Testing
+coverage/
+.nyc_output/
