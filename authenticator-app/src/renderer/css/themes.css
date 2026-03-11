@@ -16,6 +16,19 @@
     --accent-hover: hsl(var(--h), var(--s), 62%);
     --accent-soft: hsla(var(--h), var(--s), 68%, 0.12);
     
+    /* Accent Color Themes */
+    --accent-royal-purple: 258; /* Default Royal Purple */
+    --accent-electric-blue: 200; /* Electric Blue */
+    --accent-emerald-green: 145; /* Emerald Green */
+    --accent-solar-orange: 15; /* Solar Orange */
+    
+    /* Dynamic Accent Colors (will be set by JavaScript) */
+    --dynamic-accent-hue: var(--accent-royal-purple);
+    --dynamic-accent-primary: hsl(var(--dynamic-accent-hue), 100%, 68%);
+    --dynamic-accent-secondary: hsl(calc(var(--dynamic-accent-hue) + 20), 100%, 75%);
+    --dynamic-accent-hover: hsl(var(--dynamic-accent-hue), 100%, 62%);
+    --dynamic-accent-soft: hsla(var(--dynamic-accent-hue), 100%, 68%, 0.12);
+    
     /* Aura Mesh Colors (Scientific Harmony) */
     --aura-1: hsla(258, 100%, 68%, 0.35); /* Nebula (Default) */
     --aura-2: hsla(330, 100%, 75%, 0.25);

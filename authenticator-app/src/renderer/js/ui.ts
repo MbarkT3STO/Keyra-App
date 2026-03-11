@@ -318,6 +318,77 @@ export class UIManager {
         
         // Handle window resize for icon refreshing if layout shifts majorly
         window.addEventListener('resize', this.debounce(() => this.refreshLucide(), 250));
+
+        // Initialize accent color from localStorage
+        this.loadAccentColor();
+
+        // Setup accent color selector
+        this.setupAccentColorSelector();
+    }
+
+    private setupAccentColorSelector() {
+        const accentOptions = document.querySelectorAll('.accent-color-option');
+        
+        accentOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const accentColor = option.getAttribute('data-accent');
+                if (accentColor) {
+                    this.setAccentColor(accentColor);
+                    
+                    // Update active state
+                    accentOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                    
+                    // Show feedback
+                    this.showToast("Accent color updated", "success");
+                }
+            });
+        });
+    }
+
+    private setAccentColor(accentColor: string) {
+        const root = document.documentElement;
+        const accentHues: Record<string, number> = {
+            'royal-purple': 258,
+            'electric-blue': 200,
+            'emerald-green': 145,
+            'solar-orange': 15
+        };
+
+        const hue = accentHues[accentColor];
+        if (hue) {
+            // Update CSS custom properties
+            root.style.setProperty('--dynamic-accent-hue', hue.toString());
+            root.style.setProperty('--accent-primary', `hsl(${hue}, 100%, 68%)`);
+            root.style.setProperty('--accent-secondary', `hsl(${hue + 20}, 100%, 75%)`);
+            root.style.setProperty('--accent-hover', `hsl(${hue}, 100%, 62%)`);
+            root.style.setProperty('--accent-soft', `hsla(${hue}, 100%, 68%, 0.12)`);
+            
+            // Update aura colors to match accent
+            root.style.setProperty('--aura-1', `hsla(${hue}, 100%, 68%, 0.35)`);
+            root.style.setProperty('--aura-2', `hsla(${hue + 30}, 100%, 75%, 0.25)`);
+            root.style.setProperty('--aura-3', `hsla(${hue - 30}, 100%, 75%, 0.25)`);
+            
+            // Save to localStorage
+            localStorage.setItem('keyra_accent_color', accentColor);
+        }
+    }
+
+    private loadAccentColor() {
+        const savedAccent = localStorage.getItem('keyra_accent_color') || 'royal-purple';
+        
+        // Set the accent color
+        this.setAccentColor(savedAccent);
+        
+        // Update active state in UI
+        const accentOptions = document.querySelectorAll('.accent-color-option');
+        accentOptions.forEach(option => {
+            if (option.getAttribute('data-accent') === savedAccent) {
+                option.classList.add('active');
+            } else {
+                option.classList.remove('active');
+            }
+        });
     }
 
     private debounce(func: Function, wait: number) {

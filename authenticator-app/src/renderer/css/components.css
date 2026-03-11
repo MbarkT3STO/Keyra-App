@@ -450,6 +450,63 @@ input:checked + .slider:before {
     100% { transform: scale(1); }
 }
 
+/* Accent Color Selector */
+.accent-color-selector {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.accent-color-option {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.accent-color-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.accent-color-option.active {
+    border-color: var(--border-color);
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--border-color), 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.accent-check {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.accent-color-option.active .accent-check {
+    opacity: 1;
+}
+
+/* Accent color transitions for dynamic theming */
+.btn-primary,
+.nav-tab.active,
+.pin-dot.filled,
+.account-icon,
+.brand-icon {
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    BENTO SETTINGS
    ───────────────────────────────────────────────────────────────────────────── */
@@ -460,7 +517,18 @@ input:checked + .slider:before {
     gap: var(--space-lg);
 }
 
-.bento-card { padding: var(--space-xl); }
+.bento-card { 
+    padding: var(--space-xl); 
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
+}
+
+.bento-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    border-color: var(--accent-soft);
+}
+
 .setting-row {
     display: flex; align-items: center; justify-content: space-between;
     padding: var(--space-md);
