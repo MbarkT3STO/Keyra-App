@@ -435,4 +435,83 @@ input:checked + .slider:before {
    SCIENTIFIC RESPONSIVITY
    ───────────────────────────────────────────────────────────────────────────── */
 
-/* Responsive refined in layout.css */
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCIENTIFIC BENTO HEADERS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.bento-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.bento-icon {
+    width: clamp(44px, 12vw, 52px);
+    height: clamp(44px, 12vw, 52px);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--border-color);
+    flex-shrink: 0;
+    transition: all var(--transition-medium);
+}
+
+.bento-icon i {
+    width: clamp(20px, 5vw, 24px);
+    height: clamp(20px, 5vw, 24px);
+}
+
+.bento-title-vessel {
+    display: flex;
+    flex-direction: column;
+}
+
+.bento-title {
+    font-weight: 850;
+    font-size: clamp(18px, 4vw, 22px);
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.bento-subtitle {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+}
+
+/* Premium Maintenance Buttons */
+.btn-maintenance {
+    height: clamp(48px, 12vw, 60px) !important;
+    width: 100%;
+    justify-content: flex-start !important;
+    padding-left: clamp(16px, 4vw, 24px) !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: none !important;
+    transition: all var(--transition-medium) !important;
+}
+
+.btn-maintenance:hover {
+    background: var(--bg-tertiary) !important;
+    border-color: var(--accent-primary) !important;
+    transform: translateX(4px);
+}
+
+.btn-maintenance i {
+    width: clamp(18px, 4vw, 22px) !important;
+    height: clamp(18px, 4vw, 22px) !important;
+    margin-right: 12px;
+    color: var(--accent-primary);
+}
+
+.btn-maintenance span {
+    font-size: clamp(13px, 3.5vw, 15px);
+    font-weight: 750;
+}

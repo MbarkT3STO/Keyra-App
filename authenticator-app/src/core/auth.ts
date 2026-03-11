@@ -201,3 +201,28 @@ export function saveActiveAccounts(accounts: AuthenticatorAccount[]): void {
 
     saveUsers(users);
 }
+export function getBackupData(): { salt: string, encryptedVaultData: string } {
+    if (!currentUser) throw new Error("No active user session.");
+    // We export the salt and the vault blob so it can be decrypted with the same password on any machine
+    return {
+        salt: currentUser.salt,
+        encryptedVaultData: currentUser.encryptedVaultData
+    };
+}
+
+export function importVaultData(salt: string, encryptedVaultData: string, password: string): { success: boolean, message: string } {
+    if (!currentUser || !currentKey) throw new Error("No active user session.");
+
+    try {
+        const key = deriveKey(password, salt);
+        const decryptedJson = decryptVault(encryptedVaultData, key);
+        const accounts = JSON.parse(decryptedJson) as AuthenticatorAccount[];
+
+        // If decryption worked, we can safely re-encrypt it with the CURRENT user's key
+        saveActiveAccounts(accounts);
+        return { success: true, message: "Vault successfully merged and secured." };
+    } catch (err) {
+        console.error("Vault Import Error:", err);
+        return { success: false, message: "Decryption failed. Please check the backup password." };
+    }
+}

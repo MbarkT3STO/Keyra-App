@@ -1,7 +1,9 @@
 import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import * as path from 'path';
-import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, checkSession } from '../core/auth';
+import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, checkSession, getBackupData, importVaultData } from '../core/auth';
 import { generateTOTP, getRemainingSeconds } from '../core/totp';
+import * as fs from 'fs';
+import { dialog } from 'electron';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -113,6 +115,52 @@ ipcMain.handle('get-remaining-seconds', () => {
 ipcMain.handle('parse-uri', (event, uri) => {
     const { parseOTPAuthURI } = require('../core/otpauth');
     return parseOTPAuthURI(uri);
+});
+
+// -- Backup & Maintenance --
+ipcMain.handle('export-vault', async () => {
+    const { filePath } = await dialog.showSaveDialog(mainWindow!, {
+        title: 'Export Secure Vault Backup',
+        defaultPath: 'Keyra_Vault_Backup.keyra',
+        filters: [{ name: 'Keyra Backup', extensions: ['keyra'] }]
+    });
+
+    if (filePath) {
+        try {
+            const data = getBackupData();
+            fs.writeFileSync(filePath, JSON.stringify(data));
+            return { success: true };
+        } catch (e) {
+            return { success: false, message: "Export failed." };
+        }
+    }
+    return { success: false };
+});
+
+ipcMain.handle('import-vault', async () => {
+    const { filePaths } = await dialog.showOpenDialog(mainWindow!, {
+        title: 'Import Secure Vault Backup',
+        filters: [{ name: 'Keyra Backup', extensions: ['keyra'] }],
+        properties: ['openFile']
+    });
+
+    if (filePaths && filePaths.length > 0) {
+        try {
+            const content = fs.readFileSync(filePaths[0], 'utf8');
+            const data = JSON.parse(content);
+            if (!data.salt || !data.encryptedVaultData) {
+                return { success: false, message: "Invalid backup file format." };
+            }
+            return { success: true, data }; // Send data back to renderer to ask for password
+        } catch (e) {
+            return { success: false, message: "Import failed." };
+        }
+    }
+    return { success: false };
+});
+
+ipcMain.handle('perform-vault-import', async (event, salt, encryptedVaultData, password) => {
+    return importVaultData(salt, encryptedVaultData, password);
 });
 
 // Basic window controls for custom titlebar

@@ -122,7 +122,7 @@ export class UIManager {
 
         // Logout Confirmation
         document.getElementById('btn-confirm-logout')?.addEventListener('click', async () => {
-            await window.api.logout();
+            await (window as any).api.logout();
             window.location.reload();
         });
         document.getElementById('btn-cancel-logout')?.addEventListener('click', () => {
@@ -153,7 +153,7 @@ export class UIManager {
                 this.showToast(`Vault Auto-lock: ${val === '0' ? 'Off' : val + 'm'}`, "info");
             });
         });
-        
+
         // Settings PIN
         document.getElementById('setup-pin-btn')?.addEventListener('click', () => this.showPinSetup());
 
@@ -164,6 +164,26 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             this.renderAccounts(); // Re-render to apply/remove masking
             this.showToast(this.privacyMode ? "Privacy Mode Enabled" : "Privacy Mode Disabled", "info");
+        });
+
+        // -- Vault Maintenance --
+        document.getElementById('btn-export-vault')?.addEventListener('click', async () => {
+            const res = await (window as any).api.exportVault();
+            if (res.success) {
+                this.showToast("Vault backup exported successfully", "success");
+            } else if (res.message) {
+                this.showToast(res.message, "error");
+            }
+        });
+
+        document.getElementById('btn-import-vault')?.addEventListener('click', async () => {
+            const res = await (window as any).api.importVault();
+            if (res.success && res.data) {
+                // Show a modal to ask for the password of that backup
+                this.showImportPasswordModal(res.data.salt, res.data.encryptedVaultData);
+            } else if (res.message) {
+                this.showToast(res.message, "error");
+            }
         });
 
         // Search Input
@@ -200,7 +220,7 @@ export class UIManager {
 
     private async loadInitialData() {
         try {
-            const user = await window.api.getCurrentUser();
+            const user = await (window as any).api.getCurrentUser();
             const userNameDisplay = document.getElementById('user-name-display');
             const userAvatar = document.getElementById('user-avatar');
             
@@ -218,7 +238,7 @@ export class UIManager {
     }
 
     public async refreshAccounts() {
-        this.accounts = await window.api.getAccounts();
+        this.accounts = await (window as any).api.getAccounts();
         this.renderAccounts();
     }
 
@@ -423,7 +443,7 @@ export class UIManager {
                 this.showToast("Verification data missing", "error");
                 return;
             }
-            await window.api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
+            await (window as any).api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
             await this.refreshAccounts();
             this.hideModal();
             this.showToast("Identity successfully verified", "success");
@@ -465,7 +485,7 @@ export class UIManager {
             const accountName = (document.getElementById('edit-account') as HTMLInputElement).value;
             if (!issuer) return this.showToast("Identification required", "error");
             
-            await window.api.saveAccount({ ...account, issuer, account: accountName });
+            await (window as any).api.saveAccount({ ...account, issuer, account: accountName });
             await this.refreshAccounts();
             this.hideModal();
             this.showToast("Vault synchronized successfully", "success");
@@ -587,11 +607,57 @@ export class UIManager {
         `;
         this.showModal(content);
         document.getElementById('confirm-delete')?.addEventListener('click', async () => {
-            await window.api.deleteAccount(account.id);
+            await (window as any).api.deleteAccount(account.id);
             await this.refreshAccounts();
             this.hideModal();
             this.showToast("Identity destroyed", "info");
         });
         document.getElementById('cancel-delete-btn')?.addEventListener('click', () => this.hideModal());
+    }
+
+    private showImportPasswordModal(salt: string, encryptedVaultData: string) {
+        const content = `
+            <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
+                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
+                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary); width: 64px; height: 64px;">
+                        <i data-lucide="unlock" style="color: var(--accent-primary); width: 32px; height: 32px;"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-weight: 900; font-size: 24px; color: var(--text-primary);">Restore Vault</h2>
+                        <div class="modal-help-text" style="text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">Verification required for decryption</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Backup Password</label>
+                    <input type="password" id="import-pass" class="form-input" placeholder="Enter the password for this backup">
+                    <div class="modal-help-text">This is usually the master password used when the backup was created.</div>
+                </div>
+                
+                <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl);">
+                    <button class="btn-primary" id="confirm-import" style="flex: 2; height: var(--btn-h-lg);">Verify & Restore</button>
+                    <button class="user-button" id="cancel-import" style="flex: 1; justify-content: center; height: var(--btn-h-lg); font-weight: 800;">Cancel</button>
+                </div>
+            </div>
+        `;
+        this.showModal(content);
+        
+        document.getElementById('cancel-import')?.addEventListener('click', () => this.hideModal());
+        document.getElementById('confirm-import')?.addEventListener('click', async () => {
+            const pass = (document.getElementById('import-pass') as HTMLInputElement).value;
+            if (!pass) {
+                this.showToast("Password required", "error");
+                return;
+            }
+
+            const res = await (window as any).api.performVaultImport(salt, encryptedVaultData, pass);
+            if (res.success) {
+                this.hideModal();
+                this.showToast("Vault successfully restored!", "success");
+                await this.refreshAccounts();
+            } else {
+                this.showToast(res.message, "error");
+            }
+        });
     }
 }

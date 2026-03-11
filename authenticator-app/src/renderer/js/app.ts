@@ -30,7 +30,7 @@ async function init() {
     setAppInitCallback(async () => {
         // 0. Fetch Identity Context
         try {
-            const user = await window.api.getCurrentUser();
+            const user = await (window as any).api.getCurrentUser();
             (window as any).userId = user?.id || 'default';
         } catch (e) {
             console.error("Identity fetch failed", e);
@@ -47,6 +47,19 @@ async function init() {
 
         // 5. Initialize Security Logic
         initAutoLock();
+
+        // 6. Privacy & Focus Shield
+        const privacyOverlay = document.getElementById('privacy-blur-overlay');
+        window.addEventListener('blur', () => {
+            const authVessel = document.getElementById('auth-vessel');
+            // Only blur if we are not on the auth screen (so we don't hide the login/signup)
+            if (authVessel && authVessel.classList.contains('hidden')) {
+                privacyOverlay?.classList.remove('hidden');
+            }
+        });
+        window.addEventListener('focus', () => {
+            privacyOverlay?.classList.add('hidden');
+        });
     });
 }
 

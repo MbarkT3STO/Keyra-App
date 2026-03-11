@@ -17,6 +17,9 @@ contextBridge.exposeInMainWorld('api', {
     generateTOTP: (secret: string) => ipcRenderer.invoke('generate-totp', secret),
     getRemainingSeconds: () => ipcRenderer.invoke('get-remaining-seconds'),
     parseURI: (uri: string) => ipcRenderer.invoke('parse-uri', uri),
+    exportVault: () => ipcRenderer.invoke('export-vault'),
+    importVault: () => ipcRenderer.invoke('import-vault'),
+    performVaultImport: (salt: string, encryptedVaultData: string, pass: string) => ipcRenderer.invoke('perform-vault-import', salt, encryptedVaultData, pass),
 
     // Custom window controls
     minimize: () => ipcRenderer.send('window-minimize'),
