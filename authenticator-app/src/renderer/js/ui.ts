@@ -108,6 +108,17 @@ export class UIManager {
         modalOverlay?.addEventListener('click', (e) => {
             if (e.target === e.currentTarget) this.hideModal();
         });
+        
+        // Handle window resize for icon refreshing if layout shifts majorly
+        window.addEventListener('resize', this.debounce(() => this.refreshLucide(), 250));
+    }
+
+    private debounce(func: Function, wait: number) {
+        let timeout: any;
+        return (...args: any[]) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
     }
 
     private async loadInitialData() {
@@ -167,14 +178,14 @@ export class UIManager {
     private createAccountCard(account: any, index: number): HTMLElement {
         const card = document.createElement('div');
         card.className = 'account-card animate-fade-in';
-        card.style.animationDelay = `${index * 0.05}s`;
+        card.style.animationDelay = `${index * 0.08}s`;
         
         card.innerHTML = `
             <div class="card-actions">
-                <button class="btn-icon edit-btn" title="Edit">
+                <button class="btn-icon edit-btn" title="Edit Identity">
                     <i data-lucide="edit-3"></i>
                 </button>
-                <button class="btn-icon danger delete-btn" title="Delete">
+                <button class="btn-icon danger delete-btn" title="Remove Token">
                     <i data-lucide="trash-2"></i>
                 </button>
             </div>
@@ -198,25 +209,29 @@ export class UIManager {
                         </svg>
                     </div>
                 </div>
-                <button class="btn-primary copy-btn" style="width: 100%; margin-top: 12px;">
+                <button class="btn-primary copy-btn" style="width: 100%; margin-top: 20px; height: 52px; position: relative; overflow: hidden;">
                     <i data-lucide="copy"></i>
-                    <span>Copy Code</span>
-                    <span class="copy-feedback">Copied!</span>
+                    <span class="btn-text">Secure Copy</span>
+                    <div class="copy-success-layer" style="position: absolute; top:0; left:0; right:0; bottom:0; background: var(--accent-primary); color: white; display: flex; align-items: center; justify-content: center; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);">
+                        <i data-lucide="check" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                        <span>Copied!</span>
+                    </div>
                 </button>
             </div>
         `;
 
         const copyBtn = card.querySelector('.copy-btn') as HTMLElement;
         copyBtn.onclick = async () => {
-            const code = card.querySelector('.otp-code')?.textContent || '';
+            const code = card.querySelector('.otp-code')?.textContent?.replace(/\s/g, '') || '';
             await navigator.clipboard.writeText(code);
-            const feedback = copyBtn.querySelector('.copy-feedback') as HTMLElement;
-            feedback.style.opacity = '1';
-            feedback.style.transform = 'translateX(-50%) translateY(-5px)';
-            setTimeout(() => {
-                feedback.style.opacity = '0';
-                feedback.style.transform = 'translateX(-50%) translateY(0)';
-            }, 2000);
+            
+            const successLayer = copyBtn.querySelector('.copy-success-layer') as HTMLElement;
+            if (successLayer) {
+                successLayer.style.transform = 'translateY(0)';
+                setTimeout(() => {
+                    successLayer.style.transform = 'translateY(100%)';
+                }, 2000);
+            }
         };
 
         card.querySelector('.edit-btn')?.addEventListener('click', (e) => {
@@ -238,8 +253,8 @@ export class UIManager {
         if (!codeElement) return;
 
         const otp = await window.api.generateTOTP(secret);
-        if (codeElement.textContent !== otp) {
-            codeElement.textContent = otp;
+        if (codeElement.textContent?.replace(/\s/g, '') !== otp) {
+            codeElement.textContent = otp.substring(0, 3) + ' ' + otp.substring(3);
         }
 
         const remaining = await window.api.getRemainingSeconds();
@@ -288,27 +303,34 @@ export class UIManager {
 
     private showAddModal() {
         const content = `
-            <div style="padding: 32px;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                    <i data-lucide="plus-circle" style="color: var(--accent-primary); width: 24px; height: 24px;"></i>
-                    <h2 style="font-weight: 800;">Add Account</h2>
+            <div style="padding: clamp(24px, 5vw, 40px);">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary);">
+                        <i data-lucide="plus-circle" style="color: var(--accent-primary);"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-weight: 850; font-size: 24px; color: var(--text-primary);">New Identity</h2>
+                        <div class="modal-help-text">Connect a new service to your vault</div>
+                    </div>
                 </div>
-                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Enter your service details manually</p>
+                
                 <div class="form-group">
-                    <label class="form-label">Service Name</label>
+                    <label class="form-label">Service Provider</label>
                     <input type="text" id="new-issuer" class="form-input" placeholder="e.g. Google, GitHub">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Account Identity</label>
+                    <label class="form-label">Identity / Email</label>
                     <input type="text" id="new-account" class="form-input" placeholder="user@example.com">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Secret Key</label>
-                    <input type="text" id="new-secret" class="form-input" placeholder="Base32 code">
+                    <label class="form-label">Base32 Secret Key</label>
+                    <input type="text" id="new-secret" class="form-input" placeholder="PASTE_SECRET_HERE">
+                    <div class="modal-help-text">Obtained via "Manual entry" or QR backup</div>
                 </div>
-                <div style="display: flex; gap: 12px; margin-top: 32px;">
-                    <button class="btn-primary" id="save-new-account" style="flex: 2;">Add Identity</button>
-                    <button class="user-button" id="cancel-add-btn" style="flex: 1; justify-content: center;">Cancel</button>
+                
+                <div style="display: flex; gap: 16px; margin-top: 40px;">
+                    <button class="btn-primary" id="save-new-account" style="flex: 2; height: 56px;">Initialize Security</button>
+                    <button class="user-button" id="cancel-add-btn" style="flex: 1; justify-content: center; height: 56px;">Discard</button>
                 </div>
             </div>
         `;
@@ -318,36 +340,42 @@ export class UIManager {
             const account = (document.getElementById('new-account') as HTMLInputElement).value;
             const secret = (document.getElementById('new-secret') as HTMLInputElement).value;
             if (!issuer || !secret) {
-                this.showToast("Issuer and Secret are required", "error");
+                this.showToast("Required fields missing", "error");
                 return;
             }
             await window.api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
             await this.refreshAccounts();
             this.hideModal();
-            this.showToast("Account added successfully", "success");
+            this.showToast("Identity secured in vault", "success");
         });
         document.getElementById('cancel-add-btn')?.addEventListener('click', () => this.hideModal());
     }
 
     private showEditModal(account: any) {
         const content = `
-            <div style="padding: 32px;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                    <i data-lucide="edit-3" style="color: var(--accent-primary); width: 24px; height: 24px;"></i>
-                    <h2 style="font-weight: 800;">Edit Account</h2>
+            <div style="padding: clamp(24px, 5vw, 40px);">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary);">
+                        <i data-lucide="edit-3" style="color: var(--accent-primary);"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-weight: 850; font-size: 24px; color: var(--text-primary);">Refine Token</h2>
+                        <div class="modal-help-text">Editing metadata for ${account.issuer}</div>
+                    </div>
                 </div>
-                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Update details for ${account.issuer}</p>
+                
                 <div class="form-group">
-                    <label class="form-label">Service Name</label>
+                    <label class="form-label">Provider Label</label>
                     <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Account Identity</label>
+                    <label class="form-label">Identity Label</label>
                     <input type="text" id="edit-account" class="form-input" value="${account.account}">
                 </div>
-                <div style="display: flex; gap: 12px; margin-top: 32px;">
-                    <button class="btn-primary" id="update-account" style="flex: 2;">Update Changes</button>
-                    <button class="user-button" id="cancel-edit-btn" style="flex: 1; justify-content: center;">Cancel</button>
+                
+                <div style="display: flex; gap: 16px; margin-top: 40px;">
+                    <button class="btn-primary" id="update-account" style="flex: 2; height: 56px;">Save Changes</button>
+                    <button class="user-button" id="cancel-edit-btn" style="flex: 1; justify-content: center; height: 56px;">Discard</button>
                 </div>
             </div>
         `;
@@ -355,12 +383,12 @@ export class UIManager {
         document.getElementById('update-account')?.addEventListener('click', async () => {
             const issuer = (document.getElementById('edit-issuer') as HTMLInputElement).value;
             const accountName = (document.getElementById('edit-account') as HTMLInputElement).value;
-            if (!issuer) return this.showToast("Service name is required", "error");
+            if (!issuer) return this.showToast("Label required", "error");
             
             await window.api.saveAccount({ ...account, issuer, account: accountName });
             await this.refreshAccounts();
             this.hideModal();
-            this.showToast("Account updated", "success");
+            this.showToast("Vault synchronized", "success");
         });
         document.getElementById('cancel-edit-btn')?.addEventListener('click', () => this.hideModal());
     }
@@ -371,26 +399,30 @@ export class UIManager {
         const toast = document.createElement('div');
         toast.className = 'animate-fade-in';
         toast.style.cssText = `
-            background: var(--bg-primary);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
             color: var(--text-primary);
-            padding: 12px 20px;
+            padding: 14px 24px;
             border-radius: var(--radius-md);
-            box-shadow: var(--shadow-medium);
-            border-left: 4px solid ${type === 'error' ? '#ff3b30' : type === 'success' ? '#34c759' : 'var(--accent-primary)'};
-            display: flex; align-items: center; gap: 10px;
-            font-size: 14px; font-weight: 600;
+            box-shadow: var(--shadow-hard);
+            border: 1px solid var(--glass-border);
+            border-bottom: 3px solid ${type === 'error' ? '#ff3b30' : type === 'success' ? '#34c759' : 'var(--accent-primary)'};
+            display: flex; align-items: center; gap: 12px;
+            font-size: 15px; font-weight: 700;
+            max-width: 90vw;
+            margin: 0 auto;
         `;
         
         const iconName = type === 'error' ? 'alert-circle' : type === 'success' ? 'check-circle' : 'info';
-        toast.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px; color: ${type === 'error' ? '#ff3b30' : type === 'success' ? '#34c759' : 'var(--accent-primary)'}; flex-shrink:0;"></i> <span>${message}</span>`;
         
         container.appendChild(toast);
         this.refreshLucide();
 
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateY(10px)';
-            setTimeout(() => toast.remove(), 300);
+            toast.style.transform = 'translateY(16px)';
+            setTimeout(() => toast.remove(), 400);
         }, 3000);
     }
 
@@ -410,23 +442,33 @@ export class UIManager {
         if (pinIn.value === saved) {
             document.getElementById('lock-vessel')?.classList.remove('show');
         } else {
-            this.showToast("Invalid PIN", "error");
+            this.showToast("Verification failed", "error");
             pinIn.value = ''; pinIn.focus();
         }
     }
 
     private showPinSetup() {
         const content = `
-            <div style="padding: 32px;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                    <i data-lucide="key-round" style="color: var(--accent-primary); width: 24px; height: 24px;"></i>
-                    <h2 style="font-weight: 800;">Vault Security</h2>
+            <div style="padding: clamp(24px, 5vw, 40px);">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary);">
+                        <i data-lucide="key-round" style="color: var(--accent-primary);"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-weight: 850; font-size: 24px; color: var(--text-primary);">Vault Security</h2>
+                        <div class="modal-help-text">Set a 4-digit master access PIN</div>
+                    </div>
                 </div>
-                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Set a 4-digit PIN to protect your vault</p>
-                <input type="password" id="new-pin" maxlength="4" class="form-input" style="text-align: center; font-size: 24px; letter-spacing: 12px;" placeholder="••••">
-                <div style="display: flex; gap: 12px; margin-top: 32px;">
-                    <button class="btn-primary" id="save-pin" style="flex: 2;">Save PIN</button>
-                    <button class="user-button" id="cancel-pin-btn" style="flex: 1; justify-content: center;">Cancel</button>
+                
+                <div class="form-group">
+                    <label class="form-label">Access PIN</label>
+                    <input type="password" id="new-pin" maxlength="4" class="form-input" style="text-align: center; font-size: 32px; letter-spacing: 16px; height: 80px;" placeholder="••••">
+                    <div class="modal-help-text">Must be exactly 4 numeric digits</div>
+                </div>
+                
+                <div style="display: flex; gap: 16px; margin-top: 40px;">
+                    <button class="btn-primary" id="save-pin" style="flex: 2; height: 56px;">Lock Vault</button>
+                    <button class="user-button" id="cancel-pin-btn" style="flex: 1; justify-content: center; height: 56px;">Discard</button>
                 </div>
             </div>
         `;
@@ -436,7 +478,7 @@ export class UIManager {
             if (pin.length === 4) {
                 const uid = (window as any).currentUserId || 'default';
                 localStorage.setItem(`${uid}_vault_pin`, pin);
-                this.showToast("PIN set successfully", "success");
+                this.showToast("PIN established successfully", "success");
                 this.hideModal();
             } else {
                 this.showToast("PIN must be 4 digits", "error");
@@ -447,15 +489,18 @@ export class UIManager {
 
     private showDeleteConfirm(account: any) {
         const content = `
-            <div style="padding: 32px; text-align: center;">
-                <div style="color: #ff3b30; margin-bottom: 16px;">
-                    <i data-lucide="alert-triangle" style="width: 48px; height: 48px;"></i>
+            <div style="padding: clamp(32px, 8vw, 48px); text-align: center;">
+                <div style="color: #ff3b30; margin-bottom: 24px;">
+                    <i data-lucide="alert-triangle" style="width: 64px; height: 64px;"></i>
                 </div>
-                <h2 style="font-weight: 800; margin-bottom: 12px;">Delete Account?</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 32px; font-size: 15px;">Removing <strong>${account.issuer}</strong> will permanently erase its token.</p>
-                <div style="display: flex; gap: 12px;">
-                    <button class="btn-primary" id="confirm-delete" style="flex: 1; background: #ff3b30;">Delete</button>
-                    <button class="user-button" id="cancel-delete-btn" style="flex: 1; justify-content: center;">Cancel</button>
+                <h2 style="font-weight: 850; font-size: 24px; margin-bottom: 12px; color: var(--text-primary);">Destroy Token?</h2>
+                <div class="modal-help-text" style="font-size: 16px; margin-bottom: 40px;">
+                    Permanently remove identity for <strong>${account.issuer}</strong>? This action is irreversible.
+                </div>
+                
+                <div style="display: flex; gap: 16px;">
+                    <button class="btn-primary" id="confirm-delete" style="flex: 1; height: 56px; background: #ff3b30; box-shadow: 0 8px 24px rgba(255, 59, 48, 0.2);">Confirm Erase</button>
+                    <button class="user-button" id="cancel-delete-btn" style="flex: 1; justify-content: center; height: 56px;">Discard</button>
                 </div>
             </div>
         `;
@@ -464,7 +509,7 @@ export class UIManager {
             await window.api.deleteAccount(account.id);
             await this.refreshAccounts();
             this.hideModal();
-            this.showToast("Account removed", "info");
+            this.showToast("Identity destroyed", "info");
         });
         document.getElementById('cancel-delete-btn')?.addEventListener('click', () => this.hideModal());
     }
