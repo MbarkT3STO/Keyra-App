@@ -415,8 +415,14 @@
                 <h2 style="margin-bottom: 12px; font-weight: 850; font-size: 26px; color: var(--text-primary);">Vault Locked</h2>
                 <p style="color: var(--text-secondary); margin-bottom: 40px; font-size: 15px; font-weight: 500;">Enter your security PIN to resume</p>
                 <form id="form-unlock">
-                    <div class="form-group">
-                        <input type="password" id="unlock-pin" maxlength="4" placeholder="••••" class="form-input" style="text-align: center; font-size: 36px; height: 80px; letter-spacing: 16px;">
+                    <div class="form-group" style="position: relative;">
+                        <input type="password" id="unlock-pin" maxlength="4" placeholder="••••" class="form-input" style="text-align: center; font-size: 36px; height: 80px; letter-spacing: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                        <div id="pin-progress" style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; margin-top: 12px;">
+                            <div class="pin-dot" data-digit="1"></div>
+                            <div class="pin-dot" data-digit="2"></div>
+                            <div class="pin-dot" data-digit="3"></div>
+                            <div class="pin-dot" data-digit="4"></div>
+                        </div>
                     </div>
                     <button type="submit" class="btn-primary" style="width: 100%; height: 56px;">Identity Verified</button>
                 </form>

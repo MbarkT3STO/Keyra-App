@@ -284,6 +284,37 @@ export class UIManager {
             e.preventDefault();
             this.handleUnlock();
         });
+
+        // Auto-unlock on PIN input
+        const pinInput = document.getElementById('unlock-pin') as HTMLInputElement;
+        pinInput?.addEventListener('input', (e) => {
+            const value = (e.target as HTMLInputElement).value;
+            
+            // Only allow numeric digits
+            const numericValue = value.replace(/[^0-9]/g, '');
+            if (value !== numericValue) {
+                (e.target as HTMLInputElement).value = numericValue;
+                return;
+            }
+            
+            if (numericValue.length === 4) {
+                this.validateAndAutoUnlock(numericValue);
+            }
+        });
+
+        // Add keyboard support for PIN input
+        pinInput?.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.clearPinInput();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                this.handleUnlock();
+            }
+            // Prevent non-numeric input
+            else if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
         
         // Handle window resize for icon refreshing if layout shifts majorly
         window.addEventListener('resize', this.debounce(() => this.refreshLucide(), 250));
@@ -617,14 +648,98 @@ export class UIManager {
 
     private handleUnlock() {
         const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
+        if (!pinIn) return;
+        
+        this.validateAndAutoUnlock(pinIn.value);
+    }
+
+    private validateAndAutoUnlock(pinValue: string) {
+        const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
         const uid = (window as any).currentUserId || 'default';
         const saved = localStorage.getItem(`${uid}_vault_pin`);
-        if (pinIn.value === saved) {
-            document.getElementById('lock-vessel')?.classList.remove('show');
-        } else {
-            this.showToast("Verification failed", "error");
-            pinIn.value = ''; pinIn.focus();
+        const progressDots = document.querySelectorAll('.pin-dot');
+        
+        // Update progress dots based on input length
+        progressDots.forEach((dot, index) => {
+            dot.classList.remove('filled', 'error', 'success');
+            if (index < pinValue.length) {
+                dot.classList.add('filled');
+            }
+        });
+        
+        // Add visual feedback for validation
+        if (pinValue.length === 4) {
+            pinIn.style.borderColor = 'var(--accent-primary)';
+            pinIn.style.boxShadow = '0 0 0 3px rgba(199, 125, 255, 0.1)';
+            
+            if (pinValue === saved) {
+                // Success feedback
+                pinIn.style.borderColor = '#28a745';
+                pinIn.style.boxShadow = '0 0 0 3px rgba(40, 167, 69, 0.2)';
+                
+                // Animate progress dots to success state
+                progressDots.forEach((dot, index) => {
+                    setTimeout(() => {
+                        dot.classList.remove('filled');
+                        dot.classList.add('success');
+                    }, index * 100);
+                });
+                
+                // Auto-unlock after brief delay for visual feedback
+                setTimeout(() => {
+                    document.getElementById('lock-vessel')?.classList.remove('show');
+                    pinIn.style.borderColor = '';
+                    pinIn.style.boxShadow = '';
+                    pinIn.value = '';
+                    // Reset progress dots
+                    progressDots.forEach(dot => {
+                        dot.classList.remove('filled', 'error', 'success');
+                    });
+                }, 600);
+                
+                this.showToast("Vault unlocked successfully", "success");
+            } else {
+                // Error feedback
+                pinIn.style.borderColor = '#ff3b30';
+                pinIn.style.boxShadow = '0 0 0 3px rgba(255, 59, 48, 0.2)';
+                
+                // Animate progress dots to error state
+                progressDots.forEach(dot => {
+                    dot.classList.remove('filled');
+                    dot.classList.add('error');
+                });
+                
+                setTimeout(() => {
+                    pinIn.style.borderColor = '';
+                    pinIn.style.boxShadow = '';
+                    pinIn.value = '';
+                    pinIn.focus();
+                    // Reset progress dots
+                    progressDots.forEach(dot => {
+                        dot.classList.remove('filled', 'error', 'success');
+                    });
+                }, 1000);
+                
+                this.showToast("Invalid PIN", "error");
+            }
         }
+    }
+
+    private clearPinInput() {
+        const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
+        const progressDots = document.querySelectorAll('.pin-dot');
+        
+        if (pinIn) {
+            pinIn.value = '';
+            pinIn.style.borderColor = '';
+            pinIn.style.boxShadow = '';
+            pinIn.focus();
+        }
+        
+        // Reset progress dots
+        progressDots.forEach(dot => {
+            dot.classList.remove('filled', 'error', 'success');
+        });
     }
 
     private showPinSetup() {
