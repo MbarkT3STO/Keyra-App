@@ -1,0 +1,250 @@
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--bg-primary);
+    overflow: hidden;
+    position: relative;
+    transition: background-color var(--transition-medium);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   NAVBAR & HEADER
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.navbar {
+    height: 72px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 100;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    user-select: none;
+    -webkit-app-region: drag;
+    transition: all var(--transition-medium);
+}
+
+.navbar-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    padding: 0 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    overflow: visible; /* Prevent clipping critical items */
+}
+
+.navbar-section {
+    display: flex;
+    align-items: center;
+    -webkit-app-region: no-drag;
+}
+
+.navbar-left {
+    flex: 0 0 auto; /* Force size persistence */
+    justify-content: flex-start;
+}
+
+.navbar-center {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+}
+
+.navbar-right {
+    flex: 0 0 auto; /* Force size persistence */
+    justify-content: flex-end;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MAIN CONTENT
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.section-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 32px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.section-title {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.section-subtitle {
+    color: var(--text-secondary); 
+    font-size: 14px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MODALS & OVERLAYS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 9, 16, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all var(--transition-medium);
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.modal {
+    background: var(--bg-primary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 440px;
+    box-shadow: var(--shadow-hard);
+    transform: translateY(30px) scale(0.95);
+    transition: all var(--transition-medium);
+    overflow: hidden;
+}
+
+.modal-overlay.show .modal {
+    transform: translateY(0) scale(1);
+}
+
+.accounts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    width: 100%;
+}
+
+.view-section {
+    width: 100%;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   RESPONSIVE OVERRIDES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+    .navbar-wrapper { padding: 0 24px; }
+}
+
+@media (max-width: 768px) {
+    .navbar { height: 64px; }
+    .navbar-wrapper { padding: 0 16px; }
+    .navbar-brand .brand-text { display: none; }
+    .nav-tab span { display: none; }
+    .main-content { padding: 24px 16px; }
+}
+
+/* Mobile Layout - Nav tabs move to bottom */
+@media (max-width: 540px) {
+    .navbar-center {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border-color);
+        height: 72px;
+        padding: 0 16px;
+        z-index: 101;
+        width: 100vw;
+        flex: none;
+    }
+    
+    .nav-tabs {
+        width: 100%;
+        justify-content: space-around;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+
+    /* Side sections share the header space evenly */
+    .navbar-left, .navbar-right {
+        flex: 1 1 auto;
+    }
+    
+    .navbar-left { justify-content: flex-start; }
+    .navbar-right { justify-content: flex-end; }
+    
+    .main-content { padding-bottom: 100px; }
+    .accounts-grid { grid-template-columns: 1fr; }
+    .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .btn-primary#add-account-btn { width: 100%; }
+
+    .modal {
+        max-width: 100%;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        position: fixed;
+        bottom: 0;
+        margin: 0;
+        transform: translateY(100%);
+    }
+    .modal-overlay.show .modal { transform: translateY(0); }
+}
+
+/* ULTRA NARROW - Below 400px */
+@media (max-width: 400px) {
+    .navbar-wrapper { padding: 0 12px; }
+    
+    .navbar-brand { gap: 0; width: 40px; }
+    .brand-icon i { width: 24px !important; height: 24px !important; }
+
+    .user-button {
+        padding: 4px 6px !important;
+        gap: 0 !important;
+        background: none !important;
+        border: none !important;
+    }
+    
+    .user-name, .user-button i[data-lucide="chevron-down"] {
+        display: none !important;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* ABSOLUTE MINIMUM - Below 320px */
+@media (max-width: 320px) {
+    .navbar-wrapper { padding: 0 8px; }
+    .main-content { padding: 16px 12px 100px; }
+}

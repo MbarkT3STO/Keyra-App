@@ -5,7 +5,7 @@
   "main": "dist/main/main.js",
   "scripts": {
     "build:main": "tsc -p tsconfig.json",
-    "build:renderer": "tsc -p tsconfig.renderer.json",
+    "build:renderer": "tsc -p tsconfig.renderer.json && copy src\\renderer\\index.html dist\\renderer\\renderer\\index.html && xcopy /E /Y /I src\\renderer\\css dist\\renderer\\renderer\\css",
     "build": "npm run build:main && npm run build:renderer",
     "start": "npm run build && electron ."
   },

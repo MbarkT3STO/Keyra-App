@@ -1,5 +1,5 @@
 import { syncVault } from './store.js';
-import { setupUI, renderAccounts, lockVault } from './ui.js';
+import { UIManager } from './ui.js';
 import { setupAuthUI, setAppInitCallback } from './auth.js';
 
 let inactivityTimer: any = null;
@@ -11,7 +11,7 @@ function resetInactivityTimer() {
     const timeoutMinutes = parseInt(localStorage.getItem(`${uid}_autolock`) || '0');
     if (timeoutMinutes > 0) {
         inactivityTimer = setTimeout(() => {
-            lockVault();
+            if ((window as any).ui) (window as any).ui.lockVault();
         }, timeoutMinutes * 60 * 1000);
     }
 }
@@ -31,10 +31,11 @@ async function init() {
         // 0. Startup Security Check (Post-Auth)
         const uid = (window as any).currentUserId || 'default';
         const hasPin = !!localStorage.getItem(`${uid}_vault_pin`);
-        if (hasPin) lockVault();
 
         // 2. Setup UI Components
-        setupUI();
+        (window as any).ui = new UIManager();
+        
+        if (hasPin) (window as any).ui.lockVault();
 
         // 5. Initialize Security Logic
         initAutoLock();

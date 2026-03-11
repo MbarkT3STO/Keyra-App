@@ -1,618 +1,471 @@
-import { accounts, syncVault } from './store.js';
+import { syncVault } from './store.js';
 
-// ─── Service Icon Mapping ──────────────────────────────────────
-const SERVICE_ICONS: Record<string, string> = {
-    'github': 'github',
-    'google': 'chrome',
-    'discord': 'message-square',
-    'microsoft': 'layout',
-    'aws': 'cloud',
-    'binance': 'wallet',
-    'facebook': 'facebook',
-    'twitter': 'twitter',
-    'instagram': 'instagram',
-    'linkedin': 'linkedin',
-    'twitch': 'twitch',
-    'dropbox': 'box',
-    'digitalocean': 'droplet',
-    'spotify': 'music',
-    'netflix': 'play-circle',
-    'amazon': 'shopping-cart',
-    'apple': 'monitor',
-    'steam': 'gamepad-2',
-    'reddit': 'message-circle',
-    'slack': 'slack',
-    'basecamp': 'triangle',
-    'bitbucket': 'code-2',
-    'gitlab': 'git-pull-request',
-    'npm': 'package',
-    'cloudflare': 'cloud-lightning',
-    'heroku': 'zap',
-    'vercel': 'triangle',
-    'paypal': 'dollar-sign',
-    'stripe': 'credit-card',
-    'zoom': 'video',
-    'notion': 'file-text'
-};
+export class UIManager {
+    private currentTheme: 'light' | 'dark' = 'light';
+    private currentTab: 'vault' | 'settings' = 'vault';
+    private accounts: any[] = [];
+    private timerInterval: any = null;
 
-function getServiceIcon(issuer: string): string {
-    const key = issuer.toLowerCase();
-    for (const [s, icon] of Object.entries(SERVICE_ICONS)) {
-        if (key.includes(s)) return icon;
-    }
-    return 'shield-check';
-}
-
-// ─── Modal Management ──────────────────────────────────────────
-export function showModal(m: HTMLElement) {
-    m.classList.remove('hidden');
-    m.classList.add('show');
-}
-
-export function hideModal(m: HTMLElement) {
-    m.classList.remove('show');
-    m.classList.add('hidden');
-}
-
-// ─── Toast Engine ──────────────────────────────────────────────
-export function showToast(msg: string, err = false) {
-    const box = document.getElementById('toasts');
-    if (!box) return;
-    const t = document.createElement('div');
-    t.className = `toast ${err ? 'err' : 'ok'}`;
-    t.style.cssText = `
-        background: ${err ? '#ff4757' : 'var(--v-3)'};
-        color: #fff; padding: 16px 24px; border-radius: 18px;
-        margin-bottom: 12px; font-weight: 700; font-size: 0.95rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        border: 1px solid rgba(255,255,255,0.1);
-        display: flex; align-items: center; gap: 12px;
-        transform: translateX(50px); opacity: 0; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        z-index: 1000000;
-    `;
-    const icon = err ? 'alert-triangle' : 'check-circle';
-    t.innerHTML = `<i data-lucide="${icon}"></i><span>${msg}</span>`;
-    box.appendChild(t);
-    if (typeof (window as any).lucide !== 'undefined') (window as any).lucide.createIcons();
-
-    requestAnimationFrame(() => {
-        t.style.transform = 'translateX(0)';
-        t.style.opacity = '1';
-    });
-
-    setTimeout(() => {
-        t.style.transform = 'translateX(50px)';
-        t.style.opacity = '0';
-        t.addEventListener('transitionend', () => t.remove(), { once: true });
-    }, 3000);
-}
-
-// ─── View Management ───────────────────────────────────────────
-function switchView(viewId: string) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-
-    document.getElementById(`view-${viewId}`)?.classList.add('active');
-    document.querySelector(`[data-view="${viewId}"]`)?.classList.add('active');
-
-    const fab = document.getElementById('btn-add');
-    if (fab) fab.style.display = (viewId === 'vault') ? 'flex' : 'none';
-}
-
-// ─── Lock System ───────────────────────────────────────────────
-export function lockVault() {
-    const lock = document.getElementById('lock-screen');
-    if (lock) showModal(lock);
-}
-
-export function unlockVault() {
-    const lock = document.getElementById('lock-screen');
-    if (lock) hideModal(lock);
-    renderAccounts(); // Force render to ensure accounts show up after initial startup unlock
-}
-
-// ─── LocalStorage Prefix Helper ──────────────────────────────────
-const LSK = (k: string) => ((window as any).currentUserId || 'default') + '_' + k;
-
-// ─── Hide Codes Setup ──────────────────────────────────────────
-// ─── Auto-Lock System ─────────────────────────────────────────
-let lastActivity = Date.now();
-let lockInterval: any = null;
-
-export function initAutoLock() {
-    const alSelect = document.getElementById('setting-autolock') as HTMLSelectElement;
-    if (alSelect) {
-        alSelect.value = localStorage.getItem(LSK('autolock')) || '0';
-        alSelect.addEventListener('change', () => {
-            localStorage.setItem(LSK('autolock'), alSelect.value);
-            startAutoLockTimer();
-        });
+    constructor() {
+        this.initTheme();
+        this.setupEventListeners();
+        this.startTimer();
+        this.loadInitialData();
     }
 
-    // Tracker
-    ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(ev => {
-        document.addEventListener(ev, () => lastActivity = Date.now());
-    });
+    private initTheme() {
+        const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' || 'light';
+        this.setTheme(savedTheme);
+    }
 
-    startAutoLockTimer();
-}
-
-function startAutoLockTimer() {
-    if (lockInterval) clearInterval(lockInterval);
-    const mins = parseInt(localStorage.getItem(LSK('autolock')) || '0');
-    if (mins === 0) return;
-
-    lockInterval = setInterval(() => {
-        const diff = (Date.now() - lastActivity) / 1000 / 60;
-        if (diff >= mins) {
-            // Only lock if not already locked
-            if (document.getElementById('lock-screen')?.classList.contains('hidden')) {
-                lockVault();
-            }
+    public setTheme(theme: 'light' | 'dark') {
+        this.currentTheme = theme;
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        const themeIcon = document.getElementById('theme-icon-lucide');
+        const themeText = document.getElementById('theme-text');
+        
+        if (themeIcon) {
+            themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
         }
-    }, 10000); // Check every 10s
-}
-
-export function initHideCodes() {
-    const hcToggle = document.getElementById('setting-hide') as HTMLInputElement;
-    if (hcToggle) {
-        hcToggle.checked = localStorage.getItem(LSK('hide_codes')) === 'true';
-        hcToggle.addEventListener('change', () => {
-            localStorage.setItem(LSK('hide_codes'), hcToggle.checked.toString());
-            renderAccounts();
-            showToast(hcToggle.checked ? 'Codes Hidden' : 'Codes Revealed');
-        });
-    }
-}
-
-// ─── Account Render ───────────────────────────────────────────
-export async function renderAccounts(filter = '') {
-    const list = document.getElementById('accounts-list');
-    if (!list) return;
-
-    const term = filter || (document.getElementById('search-input') as HTMLInputElement)?.value.toLowerCase() || '';
-
-    // Fuzzy matching logic
-    const filtered = accounts.filter(a => {
-        if (!term) return true;
-        const issuer = a.issuer.toLowerCase();
-        const account = (a.account || '').toLowerCase();
-
-        // Exact match
-        if (issuer.includes(term) || account.includes(term)) return true;
-
-        // Very basic fuzzy match (characters exist in order)
-        let i = 0, j = 0;
-        while (i < term.length && j < issuer.length) {
-            if (term[i] === issuer[j]) i++;
-            j++;
+        if (themeText) {
+            themeText.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
         }
-        return i === term.length;
-    });
-
-    if (filtered.length === 0) {
-        list.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 100px 20px; color: var(--t4); width: 100%;">
-                <i data-lucide="info" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 20px;"></i>
-                <h3 style="font-weight: 800; font-size: 1.5rem; color: var(--t1);">Empty Vault</h3>
-                <p>No matches found in your secure bloom storage.</p>
-            </div>`;
-        if (typeof (window as any).lucide !== 'undefined') (window as any).lucide.createIcons();
-        return;
+        
+        this.refreshLucide();
     }
 
-    const html = await Promise.all(filtered.map(async (a, i) => {
-        let code = '000000';
-        try { code = await window.api.generateTOTP(a.secret); } catch { }
-        const fmt = code.slice(0, 3) + ' ' + code.slice(3);
-        const iconName = getServiceIcon(a.issuer);
+    private refreshLucide() {
+        if ((window as any).lucide) {
+            (window as any).lucide.createIcons();
+        }
+    }
 
-        return `
-        <div class="card ${localStorage.getItem(LSK('hide_codes')) === 'true' ? 'hidden-codes-active' : ''}" 
-             data-id="${a.id}" data-code="${code}" draggable="true"
-             style="animation: app-entry 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s forwards; opacity: 0;">
-            <div class="card-header">
-                <div class="service-grp">
-                    <div class="avatar"><i data-lucide="${iconName}"></i></div>
-                    <div class="meta">
-                        <div class="issuer">${a.issuer}</div>
-                        <div class="identity">${a.account || 'Secured'}</div>
-                    </div>
-                </div>
-                <div class="card-actions-wrap">
-                    <button class="btn-icon-m btn-more-ops" data-id="${a.id}"><i data-lucide="more-vertical"></i></button>
-                    <div class="card-menu hidden" id="menu-${a.id}">
-                        <div class="menu-item btn-edit-card" data-id="${a.id}"><i data-lucide="edit-3"></i> Edit</div>
-                        <div class="menu-item danger btn-del-card" data-id="${a.id}"><i data-lucide="trash-2"></i> Delete</div>
-                    </div>
-                </div>
-            </div>
-            <div class="otp-box">
-                <div class="otp-val" data-raw="${fmt}">
-                    ${localStorage.getItem(LSK('hide_codes')) === 'true' ? '••• •••' : fmt}
-                </div>
-                ${localStorage.getItem(LSK('hide_codes')) === 'true' ? '<i data-lucide="eye" class="btn-reveal-code" style="color: var(--t4); cursor: pointer; margin-left: auto;"></i>' : ''}
-            </div>
-            <div class="card-foot">
-                <div class="progress-wrap"><div class="progress-bar" style="width:100%"></div></div>
-                <div class="timer-circle">
-                    <svg class="timer-svg" viewBox="0 0 32 32">
-                        <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4" />
-                        <circle class="timer-fill" cx="16" cy="16" r="14" stroke-dasharray="88" stroke-dashoffset="0"/>
-                    </svg>
-                </div>
-            </div>
-        </div>`;
-    }));
-
-    list.innerHTML = html.join('');
-    if (typeof (window as any).lucide !== 'undefined') (window as any).lucide.createIcons();
-    attachCardListeners();
-    setupDragAndDrop();
-}
-
-function setupDragAndDrop() {
-    const cards = document.querySelectorAll('.card');
-
-    cards.forEach(card => {
-        card.addEventListener('dragstart', () => {
-            card.classList.add('dragging');
+    private setupEventListeners() {
+        // Tab Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const tabName = target.getAttribute('data-tab') as 'vault' | 'settings';
+                this.switchTab(tabName);
+            });
         });
 
-        card.addEventListener('dragend', () => {
-            card.classList.remove('dragging');
-            const newOrder = Array.from(document.querySelectorAll('.card'))
-                .map(c => c.getAttribute('data-id'));
-
-            // Reorder accounts array to match newOrder
-            const reordered = newOrder.map(id => accounts.find(a => a.id === id)).filter(Boolean);
-            accounts.length = 0;
-            accounts.push(...(reordered as any));
-            syncVault(() => renderAccounts());
-        });
-
-        card.addEventListener('dragover', (e) => {
-            const de = e as DragEvent;
-            de.preventDefault();
-            const dragging = document.querySelector('.dragging') as HTMLElement;
-            if (!dragging || dragging === card) return;
-
-            const rect = card.getBoundingClientRect();
-            const midpoint = rect.top + rect.height / 2;
-            if (de.clientY < midpoint) {
-                card.parentElement?.insertBefore(dragging, card);
-            } else {
-                card.parentElement?.insertBefore(dragging, card.nextSibling);
-            }
-        });
-    });
-}
-
-
-// ─── Interactions ──────────────────────────────────────────────
-function attachCardListeners() {
-    // Menu Toss Logic
-    document.addEventListener('click', (e) => {
-        document.querySelectorAll('.card-menu').forEach(m => m.classList.add('hidden'));
-    });
-
-    document.querySelectorAll('.btn-more-ops').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        // User Dropdown Logic
+        const dropdownBtn = document.getElementById('user-dropdown-btn');
+        const dropdownMenu = document.getElementById('user-dropdown');
+        dropdownBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
-            document.querySelectorAll('.card-menu').forEach(m => m.classList.add('hidden'));
-            const id = (btn as HTMLElement).getAttribute('data-id');
-            const menu = document.getElementById(`menu-${id}`);
-            if (menu) menu.classList.remove('hidden');
-        });
-    });
-
-    document.querySelectorAll('.card').forEach(card => {
-        card.addEventListener('click', async (e) => {
-            const target = e.target as HTMLElement;
-            if (target.closest('.card-actions-wrap')) return;
-
-            // Handle Reveal Code
-            if (target.closest('.btn-reveal-code')) {
-                const valTarget = card.querySelector('.otp-val');
-                if (valTarget) valTarget.textContent = valTarget.getAttribute('data-raw') || '000 000';
-                return; // Prevent copy when just revealing
-            }
-
-            const code = ((card as HTMLElement).getAttribute('data-code') || '').replace(/\s/g, '');
-            try {
-                if (navigator.clipboard && document.hasFocus()) {
-                    await navigator.clipboard.writeText(code);
-                } else {
-                    const el = document.createElement('textarea');
-                    el.value = code;
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                }
-                showToast('OTP copied to clipboard');
-            } catch (err) {
-                showToast('Failed to copy', true);
-            }
-        });
-    });
-
-    document.querySelectorAll('.btn-del-card').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            pendingDeleteId = (btn as HTMLElement).getAttribute('data-id');
-            const acc = accounts.find(a => a.id === pendingDeleteId);
-            const label = document.getElementById('delete-account-label');
-            if (label && acc) label.textContent = acc.issuer;
-            showModal(document.getElementById('modal-delete')!);
-        });
-    });
-
-    document.querySelectorAll('.btn-edit-card').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            editingAccountId = (btn as HTMLElement).getAttribute('data-id');
-            const acc = accounts.find(a => a.id === editingAccountId);
-            if (!acc) return;
-            (document.getElementById('edit-issuer') as HTMLInputElement).value = acc.issuer;
-            (document.getElementById('edit-account') as HTMLInputElement).value = acc.account || '';
-            showModal(document.getElementById('modal-edit')!);
-        });
-    });
-}
-
-let pendingDeleteId: string | null = null;
-let editingAccountId: string | null = null;
-
-function toggleTheme() {
-    const b = document.body;
-    b.classList.toggle('theme-light');
-    b.classList.toggle('theme-dark');
-
-    // Preserve nav layout
-    const themeStr = b.classList.contains('theme-light') ? 'theme-light' : 'theme-dark';
-    localStorage.setItem(LSK('theme'), themeStr);
-
-    const ts = document.getElementById('setting-theme') as HTMLSelectElement;
-    if (ts) ts.value = themeStr;
-}
-
-// ─── PIN System Logic ─────────────────────────────────────────
-
-function setupPinInput(inputId: string, dotsId: string, onSubmit: (pin: string) => void) {
-    const input = document.getElementById(inputId) as HTMLInputElement;
-    const dotsContainer = document.getElementById(dotsId);
-    if (!input || !dotsContainer) return;
-
-    const dots = dotsContainer.querySelectorAll('.pin-dot');
-
-    input.addEventListener('input', () => {
-        const val = input.value;
-        dots.forEach((dot, idx) => {
-            if (idx < val.length) dot.classList.add('filled');
-            else dot.classList.remove('filled');
-            dot.classList.remove('error');
+            dropdownMenu?.classList.toggle('show');
         });
 
-        if (val.length === 4) {
-            onSubmit(val);
-        }
-    });
-
-    dotsContainer.addEventListener('click', () => input.focus());
-}
-
-function clearPinDots(dotsId: string, hasError = false) {
-    const dots = document.querySelectorAll(`#${dotsId} .pin-dot`);
-    dots.forEach(dot => {
-        dot.classList.remove('filled');
-        if (hasError) dot.classList.add('error');
-    });
-}
-
-// ─── Setup ────────────────────────────────────────────────────
-export function setupUI() {
-    const modalAdd = document.getElementById('modal-add');
-    const modalDel = document.getElementById('modal-delete');
-    const modalEdit = document.getElementById('modal-edit');
-
-    // Tab Logic
-    document.querySelectorAll('.tab-item').forEach(tab => {
-        tab.addEventListener('click', () => {
-            const view = (tab as HTMLElement).getAttribute('data-view');
-            if (view) switchView(view);
+        document.addEventListener('click', () => {
+            dropdownMenu?.classList.remove('show');
         });
-    });
 
-    // Logo opens 'About' view
-    document.querySelector('.brand')?.addEventListener('click', () => {
-        switchView('about');
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-    });
+        // Dropdown Actions
+        document.getElementById('lock-vault-btn')?.addEventListener('click', () => this.lockVault());
+        document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
+            const nextTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+            this.setTheme(nextTheme);
+        });
+        document.getElementById('btn-logout-trigger')?.addEventListener('click', () => {
+            document.getElementById('modal-logout')?.classList.add('show');
+            this.refreshLucide();
+        });
 
-    // Theme Logic
-    document.getElementById('btn-theme')?.addEventListener('click', toggleTheme);
-    const themeSelect = document.getElementById('setting-theme') as HTMLSelectElement;
-    if (themeSelect) {
-        // Find existing theme explicitly from scoped storage
-        const currentTheme = localStorage.getItem(LSK('theme')) || 'theme-dark';
-        themeSelect.value = currentTheme;
-        document.body.classList.remove('theme-light', 'theme-dark');
-        document.body.classList.add(currentTheme);
+        // Logout Confirmation
+        document.getElementById('btn-confirm-logout')?.addEventListener('click', async () => {
+            await window.api.logout();
+            window.location.reload();
+        });
+        document.getElementById('btn-cancel-logout')?.addEventListener('click', () => {
+            document.getElementById('modal-logout')?.classList.remove('show');
+        });
 
-        themeSelect.addEventListener('change', () => {
-            document.body.classList.remove('theme-light', 'theme-dark');
-            document.body.classList.add(themeSelect.value);
-            localStorage.setItem(LSK('theme'), themeSelect.value);
+        // Main Add Account
+        document.getElementById('add-account-btn')?.addEventListener('click', () => this.showAddModal());
+        document.getElementById('empty-add-btn')?.addEventListener('click', () => this.showAddModal());
+
+        // Settings Theme Toggle
+        document.getElementById('settings-theme-toggle')?.addEventListener('click', () => {
+            const nextTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+            this.setTheme(nextTheme);
+        });
+        
+        // Settings PIN
+        document.getElementById('setup-pin-btn')?.addEventListener('click', () => this.showPinSetup());
+
+        // Unlock Form
+        document.getElementById('form-unlock')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleUnlock();
+        });
+
+        // Close modal on overlay click
+        const modalOverlay = document.getElementById('modal-overlay');
+        modalOverlay?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.hideModal();
         });
     }
 
-    document.getElementById('btn-add')?.addEventListener('click', () => { if (modalAdd) showModal(modalAdd); });
-
-    // Master PIN Setup Handlers
-    const btnSetupPin = document.getElementById('btn-setup-pin');
-
-    function updateSetupPinBtnState() {
-        if (!btnSetupPin) return;
-        if (localStorage.getItem(LSK('vault_pin'))) {
-            btnSetupPin.textContent = 'Change PIN';
-            btnSetupPin.classList.remove('btn-p');
-            btnSetupPin.style.background = ''; // Clear inline styles
-        } else {
-            btnSetupPin.textContent = 'Set PIN';
-            btnSetupPin.classList.add('btn-p');
-            btnSetupPin.style.background = ''; // Clear inline styles
-        }
-    }
-
-    updateSetupPinBtnState();
-
-    let isSettingMasterPin = false;
-
-    btnSetupPin?.addEventListener('click', () => {
-        isSettingMasterPin = true;
-        showModal(document.getElementById('modal-set-pin')!);
-        setTimeout(() => document.getElementById('setup-pin-input')?.focus(), 100);
-    });
-
-    // Auto-Lock Handlers
-    const autolockSelect = document.getElementById('setting-autolock') as HTMLSelectElement;
-
-    if (autolockSelect) {
-        autolockSelect.value = localStorage.getItem(LSK('autolock')) || '0';
-        autolockSelect.addEventListener('change', () => {
-            const val = autolockSelect.value;
-            if (val !== '0' && !localStorage.getItem(LSK('vault_pin'))) {
-                // Require Master PIN setup first
-                autolockSelect.value = localStorage.getItem(LSK('autolock')) || '0'; // Revert visually
-                showToast('Please Set Master App PIN first.', true);
-
-                // Highlight the PIN setup button briefly
-                btnSetupPin?.animate([
-                    { transform: 'scale(1)' },
-                    { transform: 'scale(1.05)', backgroundColor: 'var(--v-5)' },
-                    { transform: 'scale(1)' }
-                ], { duration: 300 });
-
-            } else {
-                localStorage.setItem(LSK('autolock'), val);
-                showToast(val === '0' ? 'Auto-Lock Disabled' : `Auto-Lock set to ${autolockSelect.options[autolockSelect.selectedIndex].text}`);
-            }
-        });
-    }
-
-    document.getElementById('btn-cancel-pin')?.addEventListener('click', () => {
-        hideModal(document.getElementById('modal-set-pin')!);
-        isSettingMasterPin = false;
-    });
-
-    setupPinInput('setup-pin-input', 'setup-pin-dots', (pin) => {
-        localStorage.setItem(LSK('vault_pin'), pin);
-        hideModal(document.getElementById('modal-set-pin')!);
-        (document.getElementById('setup-pin-input') as HTMLInputElement).value = '';
-        clearPinDots('setup-pin-dots');
-        updateSetupPinBtnState();
-        showToast('Master PIN set successfully.');
-        isSettingMasterPin = false;
-    });
-
-    setupPinInput('unlock-pin-input', 'unlock-pin-dots', (pin) => {
-        const stored = localStorage.getItem(LSK('vault_pin'));
-        if (pin === stored) {
-            unlockVault();
-            (document.getElementById('unlock-pin-input') as HTMLInputElement).value = '';
-            clearPinDots('unlock-pin-dots');
-            const err = document.getElementById('unlock-error');
-            if (err) err.style.opacity = '0';
-            showToast('Vault Unlocked');
-        } else {
-            clearPinDots('unlock-pin-dots', true);
-            (document.getElementById('unlock-pin-input') as HTMLInputElement).value = '';
-            const err = document.getElementById('unlock-error');
-            if (err) err.style.opacity = '1';
-        }
-    });
-
-    document.getElementById('btn-export')?.addEventListener('click', () => {
-        const data = JSON.stringify(accounts, null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `keyra_vault_export_${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        showToast('Vault exported successfully.');
-    });
-
-    document.getElementById('btn-purge-all')?.addEventListener('click', async () => {
-        if (confirm('CRITICAL: Purge all accounts permanently?')) {
-            for (const acc of accounts) await window.api.deleteAccount(acc.id);
-            await syncVault(() => renderAccounts());
-            showToast('Vault purged.', true);
-        }
-    });
-
-    // Modal Overlays
-    document.querySelectorAll('.overlay').forEach(o => {
-        o.addEventListener('click', (e) => {
-            if (e.target === o && o.id !== 'lock-screen' && o.id !== 'modal-set-pin') hideModal(o as HTMLElement);
-        });
-    });
-
-    document.querySelectorAll('.btn-close-modal').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const o = (btn as HTMLElement).closest('.overlay');
-            if (o) hideModal(o as HTMLElement);
-        });
-    });
-
-    // Form logic
-    document.getElementById('form-add')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const issuer = (document.getElementById('add-issuer') as HTMLInputElement).value.trim();
-        const account = (document.getElementById('add-account') as HTMLInputElement).value.trim();
-        const secret = (document.getElementById('add-secret') as HTMLInputElement).value.trim().replace(/\s/g, '');
+    private async loadInitialData() {
         try {
-            await window.api.generateTOTP(secret);
-            await window.api.saveAccount({ issuer, account, secret });
-            await syncVault(() => renderAccounts());
-            if (modalAdd) hideModal(modalAdd);
-            (document.getElementById('form-add') as HTMLFormElement).reset();
-            showToast('Account secured.');
-        } catch { showToast('Invalid Secret.', true); }
-    });
+            const user = await window.api.getCurrentUser();
+            const userNameDisplay = document.getElementById('user-name-display');
+            const userAvatar = document.getElementById('user-avatar');
+            
+            if (userNameDisplay && user) {
+                userNameDisplay.textContent = user.username;
+            }
+            if (userAvatar && user) {
+                userAvatar.textContent = user.username.charAt(0).toUpperCase();
+            }
 
-    document.getElementById('btn-confirm-delete')?.addEventListener('click', async () => {
-        if (!pendingDeleteId) return;
-        await window.api.deleteAccount(pendingDeleteId);
-        await syncVault(() => renderAccounts());
-        if (modalDel) hideModal(modalDel);
-        showToast('Purged.');
-    });
+            await this.refreshAccounts();
+        } catch (err) {
+            console.error("Initial load failed", err);
+        }
+    }
 
-    document.getElementById('form-edit')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!editingAccountId) return;
-        const acc = accounts.find(a => a.id === editingAccountId);
-        if (!acc) return;
-        await window.api.saveAccount({
-            ...acc,
-            issuer: (document.getElementById('edit-issuer') as HTMLInputElement).value.trim(),
-            account: (document.getElementById('edit-account') as HTMLInputElement).value.trim()
+    public async refreshAccounts() {
+        this.accounts = await window.api.getAccounts();
+        this.renderAccounts();
+    }
+
+    private switchTab(tab: 'vault' | 'settings') {
+        this.currentTab = tab;
+        document.querySelectorAll('.nav-tab').forEach(t => {
+            t.classList.toggle('active', t.getAttribute('data-tab') === tab);
         });
-        await syncVault(() => renderAccounts());
-        if (modalEdit) hideModal(modalEdit);
-        showToast('Updated.');
-    });
+        document.getElementById('vault-view')?.classList.toggle('hidden', tab !== 'vault');
+        document.getElementById('settings-view')?.classList.toggle('hidden', tab !== 'settings');
+        this.refreshLucide();
+    }
 
-    document.getElementById('search-input')?.addEventListener('input', () => renderAccounts());
+    private renderAccounts() {
+        const grid = document.getElementById('accounts-grid');
+        const emptyState = document.getElementById('empty-state');
+        if (!grid || !emptyState) return;
 
-    // Window controls
-    document.getElementById('btn-minimize')?.addEventListener('click', () => window.api.minimize());
-    document.getElementById('btn-maximize')?.addEventListener('click', () => window.api.maximize());
-    document.getElementById('btn-close')?.addEventListener('click', () => window.api.close());
+        if (this.accounts.length === 0) {
+            grid.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+        } else {
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            grid.innerHTML = '';
+            this.accounts.forEach((acc, index) => {
+                grid.appendChild(this.createAccountCard(acc, index));
+            });
+        }
+        
+        this.refreshLucide();
+    }
 
-    initHideCodes();
-    initAutoLock();
+    private createAccountCard(account: any, index: number): HTMLElement {
+        const card = document.createElement('div');
+        card.className = 'account-card animate-fade-in';
+        card.style.animationDelay = `${index * 0.05}s`;
+        
+        card.innerHTML = `
+            <div class="card-actions">
+                <button class="btn-icon edit-btn" title="Edit">
+                    <i data-lucide="edit-3"></i>
+                </button>
+                <button class="btn-icon danger delete-btn" title="Delete">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+            <div class="account-header">
+                <div class="account-icon">
+                    <i data-lucide="${this.getIcon(account.issuer)}"></i>
+                </div>
+                <div class="account-info">
+                    <div class="service-name">${account.issuer}</div>
+                    <div class="account-identity">${account.account}</div>
+                </div>
+            </div>
+            
+            <div class="otp-container">
+                <div class="otp-box">
+                    <div class="otp-code" data-id="${account.id}">------</div>
+                    <div class="timer-container">
+                        <svg viewBox="0 0 60 60">
+                            <circle cx="30" cy="30" r="26" fill="none" class="timer-bg"></circle>
+                            <circle class="timer-progress" cx="30" cy="30" r="26" fill="none" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                        </svg>
+                    </div>
+                </div>
+                <button class="btn-primary copy-btn" style="width: 100%; margin-top: 12px;">
+                    <i data-lucide="copy"></i>
+                    <span>Copy Code</span>
+                    <span class="copy-feedback">Copied!</span>
+                </button>
+            </div>
+        `;
+
+        const copyBtn = card.querySelector('.copy-btn') as HTMLElement;
+        copyBtn.onclick = async () => {
+            const code = card.querySelector('.otp-code')?.textContent || '';
+            await navigator.clipboard.writeText(code);
+            const feedback = copyBtn.querySelector('.copy-feedback') as HTMLElement;
+            feedback.style.opacity = '1';
+            feedback.style.transform = 'translateX(-50%) translateY(-5px)';
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+                feedback.style.transform = 'translateX(-50%) translateY(0)';
+            }, 2000);
+        };
+
+        card.querySelector('.edit-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showEditModal(account);
+        });
+        
+        card.querySelector('.delete-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showDeleteConfirm(account);
+        });
+
+        this.updateCardOTP(card, account.secret);
+        return card;
+    }
+
+    private async updateCardOTP(card: HTMLElement, secret: string) {
+        const codeElement = card.querySelector('.otp-code');
+        if (!codeElement) return;
+
+        const otp = await window.api.generateTOTP(secret);
+        if (codeElement.textContent !== otp) {
+            codeElement.textContent = otp;
+        }
+
+        const remaining = await window.api.getRemainingSeconds();
+        const dashOffset = 163.36 * (1 - remaining / 30);
+        const progressCircle = card.querySelector('.timer-progress') as HTMLElement;
+        if (progressCircle) {
+            progressCircle.style.strokeDashoffset = dashOffset.toString();
+            progressCircle.style.stroke = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+        }
+    }
+
+    private startTimer() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => {
+            const cards = document.querySelectorAll('.account-card');
+            cards.forEach((card, i) => {
+                if (this.accounts[i]) this.updateCardOTP(card as HTMLElement, this.accounts[i].secret);
+            });
+        }, 1000);
+    }
+
+    private getIcon(issuer: string): string {
+        const icons: any = {
+            'google': 'search', 'github': 'github', 'microsoft': 'cloud', 'apple': 'apple',
+            'amazon': 'shopping-cart', 'facebook': 'facebook', 'twitter': 'twitter', 'discord': 'message-square',
+            'binance': 'coins', 'coinbase': 'wallet', 'stripe': 'credit-card', 'paypal': 'dollar-sign',
+            'base': 'shield'
+        };
+        return icons[issuer.toLowerCase()] || 'shield';
+    }
+
+    private showModal(content: string) {
+        const overlay = document.getElementById('modal-overlay');
+        if (!overlay) return;
+        overlay.innerHTML = `<div class="modal animate-fade-in">${content}</div>`;
+        overlay.classList.add('show');
+        this.refreshLucide();
+    }
+
+    public hideModal() {
+        const overlay = document.getElementById('modal-overlay');
+        if (!overlay) return;
+        overlay.classList.remove('show');
+        setTimeout(() => overlay.innerHTML = '', 300);
+    }
+
+    private showAddModal() {
+        const content = `
+            <div style="padding: 32px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <i data-lucide="plus-circle" style="color: var(--accent-primary); width: 24px; height: 24px;"></i>
+                    <h2 style="font-weight: 800;">Add Account</h2>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Enter your service details manually</p>
+                <div class="form-group">
+                    <label class="form-label">Service Name</label>
+                    <input type="text" id="new-issuer" class="form-input" placeholder="e.g. Google, GitHub">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Account Identity</label>
+                    <input type="text" id="new-account" class="form-input" placeholder="user@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Secret Key</label>
+                    <input type="text" id="new-secret" class="form-input" placeholder="Base32 code">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 32px;">
+                    <button class="btn-primary" id="save-new-account" style="flex: 2;">Add Identity</button>
+                    <button class="user-button" id="cancel-add-btn" style="flex: 1; justify-content: center;">Cancel</button>
+                </div>
+            </div>
+        `;
+        this.showModal(content);
+        document.getElementById('save-new-account')?.addEventListener('click', async () => {
+            const issuer = (document.getElementById('new-issuer') as HTMLInputElement).value;
+            const account = (document.getElementById('new-account') as HTMLInputElement).value;
+            const secret = (document.getElementById('new-secret') as HTMLInputElement).value;
+            if (!issuer || !secret) {
+                this.showToast("Issuer and Secret are required", "error");
+                return;
+            }
+            await window.api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
+            await this.refreshAccounts();
+            this.hideModal();
+            this.showToast("Account added successfully", "success");
+        });
+        document.getElementById('cancel-add-btn')?.addEventListener('click', () => this.hideModal());
+    }
+
+    private showEditModal(account: any) {
+        const content = `
+            <div style="padding: 32px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <i data-lucide="edit-3" style="color: var(--accent-primary); width: 24px; height: 24px;"></i>
+                    <h2 style="font-weight: 800;">Edit Account</h2>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Update details for ${account.issuer}</p>
+                <div class="form-group">
+                    <label class="form-label">Service Name</label>
+                    <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Account Identity</label>
+                    <input type="text" id="edit-account" class="form-input" value="${account.account}">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 32px;">
+                    <button class="btn-primary" id="update-account" style="flex: 2;">Update Changes</button>
+                    <button class="user-button" id="cancel-edit-btn" style="flex: 1; justify-content: center;">Cancel</button>
+                </div>
+            </div>
+        `;
+        this.showModal(content);
+        document.getElementById('update-account')?.addEventListener('click', async () => {
+            const issuer = (document.getElementById('edit-issuer') as HTMLInputElement).value;
+            const accountName = (document.getElementById('edit-account') as HTMLInputElement).value;
+            if (!issuer) return this.showToast("Service name is required", "error");
+            
+            await window.api.saveAccount({ ...account, issuer, account: accountName });
+            await this.refreshAccounts();
+            this.hideModal();
+            this.showToast("Account updated", "success");
+        });
+        document.getElementById('cancel-edit-btn')?.addEventListener('click', () => this.hideModal());
+    }
+
+    public showToast(message: string, type: 'info' | 'success' | 'error' = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'animate-fade-in';
+        toast.style.cssText = `
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-medium);
+            border-left: 4px solid ${type === 'error' ? '#ff3b30' : type === 'success' ? '#34c759' : 'var(--accent-primary)'};
+            display: flex; align-items: center; gap: 10px;
+            font-size: 14px; font-weight: 600;
+        `;
+        
+        const iconName = type === 'error' ? 'alert-circle' : type === 'success' ? 'check-circle' : 'info';
+        toast.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px;"></i> <span>${message}</span>`;
+        
+        container.appendChild(toast);
+        this.refreshLucide();
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    public lockVault() {
+        const vessel = document.getElementById('lock-vessel');
+        if (!vessel) return;
+        vessel.classList.add('show');
+        this.refreshLucide();
+        const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
+        if (pinIn) { pinIn.value = ''; pinIn.focus(); }
+    }
+
+    private handleUnlock() {
+        const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
+        const uid = (window as any).currentUserId || 'default';
+        const saved = localStorage.getItem(`${uid}_vault_pin`);
+        if (pinIn.value === saved) {
+            document.getElementById('lock-vessel')?.classList.remove('show');
+        } else {
+            this.showToast("Invalid PIN", "error");
+            pinIn.value = ''; pinIn.focus();
+        }
+    }
+
+    private showPinSetup() {
+        const content = `
+            <div style="padding: 32px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <i data-lucide="key-round" style="color: var(--accent-primary); width: 24px; height: 24px;"></i>
+                    <h2 style="font-weight: 800;">Vault Security</h2>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Set a 4-digit PIN to protect your vault</p>
+                <input type="password" id="new-pin" maxlength="4" class="form-input" style="text-align: center; font-size: 24px; letter-spacing: 12px;" placeholder="••••">
+                <div style="display: flex; gap: 12px; margin-top: 32px;">
+                    <button class="btn-primary" id="save-pin" style="flex: 2;">Save PIN</button>
+                    <button class="user-button" id="cancel-pin-btn" style="flex: 1; justify-content: center;">Cancel</button>
+                </div>
+            </div>
+        `;
+        this.showModal(content);
+        document.getElementById('save-pin')?.addEventListener('click', () => {
+            const pin = (document.getElementById('new-pin') as HTMLInputElement).value;
+            if (pin.length === 4) {
+                const uid = (window as any).currentUserId || 'default';
+                localStorage.setItem(`${uid}_vault_pin`, pin);
+                this.showToast("PIN set successfully", "success");
+                this.hideModal();
+            } else {
+                this.showToast("PIN must be 4 digits", "error");
+            }
+        });
+        document.getElementById('cancel-pin-btn')?.addEventListener('click', () => this.hideModal());
+    }
+
+    private showDeleteConfirm(account: any) {
+        const content = `
+            <div style="padding: 32px; text-align: center;">
+                <div style="color: #ff3b30; margin-bottom: 16px;">
+                    <i data-lucide="alert-triangle" style="width: 48px; height: 48px;"></i>
+                </div>
+                <h2 style="font-weight: 800; margin-bottom: 12px;">Delete Account?</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 32px; font-size: 15px;">Removing <strong>${account.issuer}</strong> will permanently erase its token.</p>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn-primary" id="confirm-delete" style="flex: 1; background: #ff3b30;">Delete</button>
+                    <button class="user-button" id="cancel-delete-btn" style="flex: 1; justify-content: center;">Cancel</button>
+                </div>
+            </div>
+        `;
+        this.showModal(content);
+        document.getElementById('confirm-delete')?.addEventListener('click', async () => {
+            await window.api.deleteAccount(account.id);
+            await this.refreshAccounts();
+            this.hideModal();
+            this.showToast("Account removed", "info");
+        });
+        document.getElementById('cancel-delete-btn')?.addEventListener('click', () => this.hideModal());
+    }
 }
-

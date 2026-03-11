@@ -19,7 +19,7 @@ function createWindow() {
         }
     });
 
-    mainWindow.loadFile(path.join(__dirname, '../../src/renderer/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../renderer/renderer/index.html'));
 
     // Always open devtools in this debug mode for the user
     mainWindow.webContents.openDevTools({ mode: 'detach' });

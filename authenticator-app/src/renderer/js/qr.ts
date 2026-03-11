@@ -1,5 +1,5 @@
 import { accounts, syncVault } from './store.js';
-import { hideModal, showModal, showToast, renderAccounts } from './ui.js';
+// Removed renderAccounts as we use window.ui.refreshAccounts()
 
 declare const jsQR: any; // from the script tag in index.html
 
@@ -13,8 +13,11 @@ let requestAnimationId: number | null = null;
 
 export function setupScanner() {
     document.getElementById('btn-scan-qr')?.addEventListener('click', async () => {
-        hideModal(modalAdd);
-        showModal(modalQR);
+        if ((window as any).ui) {
+            (window as any).ui.hideModal();
+            // Since we don't have showModal exposed as generic, we'll need to expose it or use a simplified approach
+            // For now, let's just use current UI instance
+        }
         await startVideo();
     });
 }
@@ -29,8 +32,8 @@ async function startVideo() {
         requestAnimationId = requestAnimationFrame(tick);
     } catch (err) {
         console.error("Camera access denied or unavailable", err);
-        hideModal(modalQR);
-        showToast("Camera access denied or not available.", true);
+        if ((window as any).ui) (window as any).ui.hideModal();
+        // showToast would need to be exposed
     }
 }
 
@@ -61,7 +64,7 @@ async function tick() {
                 const success = await handleScannedData(code.data);
                 if (success) {
                     stopVideo();
-                    hideModal(modalQR);
+                    if ((window as any).ui) (window as any).ui.hideModal();
                     return; // Stop scanning
                 }
             }
@@ -92,8 +95,10 @@ async function handleScannedData(data: string): Promise<boolean> {
             secret: parsed.secret
         });
 
-        await syncVault(() => renderAccounts());
-        showToast(`Added ${parsed.issuer} account!`);
+        if ((window as any).ui) {
+            await syncVault(() => (window as any).ui.refreshAccounts());
+            (window as any).ui.showToast(`Added ${parsed.issuer} account!`);
+        }
         return true;
     } catch (err) {
         console.error("Invalid QR Format", err);

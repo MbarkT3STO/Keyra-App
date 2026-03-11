@@ -2,6 +2,7 @@ export { };
 
 declare global {
     interface Window {
+        ui?: any;
         api: {
             signup(user: string, email: string, pass: string): Promise<{ success: boolean, message: string, code?: string }>;
             resendCode(email: string): Promise<{ success: boolean, message: string, code?: string }>;

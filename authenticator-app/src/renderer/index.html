@@ -1,429 +1,286 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keyra Authenticator</title>
-    <link rel="stylesheet" href="css/styles.css" />
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <!-- Google Fonts: Inter and JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- CSS Architecture -->
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
 </head>
-
-<body class="theme-dark">
-    <div class="mesh-bg"></div>
-
-    <!-- Authentication Vessel (Blocks UI until logged in) -->
-    <div id="auth-vessel" class="overlay show"
-        style="z-index: 999999; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, var(--v-1) 0%, var(--v-0) 100%);">
-        <!-- Login Form -->
-        <div class="modal" id="auth-login-box">
-            <div class="logo-wrap large" style="margin: 0 auto 32px;"><i data-lucide="shield-check"></i></div>
-            <h3 style="text-align: center;">Welcome Back</h3>
-            <form id="form-login">
-                <input type="text" id="login-username" class="modal-input" placeholder="Username" required />
-                <input type="password" id="login-password" class="modal-input" placeholder="Password" required />
-                <p id="login-error"
-                    style="color: #ff4757; opacity: 0; min-height: 20px; font-size: 0.9rem; text-align: center; margin-bottom: 16px;">
-                </p>
-                <div style="display: flex; gap: 12px;">
-                    <button type="button" class="btn" id="btn-show-signup" style="flex: 1;">Register</button>
-                    <button type="submit" class="btn btn-p" style="flex: 1.5;">Unlock Vault</button>
+<body>
+    <!-- Premium Authentication Overlay -->
+    <div id="auth-vessel" class="modal-overlay show" style="background: var(--bg-primary); z-index: 2000;">
+        <div class="modal animate-fade-in" style="max-width: 400px; padding: 40px; border: none; box-shadow: none;">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <div class="brand-icon" style="margin-bottom: 16px;">
+                    <i data-lucide="shield-check" style="width: 64px; height: 64px;"></i>
                 </div>
-            </form>
-        </div>
-
-        <!-- Signup Form -->
-        <div class="modal hidden" id="auth-signup-box">
-            <div class="logo-wrap large" style="margin: 0 auto 32px;"><i data-lucide="user-plus"></i></div>
-            <h3 style="text-align: center;">Join Keyra</h3>
-            <form id="form-signup">
-                <input type="text" id="signup-username" class="modal-input" placeholder="New Username" required />
-                <input type="email" id="signup-email" class="modal-input" placeholder="Email Address" required />
-                <input type="password" id="signup-password" class="modal-input" placeholder="Master Password"
-                    required />
-                <p id="signup-error"
-                    style="color: #ff4757; opacity: 0; min-height: 20px; font-size: 0.9rem; text-align: center; margin-bottom: 16px;">
-                </p>
-                <div style="display: flex; gap: 12px;">
-                    <button type="button" class="btn" id="btn-show-login" style="flex: 1;">Cancel</button>
-                    <button type="submit" class="btn btn-p" style="flex: 1.5;">Sign Up</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Email Verification Form -->
-        <div class="modal hidden" id="auth-verify-box">
-            <div class="logo-wrap large" style="margin: 0 auto 32px;"><i data-lucide="mail"></i></div>
-            <h3 style="text-align: center;">Verify Your Identity</h3>
-            <p id="verify-subtext" style="text-align: center; color: var(--t4); margin-bottom: 32px;">We've sent a
-                6-digit activation code to your email.</p>
-
-            <form id="form-verify">
-                <input type="hidden" id="verify-email-field" />
-                <div class="verify-input-group" id="verify-digit-container">
-                    <input type="text" class="verify-digit" maxlength="1" inputmode="numeric"
-                        autocomplete="one-time-code" />
-                    <input type="text" class="verify-digit" maxlength="1" inputmode="numeric" />
-                    <input type="text" class="verify-digit" maxlength="1" inputmode="numeric" />
-                    <input type="text" class="verify-digit" maxlength="1" inputmode="numeric" />
-                    <input type="text" class="verify-digit" maxlength="1" inputmode="numeric" />
-                    <input type="text" class="verify-digit" maxlength="1" inputmode="numeric" />
-                </div>
-
-                <p id="verify-error"
-                    style="color: #ff4757; opacity: 0; min-height: 20px; font-size: 0.9rem; text-align: center; margin: 16px 0;">
-                </p>
-
-                <div style="text-align: center; margin-bottom: 32px;">
-                    <button type="button" class="btn-resend" id="btn-resend-code" disabled>
-                        Resend Code <span id="resend-timer">(60s)</span>
-                    </button>
-                </div>
-
-                <div style="display: flex; gap: 12px;">
-                    <button type="button" class="btn" id="btn-show-login-from-verify" style="flex: 1;">Cancel</button>
-                    <button type="submit" class="btn btn-p" style="flex: 1.5;">Activate Account</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Simulation Toast (Hidden by default) -->
-    <div id="simulation-toast" class="sim-toast hidden">
-        <div class="sim-toast-icon"><i data-lucide="mail"></i></div>
-        <div class="sim-toast-content">
-            <strong>Keyra System</strong>
-            <span>Verification code sent: <code id="sim-code">------</code></span>
-        </div>
-    </div>
-
-    <!-- Custom Titlebar -->
-    <div class="titlebar">
-        <div class="titlebar-controls">
-            <button class="title-btn" id="btn-theme" title="Toggle Theme"><i data-lucide="sun-moon"></i></button>
-            <button class="title-btn" id="btn-minimize"><i data-lucide="minus"></i></button>
-            <button class="title-btn" id="btn-maximize"><i data-lucide="maximize-2"></i></button>
-            <button class="title-btn close" id="btn-close"><i data-lucide="x"></i></button>
-        </div>
-    </div>
-
-    <!-- iCompressor Fluid Header -->
-    <header class="header">
-        <div class="header-inner">
-            <div class="brand">
-                <div class="logo-wrap"><i data-lucide="shield-check"></i></div>
-                <h1>Keyra</h1>
+                <h1 style="font-size: 32px; font-weight: 800; letter-spacing: -1.5px;">Keyra</h1>
+                <p style="color: var(--text-secondary); margin-top: 8px;">Secure Your Digital Identity</p>
             </div>
 
-            <!-- iCompressor Style Top-Right Tabs -->
-            <div class="header-nav-group">
-                <nav class="nav-tabs" id="view-tabs">
-                    <button class="tab-item active" data-view="vault"><i data-lucide="shield"></i>
-                        <span>Vault</span></button>
-                    <button class="tab-item" data-view="settings"><i data-lucide="settings"></i>
-                        <span>Settings</span></button>
-                </nav>
+            <!-- Login Box -->
+            <div id="auth-login-box">
+                <form id="form-login">
+                    <div class="form-group">
+                        <input type="text" id="login-username" class="form-input" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="login-password" class="form-input" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 14px;">Sign In</button>
+                    <div id="login-error" style="color: #ff3b30; font-size: 13px; margin-top: 12px; text-align: center; opacity: 0; transition: opacity 0.3s;"></div>
+                </form>
+                <div style="text-align: center; margin-top: 24px;">
+                    <p style="font-size: 14px; color: var(--text-secondary);">New here? <button id="btn-show-signup" style="color: var(--accent-primary); font-weight: 700;">Create account</button></p>
+                </div>
+            </div>
 
-                <!-- User Profile Dropdown -->
-                <div class="user-profile-wrap" id="user-profile-wrap">
-                    <button class="tab-item user-btn" id="btn-user-profile">
-                        <i data-lucide="user"></i>
-                        <span id="label-username">User</span>
-                        <i data-lucide="chevron-down" style="width: 14px; height: 14px; margin-left: -4px;"></i>
-                    </button>
-                    <div class="profile-dropdown hidden" id="profile-dropdown">
-                        <div class="p-drop-header">
-                            <span id="drop-username" style="font-weight: 800; color: var(--t1);"></span>
-                            <span id="drop-email" style="font-size: 0.8rem; color: var(--t4);"></span>
+            <!-- Signup Box -->
+            <div id="auth-signup-box" class="hidden">
+                <form id="form-signup">
+                    <div class="form-group">
+                        <input type="text" id="signup-username" class="form-input" placeholder="Full Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="signup-email" class="form-input" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="signup-password" class="form-input" placeholder="Create Password" required>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 14px;">Create Registry</button>
+                    <div id="signup-error" style="color: #ff3b30; font-size: 13px; margin-top: 12px; text-align: center; opacity: 0; transition: opacity 0.3s;"></div>
+                </form>
+                <div style="text-align: center; margin-top: 24px;">
+                    <p style="font-size: 14px; color: var(--text-secondary);">Already joined? <button id="btn-show-login" style="color: var(--accent-primary); font-weight: 700;">Sign in</button></p>
+                </div>
+            </div>
+
+            <!-- Verify Box -->
+            <div id="auth-verify-box" class="hidden">
+                <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 12px; text-align: center;">Verify Email</h2>
+                <p style="color: var(--text-secondary); font-size: 14px; text-align: center; margin-bottom: 24px;">Enter the code from your inbox.</p>
+                <form id="form-verify">
+                    <input type="hidden" id="verify-email-field">
+                    <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;">
+                        <input type="text" maxlength="1" class="verify-digit form-input" style="width: 48px; height: 58px; text-align: center; font-size: 26px; font-weight: 800;">
+                        <input type="text" maxlength="1" class="verify-digit form-input" style="width: 48px; height: 58px; text-align: center; font-size: 26px; font-weight: 800;">
+                        <input type="text" maxlength="1" class="verify-digit form-input" style="width: 48px; height: 58px; text-align: center; font-size: 26px; font-weight: 800;">
+                        <input type="text" maxlength="1" class="verify-digit form-input" style="width: 48px; height: 58px; text-align: center; font-size: 26px; font-weight: 800;">
+                        <input type="text" maxlength="1" class="verify-digit form-input" style="width: 48px; height: 58px; text-align: center; font-size: 26px; font-weight: 800;">
+                        <input type="text" maxlength="1" class="verify-digit form-input" style="width: 48px; height: 58px; text-align: center; font-size: 26px; font-weight: 800;">
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 14px;">Verify Identity</button>
+                    <div id="verify-error" style="color: #ff3b30; font-size: 13px; margin-top: 12px; text-align: center; opacity: 0; transition: opacity 0.3s;"></div>
+                </form>
+                <div style="text-align: center; margin-top: 24px;">
+                    <button id="btn-resend-code" style="color: var(--accent-primary); font-weight: 700; font-size: 14px;">Resend code <span id="resend-timer" style="font-weight: 400; opacity: 0.6;"></span></button>
+                    <div style="margin-top: 12px;">
+                        <button id="btn-show-login-from-verify" style="font-size: 13px; color: var(--text-tertiary); text-decoration: underline;">Back to login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Modern Top Navigation Bar -->
+        <header class="navbar">
+            <div class="navbar-wrapper">
+                <div class="navbar-section navbar-left">
+                    <div class="navbar-brand">
+                        <div class="brand-icon">
+                            <i data-lucide="shield-check" style="width: 28px; height: 28px;"></i>
                         </div>
-                        <button class="p-drop-item text-danger" id="btn-logout">
-                            <i data-lucide="log-out"></i> Log Out
+                        <span class="brand-text">Keyra</span>
+                    </div>
+                </div>
+                
+                <div class="navbar-section navbar-center">
+                    <nav class="nav-tabs">
+                        <button class="nav-tab active" data-tab="vault">
+                            <i data-lucide="archive" style="width: 18px; height: 18px;"></i>
+                            <span>Vault</span>
+                        </button>
+                        <button class="nav-tab" data-tab="settings">
+                            <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
+                            <span>Settings</span>
+                        </button>
+                    </nav>
+                </div>
+                
+                <div class="navbar-section navbar-right">
+                    <div class="user-menu">
+                        <button class="user-button" id="user-dropdown-btn">
+                            <div class="user-avatar" id="user-avatar">?</div>
+                            <span class="user-name" id="user-name-display">User</span>
+                            <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
+                        </button>
+                        
+                        <div class="dropdown-menu" id="user-dropdown">
+                            <div class="dropdown-item" id="lock-vault-btn">
+                                <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
+                                <span>Lock Vault</span>
+                            </div>
+                            <div class="dropdown-item" id="theme-toggle-btn">
+                                <i id="theme-icon-lucide" data-lucide="moon" style="width: 16px; height: 16px;"></i>
+                                <span id="theme-text">Dark Mode</span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-item" id="btn-logout-trigger">
+                                <i data-lucide="log-out" style="width: 16px; height: 16px; color: #ff3b30;"></i>
+                                <span style="color: #ff3b30; font-weight: 600;">Sign Out</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Vault View -->
+            <section id="vault-view" class="view-section">
+                <div class="section-header">
+                    <div>
+                        <h1 class="section-title">Your Vault</h1>
+                        <p class="section-subtitle">Secure authentication tokens</p>
+                    </div>
+                    <button class="btn-primary" id="add-account-btn">
+                        <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+                        <span>Add Account</span>
+                    </button>
+                </div>
+                
+                <div class="accounts-grid" id="accounts-grid">
+                    <!-- Cards dynamically inserted by JS -->
+                </div>
+                
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden">
+                    <div style="text-align: center; padding: 100px 0;">
+                        <div style="margin-bottom: 24px; color: var(--accent-primary);">
+                            <i data-lucide="shield-off" style="width: 64px; height: 64px; opacity: 0.5;"></i>
+                        </div>
+                        <h2 style="margin-bottom: 12px;">Secure Your Accounts</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 32px;">Add your first two-factor authentication account to get started.</p>
+                        <button class="btn-primary" id="empty-add-btn">
+                            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+                            <span>Add My First Account</span>
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </header>
+            </section>
 
-    <!-- Floating Action Button (FAB) -->
-    <button class="btn-fab" id="btn-add" title="Secure New Account">
-        <i data-lucide="plus"></i>
-    </button>
-
-    <!-- Main Content Vessel -->
-    <main class="main">
-
-        <!-- Vault View -->
-        <div id="view-vault" class="view active">
-            <div class="content-inner">
-                <div class="toolbar">
-                    <div class="search-pill">
-                        <i data-lucide="search" style="color: var(--v-5);"></i>
-                        <input type="text" id="search-input" placeholder="Find an account..." autocomplete="off" />
-                    </div>
-                </div>
-
-                <div class="accounts-grid" id="accounts-list">
-                    <!-- Dynamic Content -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Settings View (Enhanced) -->
-        <div id="view-settings" class="view">
-            <div class="content-inner">
-                <div class="settings-v2">
-                    <!-- Security Section -->
-                    <div class="s-section">
-                        <div class="s-header"><i data-lucide="lock"></i>
-                            <h3>Privacy & Security</h3>
+            <!-- Settings View -->
+            <section id="settings-view" class="view-section hidden">
+                <h1 class="section-title" style="margin-bottom: 32px;">Settings</h1>
+                
+                <div style="max-width: 600px;">
+                    <div class="account-card" style="margin-bottom: 24px;">
+                        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Security</h3>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border-color);">
+                            <div>
+                                <div style="font-weight: 600;">Vault PIN</div>
+                                <div style="font-size: 13px; color: var(--text-secondary);">Require a 4-digit PIN to unlock</div>
+                            </div>
+                            <button class="user-button" id="setup-pin-btn">
+                                <i data-lucide="key-round" style="width: 16px; height: 16px;"></i>
+                                <span>Configure PIN</span>
+                            </button>
                         </div>
-                        <div class="s-card">
-                            <div class="s-item">
-                                <div class="s-item-info">
-                                    <strong>Master App PIN</strong>
-                                    <span>Require a PIN on app startup.</span>
-                                </div>
-                                <button class="btn btn-p" id="btn-setup-pin" style="height: 40px; padding: 0 16px;">Set
-                                    PIN</button>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 0;">
+                            <div>
+                                <div style="font-weight: 600;">Account Removal</div>
+                                <div style="font-size: 13px; color: var(--text-secondary);">Manage your connected identities</div>
                             </div>
-                            <div class="s-item">
-                                <div class="s-item-info">
-                                    <strong>Auto-Lock Timeout</strong>
-                                    <span>Automatically lock the vault after inactivity.</span>
-                                </div>
-                                <select id="setting-autolock" class="s-select">
-                                    <option value="0">Disabled</option>
-                                    <option value="1">1 Minute</option>
-                                    <option value="5">5 Minutes</option>
-                                    <option value="10">10 Minutes</option>
-                                </select>
-                            </div>
-                            <div class="s-item">
-                                <div class="s-item-info">
-                                    <strong>Hide Codes</strong>
-                                    <span>Obfuscate OTP codes by default.</span>
-                                </div>
-                                <div class="toggle-wrap"><input type="checkbox" id="setting-hide" /><label
-                                        for="setting-hide"></label></div>
-                            </div>
+                            <span style="font-size: 12px; color: var(--text-tertiary); font-weight: 500;">Per-account action</span>
                         </div>
                     </div>
 
-                    <!-- Appearance Section -->
-                    <div class="s-section">
-                        <div class="s-header"><i data-lucide="palette"></i>
-                            <h3>Visual Identity</h3>
-                        </div>
-                        <div class="s-card">
-                            <div class="s-item">
-                                <div class="s-item-info">
-                                    <strong>Interface Theme</strong>
-                                    <span>Switch between Nightfall Bloom and Snowbloom.</span>
-                                </div>
-                                <select id="setting-theme" class="s-select">
-                                    <option value="theme-dark">Nightfall Bloom</option>
-                                    <option value="theme-light">Snowbloom</option>
-                                </select>
+                    <div class="account-card">
+                        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">System</h3>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <div style="font-weight: 600;">Interface Theme</div>
+                                <div style="font-size: 13px; color: var(--text-secondary);">Switch between light and dark modes</div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Data Section -->
-                    <div class="s-section">
-                        <div class="s-header"><i data-lucide="database"></i>
-                            <h3>Vault Management</h3>
-                        </div>
-                        <div class="s-card">
-                            <div class="s-item">
-                                <div class="s-item-info">
-                                    <strong>Export Vault</strong>
-                                    <span>Download a backup of your secure accounts.</span>
-                                </div>
-                                <button class="btn" id="btn-export" style="height: 40px; padding: 0 16px;"><i
-                                        data-lucide="download"></i> Export</button>
-                            </div>
-                            <div class="s-item danger">
-                                <div class="s-item-info">
-                                    <strong>Purge All Data</strong>
-                                    <span>Permanently delete all accounts from this device.</span>
-                                </div>
-                                <button class="btn btn-danger" id="btn-purge-all"
-                                    style="height: 40px; padding: 0 16px;">Purge Vault</button>
-                            </div>
+                            <button class="user-button" id="settings-theme-toggle">
+                                <i data-lucide="palette" style="width: 16px; height: 16px;"></i>
+                                <span>Switch Theme</span>
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
+        </main>
+
+        <!-- Modals -->
+        <div id="modal-overlay" class="modal-overlay">
+            <!-- Content injected by JS -->
         </div>
 
-        <!-- About View -->
-        <div id="view-about" class="view">
-            <div class="content-inner">
-                <div class="about-card">
-                    <div class="about-hero">
-                        <div class="logo-wrap large"><i data-lucide="shield-check"></i></div>
-                        <h2>Keyra</h2>
-                        <span class="version-tag">iCompressor Edition v4.3.0</span>
-                    </div>
-
-                    <div class="about-grid">
-                        <div class="about-section">
-                            <h3>Aesthetic Vision</h3>
-                            <p>Crafted with the <strong>Nightfall Bloom</strong> design language, merging deep violets
-                                with high-blur glassmorphism for a modern, focused security experience.</p>
-                        </div>
-                        <div class="about-section">
-                            <h3>Technical Core</h3>
-                            <p>Built on Electron and Vanilla TypeScript. Featuring military-grade TOTP generation and
-                                localized zero-knowledge storage.</p>
-                        </div>
-                    </div>
-
-                    <div class="about-footer">
-                        <div class="credits">Created by <a href="#" target="_blank">MBVRK</a></div>
-                    </div>
+        <div id="modal-logout" class="modal-overlay">
+            <div class="modal animate-fade-in" style="padding: 32px; text-align: center;">
+                <div style="margin-bottom: 20px; color: #ff3b30;">
+                    <i data-lucide="log-out" style="width: 48px; height: 48px;"></i>
                 </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- ═══════ MODALS & OVERLAYS ═══════ -->
-
-    <!-- Auto-Lock Screen -->
-    <div id="lock-screen" class="overlay hidden">
-        <div class="lock-vessel">
-            <div class="logo-wrap large"><i data-lucide="lock"></i></div>
-            <h2>Vault Locked</h2>
-            <p>Enter your PIN to restore session.</p>
-            <div class="pin-display" id="unlock-pin-dots">
-                <div class="pin-dot"></div>
-                <div class="pin-dot"></div>
-                <div class="pin-dot"></div>
-                <div class="pin-dot"></div>
-            </div>
-            <input type="password" id="unlock-pin-input" class="visually-hidden" inputmode="numeric" pattern="[0-9]*"
-                maxlength="4" autocomplete="off" />
-            <p id="unlock-error"
-                style="color: #ff4757; opacity: 0; margin-top: 12px; font-size: 0.9rem; transition: 0.3s; height: 20px;">
-                Incorrect PIN</p>
-        </div>
-    </div>
-
-    <!-- Set PIN Modal -->
-    <div class="overlay hidden" id="modal-set-pin">
-        <div class="modal" style="text-align: center;">
-            <h3>Set Vault PIN</h3>
-            <p style="color: var(--t4); margin-bottom: 24px;">This 4-digit PIN will be required to unlock your vault
-                after inactivity.</p>
-            <div class="pin-display" id="setup-pin-dots">
-                <div class="pin-dot"></div>
-                <div class="pin-dot"></div>
-                <div class="pin-dot"></div>
-                <div class="pin-dot"></div>
-            </div>
-            <input type="password" id="setup-pin-input" class="visually-hidden" inputmode="numeric" pattern="[0-9]*"
-                maxlength="4" autocomplete="off" />
-            <div style="display: flex; gap: 12px; margin-top: 32px;">
-                <button type="button" class="btn" id="btn-cancel-pin" style="flex: 1;">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Account -->
-    <div class="overlay hidden" id="modal-add">
-        <div class="modal">
-            <h3>Secure Sync</h3>
-            <form id="form-add">
-                <input type="text" id="add-issuer" class="modal-input" placeholder="Service (e.g. GitHub)" required />
-                <input type="text" id="add-account" class="modal-input" placeholder="Identity (Email/User)" />
-                <input type="text" id="add-secret" class="modal-input" placeholder="Base32 Secret Key" required />
-                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-                    <button type="button" class="btn" id="btn-scan-qr" style="flex: 1;">
-                        <i data-lucide="scan-line"></i>
-                        <span>Scan QR</span>
-                    </button>
-                </div>
+                <h2 style="margin-bottom: 12px; font-weight: 800;">Sign Out?</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 32px; font-size: 15px;">Are you sure you want to end your session? Your vault will be locked.</p>
                 <div style="display: flex; gap: 12px;">
-                    <button type="button" class="btn btn-close-modal" style="flex: 1;">Cancel</button>
-                    <button type="submit" class="btn btn-p" style="flex: 1.5;">Save Account</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Account -->
-    <div class="overlay hidden" id="modal-edit">
-        <div class="modal">
-            <h3>Modify Entry</h3>
-            <form id="form-edit">
-                <input type="text" id="edit-issuer" class="modal-input" placeholder="Service" required />
-                <input type="text" id="edit-account" class="modal-input" placeholder="Identity" />
-                <div style="display: flex; gap: 12px;">
-                    <button type="button" class="btn btn-close-modal" style="flex: 1;">Dismiss</button>
-                    <button type="submit" class="btn btn-p" style="flex: 1.5;">Apply Bloom</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation -->
-    <div class="overlay hidden" id="modal-delete">
-        <div class="modal" style="text-align: center; width: 440px;">
-            <div style="margin-bottom: 24px; color: #ff4757;"><i data-lucide="alert-circle"
-                    style="width: 48px; height: 48px;"></i></div>
-            <h3>Purge Vault Entry?</h3>
-            <p style="color: var(--t4); margin-bottom: 32px;">This will remove <strong id="delete-account-label"
-                    style="color: var(--t1);"></strong> permanently from your local vault.</p>
-            <div style="display: flex; gap: 12px;">
-                <button type="button" class="btn btn-close-modal" style="flex: 1;">Keep it</button>
-                <button type="button" class="btn" id="btn-confirm-delete"
-                    style="flex: 1; background: #ff4757; border: none; color: #fff;">Delete Forever</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Logout Confirmation -->
-    <div class="overlay hidden" id="modal-logout">
-        <div class="modal" style="text-align: center; width: 440px;">
-            <div style="margin-bottom: 24px; color: var(--v-5);"><i data-lucide="log-out"
-                    style="width: 48px; height: 48px;"></i></div>
-            <h3>End Session?</h3>
-            <p style="color: var(--t4); margin-bottom: 32px;">Your vault will be locked and you will be signed out.</p>
-            <div style="display: flex; gap: 12px;">
-                <button type="button" class="btn btn-close-modal" style="flex: 1;"
-                    id="btn-cancel-logout">Cancel</button>
-                <button type="button" class="btn" id="btn-confirm-logout"
-                    style="flex: 1; background: var(--v-5); border: none; color: #fff;">Log Out</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- QR Scanner -->
-    <div class="overlay hidden" id="modal-qr">
-        <div class="modal" style="width: 500px;">
-            <h3>Scan Bloom QR</h3>
-            <div
-                style="position: relative; border-radius: 20px; overflow: hidden; background: #000; aspect-ratio: 1/1; margin-bottom: 24px; border: var(--border);">
-                <video id="qr-video" style="width: 100%; height: 100%; object-fit: cover;"></video>
-                <canvas id="qr-canvas" style="display: none;"></canvas>
-                <div
-                    style="position: absolute; inset: 40px; border: 2px solid var(--v-5); border-radius: 20px; opacity: 0.5; pointer-events: none; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);">
+                    <button class="btn-primary" id="btn-confirm-logout" style="flex: 1; background: #ff3b30;">Sign Out</button>
+                    <button class="user-button" id="btn-cancel-logout" style="flex: 1; justify-content: center;">Cancel</button>
                 </div>
             </div>
-            <button type="button" class="btn btn-close-modal" style="width: 100%;">Stop Scanning</button>
         </div>
+
+        <!-- Lock Screen -->
+        <div id="lock-vessel" class="modal-overlay" style="background: var(--bg-primary); z-index: 1500;">
+            <div class="modal animate-fade-in" style="max-width: 320px; padding: 48px; border: none; box-shadow: none; text-align: center;">
+                <div class="brand-icon" style="margin-bottom: 24px;">
+                    <i data-lucide="lock" style="width: 54px; height: 54px;"></i>
+                </div>
+                <h2 style="margin-bottom: 12px; font-weight: 800;">Vault Locked</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 32px; font-size: 14px;">Identity verification required</p>
+                <form id="form-unlock">
+                    <input type="password" id="unlock-pin" maxlength="4" placeholder="••••" style="width: 100%; text-align: center; font-size: 28px; padding: 16px; border-radius: var(--radius-md); border: 2px solid var(--border-color); background: var(--bg-secondary); letter-spacing: 8px; margin-bottom: 24px;">
+                    <button type="submit" class="btn-primary" style="width: 100%;">Unlock Vault</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Simulation Toast -->
+        <div id="simulation-toast" class="hidden" style="position: fixed; top: 20px; right: 20px; background: var(--bg-primary); border: 2px solid var(--accent-primary); padding: 20px; border-radius: var(--radius-lg); z-index: 3000; box-shadow: var(--shadow-hard); animation: slideDown 0.4s ease-out;">
+            <div style="font-size: 14px; font-weight: 800; color: var(--accent-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="mail" style="width: 16px; height: 16px;"></i> Email Received
+            </div>
+            <div style="font-size: 15px; font-weight: 500;">Verification Code: <strong id="sim-code" style="color: var(--accent-primary); letter-spacing: 2px; font-size: 18px;">000000</strong></div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast-container" style="position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 8px; align-items: center;"></div>
     </div>
 
-    <div id="toasts"></div>
-
-    <script type="module" src="../../dist/renderer/renderer/js/app.js"></script>
+    <!-- Scripts -->
+    <script type="module" src="js/app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+        // Initialize lucide icons on load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
         });
     </script>
 </body>
-
 </html>
