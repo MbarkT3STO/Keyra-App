@@ -286,6 +286,16 @@
                                 </div>
                                 <button class="user-button" id="setup-pin-btn" style="min-width: 100px; justify-content: center;">Setup PIN</button>
                             </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Screen Guardian</div>
+                                    <div class="setting-desc">Prevent screenshots & recordings</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="screen-guardian-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -310,6 +320,32 @@
                                     <button class="segment" data-val="light">Light</button>
                                     <button class="segment" data-val="dark">Dark</button>
                                     <div class="segment-indicator"></div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: var(--space-lg);">
+                                <div class="setting-name" style="margin-bottom: 12px;">Wallpaper Library</div>
+                                <div class="wallpaper-grid">
+                                    <button class="wallpaper-card active" data-preset="nebula">
+                                        <div class="wallpaper-preview" style="background: linear-gradient(135deg, hsl(258, 60%, 50%), hsl(330, 60%, 50%));"></div>
+                                        <div class="wallpaper-name">Nebula</div>
+                                        <div class="wallpaper-desc">Core Aura</div>
+                                    </button>
+                                    <button class="wallpaper-card" data-preset="solar">
+                                        <div class="wallpaper-preview" style="background: linear-gradient(135deg, hsl(15, 60%, 50%), hsl(45, 60%, 50%));"></div>
+                                        <div class="wallpaper-name">Solar Storm</div>
+                                        <div class="wallpaper-desc">Ember Glow</div>
+                                    </button>
+                                    <button class="wallpaper-card" data-preset="emerald">
+                                        <div class="wallpaper-preview" style="background: linear-gradient(135deg, hsl(145, 60%, 40%), hsl(180, 60%, 40%));"></div>
+                                        <div class="wallpaper-name">Emerald Glade</div>
+                                        <div class="wallpaper-desc">Forest Mist</div>
+                                    </button>
+                                    <button class="wallpaper-card" data-preset="space">
+                                        <div class="wallpaper-preview" style="background: linear-gradient(135deg, hsl(220, 60%, 30%), hsl(280, 60%, 30%));"></div>
+                                        <div class="wallpaper-name">Deep Space</div>
+                                        <div class="wallpaper-desc">Void Light</div>
+                                    </button>
                                 </div>
                             </div>
                         </div>

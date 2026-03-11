@@ -163,6 +163,11 @@ ipcMain.handle('perform-vault-import', async (event, salt, encryptedVaultData, p
     return importVaultData(salt, encryptedVaultData, password);
 });
 
+ipcMain.handle('set-content-protection', (event, enabled) => {
+    mainWindow?.setContentProtection(enabled);
+    return true;
+});
+
 // Basic window controls for custom titlebar
 ipcMain.on('window-minimize', () => { mainWindow?.minimize(); });
 ipcMain.on('window-maximize', () => {

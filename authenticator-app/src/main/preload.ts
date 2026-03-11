@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('api', {
     exportVault: () => ipcRenderer.invoke('export-vault'),
     importVault: () => ipcRenderer.invoke('import-vault'),
     performVaultImport: (salt: string, encryptedVaultData: string, pass: string) => ipcRenderer.invoke('perform-vault-import', salt, encryptedVaultData, pass),
+    setContentProtection: (enabled: boolean) => ipcRenderer.invoke('set-content-protection', enabled),
 
     // Custom window controls
     minimize: () => ipcRenderer.send('window-minimize'),

@@ -6,11 +6,15 @@ export class UIManager {
     private accounts: any[] = [];
     private timerInterval: any = null;
     private privacyMode: boolean = false;
+    private screenGuardian: boolean = false;
+    private wallpaperPreset: string = 'nebula';
     private searchQuery: string = '';
 
     constructor(public userId: string = 'default') {
         this.initTheme();
         this.initPrivacyMode();
+        this.initScreenGuardian();
+        this.initWallpaper();
         this.initSegmentedStates();
         this.setupEventListeners();
         this.startTimer();
@@ -56,6 +60,62 @@ export class UIManager {
         this.privacyMode = localStorage.getItem(this.getStorageKey('privacyMode')) === 'true';
         const toggle = document.getElementById('privacy-mode-toggle') as HTMLInputElement;
         if (toggle) toggle.checked = this.privacyMode;
+    }
+
+    private initScreenGuardian() {
+        this.screenGuardian = localStorage.getItem(this.getStorageKey('screenGuardian')) === 'true';
+        const toggle = document.getElementById('screen-guardian-toggle') as HTMLInputElement;
+        if (toggle) {
+            toggle.checked = this.screenGuardian;
+            (window as any).api.setContentProtection(this.screenGuardian);
+        }
+    }
+
+    private initWallpaper() {
+        this.wallpaperPreset = localStorage.getItem(this.getStorageKey('wallpaperPreset')) || 'nebula';
+        this.applyWallpaper(this.wallpaperPreset);
+        
+        // Setup mouse-follow
+        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+    }
+
+    private applyWallpaper(preset: string) {
+        this.wallpaperPreset = preset;
+        localStorage.setItem(this.getStorageKey('wallpaperPreset'), preset);
+        
+        document.querySelectorAll('.wallpaper-card').forEach(card => {
+            card.classList.toggle('active', card.getAttribute('data-preset') === preset);
+        });
+
+        const root = document.documentElement;
+        if (preset === 'nebula') {
+            root.style.setProperty('--aura-1', 'hsla(258, 100%, 68%, 0.35)');
+            root.style.setProperty('--aura-2', 'hsla(330, 100%, 75%, 0.25)');
+            root.style.setProperty('--aura-3', 'hsla(200, 100%, 75%, 0.25)');
+        } else if (preset === 'solar') {
+            root.style.setProperty('--aura-1', 'var(--solar-1)');
+            root.style.setProperty('--aura-2', 'var(--solar-2)');
+            root.style.setProperty('--aura-3', 'var(--solar-3)');
+        } else if (preset === 'emerald') {
+            root.style.setProperty('--aura-1', 'var(--emerald-1)');
+            root.style.setProperty('--aura-2', 'var(--emerald-2)');
+            root.style.setProperty('--aura-3', 'var(--emerald-3)');
+        } else if (preset === 'space') {
+            root.style.setProperty('--aura-1', 'var(--space-1)');
+            root.style.setProperty('--aura-2', 'var(--space-2)');
+            root.style.setProperty('--aura-3', 'var(--space-3)');
+        }
+    }
+
+    private handleMouseMove(e: MouseEvent) {
+        const x = (e.clientX / window.innerWidth - 0.5) * 40;
+        const y = (e.clientY / window.innerHeight - 0.5) * 40;
+        
+        const blobs = document.querySelectorAll('.aura-blob');
+        blobs.forEach((blob, idx) => {
+            const factor = (idx + 1) * 0.5;
+            (blob as HTMLElement).style.transform = `translate(${x * factor}px, ${y * factor}px)`;
+        });
     }
 
     private initTheme() {
@@ -164,6 +224,25 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             this.renderAccounts(); // Re-render to apply/remove masking
             this.showToast(this.privacyMode ? "Privacy Mode Enabled" : "Privacy Mode Disabled", "info");
+        });
+
+        // Screen Guardian Toggle
+        document.getElementById('screen-guardian-toggle')?.addEventListener('change', (e) => {
+            const target = e.target as HTMLInputElement;
+            this.screenGuardian = target.checked;
+            localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
+            (window as any).api.setContentProtection(this.screenGuardian);
+            this.showToast(this.screenGuardian ? "Screen Guardian Active" : "Screen Guardian Disabled", "info");
+        });
+
+        // Wallpaper Presets
+        document.querySelectorAll('.wallpaper-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const preset = target.getAttribute('data-preset')!;
+                this.applyWallpaper(preset);
+                this.showToast(`Wallpaper Switched: ${preset.charAt(0).toUpperCase() + preset.slice(1)}`, "info");
+            });
         });
 
         // -- Vault Maintenance --

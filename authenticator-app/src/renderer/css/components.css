@@ -515,3 +515,57 @@ input:checked + .slider:before {
     font-size: clamp(13px, 3.5vw, 15px);
     font-weight: 750;
 }
+
+/* Wallpaper Gallery Layout */
+.wallpaper-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+}
+
+.wallpaper-card {
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all var(--transition-fast);
+    text-align: left;
+}
+
+.wallpaper-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+    background: var(--bg-tertiary);
+}
+
+.wallpaper-card.active {
+    border-color: var(--accent-primary);
+    background: var(--accent-soft);
+    box-shadow: 0 8px 20px var(--accent-soft);
+}
+
+.wallpaper-preview {
+    height: 60px;
+    border-radius: var(--radius-sm);
+    width: 100%;
+    margin-bottom: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.wallpaper-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.wallpaper-desc {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+}
