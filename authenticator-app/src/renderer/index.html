@@ -184,13 +184,11 @@
                 
                 <!-- Empty State -->
                 <div id="empty-state" class="hidden">
-                    <div style="text-align: center; padding: clamp(80px, 20vh, 160px) var(--space-md);">
-                        <div style="margin-bottom: var(--space-lg); color: var(--accent-primary); filter: drop-shadow(0 0 20px var(--aura-1));">
-                            <i data-lucide="fingerprint" style="width: 100px; height: 100px; opacity: 0.8;"></i>
-                        </div>
-                        <h2 style="margin-bottom: var(--space-sm); font-size: 32px; font-weight: 900; letter-spacing: -1.2px;">Vault is Synchronized</h2>
-                        <p style="color: var(--text-secondary); margin-bottom: 48px; font-size: 17px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6; font-weight: 500;">No active tokens detected. Secure your first digital identity to activate real-time vault protection.</p>
-                        <button class="btn-primary" id="empty-add-btn" style="padding: 18px 48px; font-size: 17px;">
+                    <div class="empty-state-vessel">
+                        <i data-lucide="fingerprint" style="width: 100px; height: 100px; opacity: 0.8;"></i>
+                        <h2>Vault is Synchronized</h2>
+                        <p>No active tokens detected. Secure your first digital identity to activate real-time vault protection.</p>
+                        <button class="btn-primary" id="empty-add-btn" style="padding: 0 48px; min-width: 240px; height: var(--btn-h-lg);">
                             <i data-lucide="plus" style="width: 24px; height: 24px;"></i>
                             <span>Initialize Security</span>
                         </button>
