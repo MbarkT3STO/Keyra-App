@@ -1,63 +1,72 @@
 :root {
-    /* Color Palette - Aura Modern (Hyper-Premium) */
-    --bg-primary: #ffffff;
-    --bg-secondary: #fdfcff;
-    --bg-tertiary: #f9f7ff;
+    /* Scientific Design Tokens - HSL System */
+    --h: 258; /* Core Purple Hue */
+    --s: 100%;
     
-    --text-primary: #0f0a1e;
-    --text-secondary: #58536e;
-    --text-tertiary: #928ca8;
+    --bg-primary: hsl(var(--h), 20%, 100%);
+    --bg-secondary: hsl(var(--h), 25%, 98%);
+    --bg-tertiary: hsl(var(--h), 30%, 96%);
     
-    --accent-primary: #8a5cff; /* Hyper Purple */
-    --accent-secondary: #b388ff;
-    --accent-tertiary: #dfccff;
-    --accent-hover: #733cff;
-    --accent-soft: rgba(138, 92, 255, 0.1);
+    --text-primary: hsl(var(--h), 40%, 8%);
+    --text-secondary: hsl(var(--h), 15%, 38%);
+    --text-tertiary: hsl(var(--h), 12%, 60%);
     
-    /* Aura Mesh Colors */
-    --aura-1: rgba(138, 92, 255, 0.4);
-    --aura-2: rgba(255, 126, 179, 0.3);
-    --aura-3: rgba(118, 204, 255, 0.3);
+    --accent-primary: hsl(var(--h), var(--s), 68%);
+    --accent-secondary: hsl(280, 100%, 75%);
+    --accent-hover: hsl(var(--h), var(--s), 62%);
+    --accent-soft: hsla(var(--h), var(--s), 68%, 0.12);
     
-    --border-color: rgba(15, 10, 30, 0.05);
-    --glass-bg: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.4);
+    /* Aura Mesh Colors (Scientific Harmony) */
+    --aura-1: hsla(var(--h), var(--s), 68%, 0.35);
+    --aura-2: hsla(330, 100%, 75%, 0.25);
+    --aura-3: hsla(200, 100%, 75%, 0.25);
     
-    --shadow-soft: 0 4px 20px rgba(138, 92, 255, 0.05);
-    --shadow-medium: 0 12px 36px rgba(138, 92, 255, 0.1);
-    --shadow-hard: 0 24px 64px rgba(138, 92, 255, 0.15);
+    --border-color: hsla(var(--h), 40%, 8%, 0.05);
+    --glass-bg: hsla(0, 0%, 100%, 0.75);
+    --glass-border: hsla(0, 0%, 100%, 0.4);
+    
+    /* Modular Spacing (8pt Grid) */
+    --space-2xs: 4px;
+    --space-xs: 8px;
+    --space-sm: 16px;
+    --space-md: 24px;
+    --space-lg: 32px;
+    --space-xl: 48px;
+    --space-2xl: 64px;
+    
+    --shadow-soft: 0 4px 20px hsla(var(--h), var(--s), 20%, 0.04);
+    --shadow-medium: 0 12px 36px hsla(var(--h), var(--s), 20%, 0.08);
+    --shadow-hard: 0 24px 64px hsla(var(--h), var(--s), 20%, 0.12);
     
     --radius-sm: 12px;
     --radius-md: 18px;
     --radius-lg: 28px;
     --radius-xl: 40px;
     
-    --transition-fast: 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-    --transition-medium: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    --transition-fast: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-medium: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme="dark"] {
-    --bg-primary: #05040a;
-    --bg-secondary: #0c0b14;
-    --bg-tertiary: #14121f;
+    --bg-primary: hsl(var(--h), 30%, 3%);
+    --bg-secondary: hsl(var(--h), 25%, 6%);
+    --bg-tertiary: hsl(var(--h), 20%, 9%);
     
-    --text-primary: #ffffff;
-    --text-secondary: #a8a4bc;
-    --text-tertiary: #6e6a80;
+    --text-primary: hsl(var(--h), 10%, 98%);
+    --text-secondary: hsl(var(--h), 15%, 72%);
+    --text-tertiary: hsl(var(--h), 10%, 48%);
     
-    --aura-1: rgba(138, 92, 255, 0.25);
-    --aura-2: rgba(255, 126, 179, 0.15);
-    --aura-3: rgba(118, 204, 255, 0.15);
+    --aura-1: hsla(var(--h), var(--s), 68%, 0.2);
+    --aura-2: hsla(330, 100%, 75%, 0.1);
+    --aura-3: hsla(200, 100%, 75%, 0.1);
     
-    --border-color: rgba(255, 255, 255, 0.06);
-    --glass-bg: rgba(12, 11, 20, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --border-color: hsla(0, 0%, 100%, 0.06);
+    --glass-bg: hsla(var(--h), 25%, 6%, 0.75);
+    --glass-border: hsla(0, 0%, 100%, 0.08);
     
-    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.4);
-    --shadow-medium: 0 12px 40px rgba(0, 0, 0, 0.6);
-    --shadow-hard: 0 24px 80px rgba(0, 0, 0, 0.8);
-    
-    --accent-soft: rgba(179, 136, 255, 0.15);
+    --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
+    --shadow-medium: 0 16px 48px rgba(0, 0, 0, 0.6);
+    --shadow-hard: 0 32px 80px rgba(0, 0, 0, 0.8);
 }
 
 * {

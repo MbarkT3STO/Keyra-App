@@ -178,44 +178,41 @@ export class UIManager {
     private createAccountCard(account: any, index: number): HTMLElement {
         const card = document.createElement('div');
         card.className = 'account-card animate-fade-in';
-        card.style.animationDelay = `${index * 0.08}s`;
+        card.style.animationDelay = `${index * 0.05}s`;
         
         card.innerHTML = `
-            <div class="card-actions">
-                <button class="btn-icon edit-btn" title="Edit Identity">
-                    <i data-lucide="edit-3"></i>
-                </button>
-                <button class="btn-icon danger delete-btn" title="Remove Token">
-                    <i data-lucide="trash-2"></i>
-                </button>
-            </div>
             <div class="account-header">
                 <div class="account-icon">
                     <i data-lucide="${this.getIcon(account.issuer)}"></i>
                 </div>
-                <div class="account-info">
+                <div style="flex: 1; min-width: 0;">
                     <div class="service-name">${account.issuer}</div>
                     <div class="account-identity">${account.account}</div>
                 </div>
+                <div class="card-actions" style="display: flex; gap: 4px;">
+                     <button class="btn-icon danger delete-btn" title="Remove Token" style="width: 32px; height: 32px; padding: 0;">
+                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </div>
             </div>
             
-            <div class="otp-container">
-                <div class="otp-box">
-                    <div class="otp-code" data-id="${account.id}">------</div>
-                    <div class="timer-container">
-                        <svg viewBox="0 0 60 60">
-                            <circle cx="30" cy="30" r="26" fill="none" class="timer-bg"></circle>
-                            <circle class="timer-progress" cx="30" cy="30" r="26" fill="none" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
-                        </svg>
-                    </div>
+            <div class="otp-box">
+                <div class="otp-code" data-id="${account.id}">------</div>
+                <div class="timer-container" style="position: absolute; right: 12px; width: 24px; height: 24px;">
+                    <svg viewBox="0 0 60 60">
+                        <circle cx="30" cy="30" r="26" fill="none" class="timer-bg" style="stroke: var(--border-color); stroke-width: 4;"></circle>
+                        <circle class="timer-progress" cx="30" cy="30" r="26" fill="none" stroke-dasharray="163.36" stroke-dashoffset="0" style="stroke: var(--accent-primary); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear;"></circle>
+                    </svg>
                 </div>
-                <button class="btn-primary copy-btn" style="width: 100%; margin-top: 20px; height: 52px; position: relative; overflow: hidden;">
-                    <i data-lucide="copy"></i>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary copy-btn" style="flex: 1; height: 44px; font-size: 14px;">
+                    <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
                     <span class="btn-text">Secure Copy</span>
-                    <div class="copy-success-layer" style="position: absolute; top:0; left:0; right:0; bottom:0; background: var(--accent-primary); color: white; display: flex; align-items: center; justify-content: center; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);">
-                        <i data-lucide="check" style="width: 20px; height: 20px; margin-right: 8px;"></i>
-                        <span>Copied!</span>
-                    </div>
+                </button>
+                <button class="user-button edit-btn" title="Refine Metadata" style="width: 44px; height: 44px; justify-content: center; padding: 0;">
+                    <i data-lucide="settings-2" style="width: 18px; height: 18px;"></i>
                 </button>
             </div>
         `;
@@ -224,14 +221,7 @@ export class UIManager {
         copyBtn.onclick = async () => {
             const code = card.querySelector('.otp-code')?.textContent?.replace(/\s/g, '') || '';
             await navigator.clipboard.writeText(code);
-            
-            const successLayer = copyBtn.querySelector('.copy-success-layer') as HTMLElement;
-            if (successLayer) {
-                successLayer.style.transform = 'translateY(0)';
-                setTimeout(() => {
-                    successLayer.style.transform = 'translateY(100%)';
-                }, 2000);
-            }
+            this.showToast("OTP Copied to Clipboard", "success");
         };
 
         card.querySelector('.edit-btn')?.addEventListener('click', (e) => {
@@ -252,12 +242,12 @@ export class UIManager {
         const codeElement = card.querySelector('.otp-code');
         if (!codeElement) return;
 
-        const otp = await window.api.generateTOTP(secret);
+        const otp = await (window as any).api.generateTOTP(secret);
         if (codeElement.textContent?.replace(/\s/g, '') !== otp) {
             codeElement.textContent = otp.substring(0, 3) + ' ' + otp.substring(3);
         }
 
-        const remaining = await window.api.getRemainingSeconds();
+        const remaining = await (window as any).api.getRemainingSeconds();
         const dashOffset = 163.36 * (1 - remaining / 30);
         const progressCircle = card.querySelector('.timer-progress') as HTMLElement;
         if (progressCircle) {
@@ -303,34 +293,34 @@ export class UIManager {
 
     private showAddModal() {
         const content = `
-            <div style="padding: clamp(24px, 5vw, 40px);">
-                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary);">
-                        <i data-lucide="plus-circle" style="color: var(--accent-primary);"></i>
+            <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
+                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
+                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary); width: 64px; height: 64px;">
+                        <i data-lucide="plus-circle" style="color: var(--accent-primary); width: 32px; height: 32px;"></i>
                     </div>
                     <div>
-                        <h2 style="font-weight: 850; font-size: 24px; color: var(--text-primary);">New Identity</h2>
-                        <div class="modal-help-text">Connect a new service to your vault</div>
+                        <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 28px); color: var(--text-primary); letter-spacing: -1px;">Initialize Identity</h2>
+                        <div class="modal-help-text" style="font-weight: 600; opacity: 0.8; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Register new secure service token</div>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">Service Provider</label>
-                    <input type="text" id="new-issuer" class="form-input" placeholder="e.g. Google, GitHub">
+                    <input type="text" id="new-issuer" class="form-input" placeholder="e.g. Identity Node">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Identity / Email</label>
-                    <input type="text" id="new-account" class="form-input" placeholder="user@example.com">
+                    <label class="form-label">Vault Label</label>
+                    <input type="text" id="new-account" class="form-input" placeholder="User Reference">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Base32 Secret Key</label>
-                    <input type="text" id="new-secret" class="form-input" placeholder="PASTE_SECRET_HERE">
-                    <div class="modal-help-text">Obtained via "Manual entry" or QR backup</div>
+                    <label class="form-label">Base32 Secret</label>
+                    <input type="text" id="new-secret" class="form-input" placeholder="Secure Token Payload">
+                    <div class="modal-help-text">Input derived from manual entry or registry backup</div>
                 </div>
                 
-                <div style="display: flex; gap: 16px; margin-top: 40px;">
-                    <button class="btn-primary" id="save-new-account" style="flex: 2; height: 56px;">Initialize Security</button>
-                    <button class="user-button" id="cancel-add-btn" style="flex: 1; justify-content: center; height: 56px;">Discard</button>
+                <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl);">
+                    <button class="btn-primary" id="save-new-account" style="flex: 2; height: 64px; font-size: 17px;">Verify & Secure</button>
+                    <button class="user-button" id="cancel-add-btn" style="flex: 1; justify-content: center; height: 64px; font-weight: 800;">Discard</button>
                 </div>
             </div>
         `;
@@ -340,27 +330,27 @@ export class UIManager {
             const account = (document.getElementById('new-account') as HTMLInputElement).value;
             const secret = (document.getElementById('new-secret') as HTMLInputElement).value;
             if (!issuer || !secret) {
-                this.showToast("Required fields missing", "error");
+                this.showToast("Verification data missing", "error");
                 return;
             }
             await window.api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
             await this.refreshAccounts();
             this.hideModal();
-            this.showToast("Identity secured in vault", "success");
+            this.showToast("Identity successfully verified", "success");
         });
         document.getElementById('cancel-add-btn')?.addEventListener('click', () => this.hideModal());
     }
 
     private showEditModal(account: any) {
         const content = `
-            <div style="padding: clamp(24px, 5vw, 40px);">
-                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary);">
-                        <i data-lucide="edit-3" style="color: var(--accent-primary);"></i>
+            <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
+                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
+                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary); width: 64px; height: 64px;">
+                        <i data-lucide="edit-3" style="color: var(--accent-primary); width: 32px; height: 32px;"></i>
                     </div>
                     <div>
-                        <h2 style="font-weight: 850; font-size: 24px; color: var(--text-primary);">Refine Token</h2>
-                        <div class="modal-help-text">Editing metadata for ${account.issuer}</div>
+                        <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 28px); color: var(--text-primary); letter-spacing: -1px;">Refine Metadata</h2>
+                        <div class="modal-help-text" style="font-weight: 600; opacity: 0.8; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Adjust identity for ${account.issuer}</div>
                     </div>
                 </div>
                 
@@ -369,13 +359,13 @@ export class UIManager {
                     <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Identity Label</label>
+                    <label class="form-label">Identity Reference</label>
                     <input type="text" id="edit-account" class="form-input" value="${account.account}">
                 </div>
                 
-                <div style="display: flex; gap: 16px; margin-top: 40px;">
-                    <button class="btn-primary" id="update-account" style="flex: 2; height: 56px;">Save Changes</button>
-                    <button class="user-button" id="cancel-edit-btn" style="flex: 1; justify-content: center; height: 56px;">Discard</button>
+                <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl);">
+                    <button class="btn-primary" id="update-account" style="flex: 2; height: 64px; font-size: 17px;">Commit Changes</button>
+                    <button class="user-button" id="cancel-edit-btn" style="flex: 1; justify-content: center; height: 64px; font-weight: 800;">Discard</button>
                 </div>
             </div>
         `;
@@ -383,12 +373,12 @@ export class UIManager {
         document.getElementById('update-account')?.addEventListener('click', async () => {
             const issuer = (document.getElementById('edit-issuer') as HTMLInputElement).value;
             const accountName = (document.getElementById('edit-account') as HTMLInputElement).value;
-            if (!issuer) return this.showToast("Label required", "error");
+            if (!issuer) return this.showToast("Identification required", "error");
             
             await window.api.saveAccount({ ...account, issuer, account: accountName });
             await this.refreshAccounts();
             this.hideModal();
-            this.showToast("Vault synchronized", "success");
+            this.showToast("Vault synchronized successfully", "success");
         });
         document.getElementById('cancel-edit-btn')?.addEventListener('click', () => this.hideModal());
     }
@@ -400,30 +390,31 @@ export class UIManager {
         toast.className = 'animate-fade-in';
         toast.style.cssText = `
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
             color: var(--text-primary);
-            padding: 14px 24px;
+            padding: 16px 28px;
             border-radius: var(--radius-md);
             box-shadow: var(--shadow-hard);
-            border: 1px solid var(--glass-border);
-            border-bottom: 3px solid ${type === 'error' ? '#ff3b30' : type === 'success' ? '#34c759' : 'var(--accent-primary)'};
-            display: flex; align-items: center; gap: 12px;
-            font-size: 15px; font-weight: 700;
-            max-width: 90vw;
+            border: 1.5px solid var(--glass-border);
+            border-bottom: 4px solid ${type === 'error' ? '#ff3b30' : type === 'success' ? '#28a745' : 'var(--accent-primary)'};
+            display: flex; align-items: center; gap: var(--space-sm);
+            font-size: 16px; font-weight: 800;
+            max-width: 92vw;
             margin: 0 auto;
+            letter-spacing: -0.2px;
         `;
         
         const iconName = type === 'error' ? 'alert-circle' : type === 'success' ? 'check-circle' : 'info';
-        toast.innerHTML = `<i data-lucide="${iconName}" style="width: 18px; height: 18px; color: ${type === 'error' ? '#ff3b30' : type === 'success' ? '#34c759' : 'var(--accent-primary)'}; flex-shrink:0;"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i data-lucide="${iconName}" style="width: 20px; height: 20px; color: ${type === 'error' ? '#ff3b30' : type === 'success' ? '#28a745' : 'var(--accent-primary)'}; flex-shrink:0;"></i> <span>${message}</span>`;
         
         container.appendChild(toast);
         this.refreshLucide();
 
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateY(16px)';
+            toast.style.transform = 'translateY(24px) scale(0.95)';
             setTimeout(() => toast.remove(), 400);
-        }, 3000);
+        }, 3500);
     }
 
     public lockVault() {
