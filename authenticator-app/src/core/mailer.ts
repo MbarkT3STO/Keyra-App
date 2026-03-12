@@ -34,6 +34,9 @@ export async function sendActivationEmail(options: MailOptions): Promise<{ succe
         auth: {
             user: user,
             pass: pass
+        },
+        tls: {
+            ciphers: 'SSLv3'
         }
     });
 
@@ -84,7 +87,15 @@ export async function sendActivationEmail(options: MailOptions): Promise<{ succe
 
         console.log(`[MAILER] Activation email sent successfully to ${options.to}`);
         return { success: true, message: "Email sent." };
-    } catch (error) {
+    } catch (error: any) {
+        if (error.code === 'EAUTH') {
+            console.error(`[MAILER] Authentication Error: SMTP AUTH is likely disabled for this account.`);
+            console.error(`[MAILER] Visit: https://aka.ms/smtp_auth_disabled`);
+            return { 
+                success: false, 
+                message: "Authentication failed. SMTP AUTH might be disabled in your Outlook settings." 
+            };
+        }
         console.error(`[MAILER] SMTP Error:`, error);
         return { success: false, message: "SMTP error. Check logs." };
     }

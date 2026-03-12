@@ -1,0 +1,26 @@
+export { };
+
+declare global {
+    interface Window {
+        ui?: any;
+        api: {
+            signup(user: string, email: string, pass: string): Promise<{ success: boolean, message: string, code?: string }>;
+            resendCode(email: string): Promise<{ success: boolean, message: string, code?: string }>;
+            verifyEmail(email: string, code: string): Promise<{ success: boolean, message: string }>;
+            login(user: string, pass: string): Promise<{ success: boolean, message: string }>;
+            checkSession(): Promise<{ success: boolean, message: string }>;
+            logout(): Promise<void>;
+            getCurrentUser(): Promise<{ id: string, username: string, email: string } | null>;
+
+            generateTOTP(secret: string): Promise<string>;
+            saveAccount(acc: any): Promise<void>;
+            deleteAccount(id: string): Promise<void>;
+            getRemainingSeconds(): Promise<number>;
+            getAccounts(): Promise<any>;
+            parseURI(uri: string): Promise<any>;
+            minimize(): void;
+            maximize(): void;
+            close(): void;
+        };
+    }
+}
