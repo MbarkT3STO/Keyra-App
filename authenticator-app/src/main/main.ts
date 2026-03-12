@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import * as path from 'path';
-import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, checkSession, getBackupData, importVaultData } from '../core/auth';
+import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates } from '../core/auth';
 import { generateTOTP, getRemainingSeconds } from '../core/totp';
 import * as fs from 'fs';
 import { dialog } from 'electron';
@@ -69,23 +69,24 @@ ipcMain.handle('login', (event, user, pass) => login(user, pass));
 ipcMain.handle('check-session', () => checkSession());
 ipcMain.handle('logout', () => logout());
 ipcMain.handle('get-current-user', () => getCurrentUser());
+ipcMain.handle('poll-for-updates', () => pollForUpdates());
 
 // -- Vault Access (Requires Active User) --
-ipcMain.handle('get-accounts', () => {
-    try { return getActiveAccounts(); }
+ipcMain.handle('get-accounts', async () => {
+    try { return await getActiveAccounts(); }
     catch (err) { return []; }
 });
 
-ipcMain.handle('save-account', (event, account) => {
+ipcMain.handle('save-account', async (event, account) => {
     try {
-        const accounts = getActiveAccounts();
+        const accounts = await getActiveAccounts();
         const existingIndex = accounts.findIndex((a: any) => a.id === account.id);
         if (existingIndex >= 0) {
             accounts[existingIndex] = account; // Update
         } else {
             accounts.push(account); // Add new
         }
-        saveActiveAccounts(accounts);
+        await saveActiveAccounts(accounts);
         return accounts;
     } catch (err) {
         console.error("Save Account Error:", err);
@@ -93,14 +94,23 @@ ipcMain.handle('save-account', (event, account) => {
     }
 });
 
-ipcMain.handle('delete-account', (event, id) => {
+ipcMain.handle('delete-account', async (event, id) => {
     try {
-        let accounts = getActiveAccounts();
+        let accounts = await getActiveAccounts();
         accounts = accounts.filter((a: any) => a.id !== id);
-        saveActiveAccounts(accounts);
+        await saveActiveAccounts(accounts);
         return accounts;
     } catch (err) {
         return [];
+    }
+});
+
+ipcMain.handle('update-user-settings', async (event, settings) => {
+    try {
+        await updateUserSettings(settings);
+        return { success: true };
+    } catch (err) {
+        return { success: false };
     }
 });
 

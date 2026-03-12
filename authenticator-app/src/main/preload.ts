@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('api', {
     checkSession: () => ipcRenderer.invoke('check-session'),
     logout: () => ipcRenderer.invoke('logout'),
     getCurrentUser: () => ipcRenderer.invoke('get-current-user'),
+    pollForUpdates: () => ipcRenderer.invoke('poll-for-updates'),
+    updateUserSettings: (settings: any) => ipcRenderer.invoke('update-user-settings', settings),
 
     // Operations
     getAccounts: () => ipcRenderer.invoke('get-accounts'),

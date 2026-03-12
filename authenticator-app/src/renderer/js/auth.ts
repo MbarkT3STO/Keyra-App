@@ -1,8 +1,8 @@
 import { UIManager } from './ui.js';
 
-let appInitCallback: (() => void | Promise<void>) | null = null;
+let appInitCallback: ((resumed: boolean) => void | Promise<void>) | null = null;
 
-export function setAppInitCallback(cb: () => void | Promise<void>) {
+export function setAppInitCallback(cb: (resumed: boolean) => void | Promise<void>) {
     appInitCallback = cb;
 }
 
@@ -14,87 +14,148 @@ export async function setupAuthUI() {
 
     // 0. Auto-Login Sequence
     try {
-        const auto = await window.api.checkSession();
+        const auto = await (window as any).api.checkSession();
         if (auto.success) {
-            completeLogin();
+            await completeLogin(true);
+        } else {
+            hideSplashScreen();
         }
-    } catch (e) { console.error("Session resume failed", e); }
+    } catch (e) { 
+        console.error("Session resume failed", e);
+        hideSplashScreen();
+    }
 
-    async function completeLogin() {
+    function hideSplashScreen() {
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+            splash.classList.add('fade-out');
+            setTimeout(() => splash.style.display = 'none', 1000);
+        }
+    }
+
+    async function completeLogin(resumed: boolean = false) {
         if (vessel) {
             vessel.classList.remove('show');
             setTimeout(() => vessel.classList.add('hidden'), 500);
         }
         
-        if (appInitCallback) await appInitCallback();
+        if (appInitCallback) await appInitCallback(resumed);
 
         // Let UIManager handle initial data loading
         if ((window as any).ui) {
-            (window as any).ui.refreshAccounts();
+            await (window as any).ui.refreshAccounts();
         }
+
+        if (resumed) {
+            hideSplashScreen();
+        }
+    }
+
+    function switchState(toHide: HTMLElement, toShow: HTMLElement) {
+        toHide.classList.add('hidden');
+        toShow.classList.remove('hidden');
     }
 
     // Navigation
     document.getElementById('btn-show-signup')?.addEventListener('click', () => {
-        boxLogin.classList.add('hidden');
-        boxSignup.classList.remove('hidden');
+        switchState(boxLogin, boxSignup);
     });
 
     document.getElementById('btn-show-login')?.addEventListener('click', () => {
-        boxSignup.classList.add('hidden');
-        boxLogin.classList.remove('hidden');
+        switchState(boxSignup, boxLogin);
     });
 
     document.getElementById('btn-show-login-from-verify')?.addEventListener('click', () => {
-        boxVerify.classList.add('hidden');
-        boxLogin.classList.remove('hidden');
+        switchState(boxVerify, boxLogin);
     });
 
     // Login Form
     document.getElementById('form-login')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const user = (document.getElementById('login-username') as HTMLInputElement).value;
+        const user = (document.getElementById('login-username') as HTMLInputElement).value.trim();
         const pass = (document.getElementById('login-password') as HTMLInputElement).value;
         const err = document.getElementById('login-error')!;
 
+        err.classList.remove('animate-shake');
         err.style.opacity = '0';
+
+        // Local Validation
+        if (user.length < 4) {
+            err.textContent = "Identity label must be at least 4 characters.";
+            err.style.opacity = '1';
+            void (err as HTMLElement).offsetWidth; 
+            err.classList.add('animate-shake');
+            return;
+        }
+        if (pass.length < 8) {
+            err.textContent = "Master key must be at least 8 characters.";
+            err.style.opacity = '1';
+            void (err as HTMLElement).offsetWidth;
+            err.classList.add('animate-shake');
+            return;
+        }
+
         try {
-            const result = await window.api.login(user, pass);
+            const result = await (window as any).api.login(user, pass);
             if (result.success) {
                 completeLogin();
             } else {
                 err.textContent = result.message;
                 err.style.opacity = '1';
+                void (err as HTMLElement).offsetWidth; 
+                err.classList.add('animate-shake');
             }
         } catch (error: any) {
             err.textContent = "Vault access denied.";
             err.style.opacity = '1';
+            err.classList.add('animate-shake');
         }
     });
 
     // Signup Form
     document.getElementById('form-signup')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const user = (document.getElementById('signup-username') as HTMLInputElement).value;
-        const email = (document.getElementById('signup-email') as HTMLInputElement).value;
+        const user = (document.getElementById('signup-username') as HTMLInputElement).value.trim();
+        const email = (document.getElementById('signup-email') as HTMLInputElement).value.trim();
         const pass = (document.getElementById('signup-password') as HTMLInputElement).value;
         const err = document.getElementById('signup-error')!;
 
+        err.classList.remove('animate-shake');
         err.style.opacity = '0';
+
+        // Local Validation
+        if (user.length < 4) {
+            err.textContent = "Full name must be at least 4 characters.";
+            err.style.opacity = '1';
+            void (err as HTMLElement).offsetWidth;
+            err.classList.add('animate-shake');
+            return;
+        }
+        if (pass.length < 8) {
+            err.textContent = "Password must be at least 8 characters.";
+            err.style.opacity = '1';
+            void (err as HTMLElement).offsetWidth;
+            err.classList.add('animate-shake');
+            return;
+        }
+
         try {
-            const result = await window.api.signup(user, email, pass);
+            const result = await (window as any).api.signup(user, email, pass);
             if (result.success) {
-                boxSignup.classList.add('hidden');
-                boxVerify.classList.remove('hidden');
+                switchState(boxSignup, boxVerify);
                 (document.getElementById('verify-email-field') as HTMLInputElement).value = email;
                 if (result.code) showSimulationToast(result.code);
+                startResendTimer();
             } else {
                 err.textContent = result.message;
                 err.style.opacity = '1';
+                void (err as HTMLElement).offsetWidth; 
+                err.classList.add('animate-shake');
             }
         } catch (error: any) {
             err.textContent = "Registry expansion failed.";
             err.style.opacity = '1';
+            err.classList.add('animate-shake');
         }
     });
 
@@ -115,24 +176,72 @@ export async function setupAuthUI() {
         const code = Array.from(digitInputs).map(i => i.value).join('');
         const err = document.getElementById('verify-error')!;
         
+        err.classList.remove('animate-shake');
         try {
-            const result = await window.api.verifyEmail(email, code);
+            const result = await (window as any).api.verifyEmail(email, code);
             if (result.success) {
-                boxVerify.classList.add('hidden');
-                boxLogin.classList.remove('hidden');
+                switchState(boxVerify, boxLogin);
             } else {
                 err.textContent = result.message;
                 err.style.opacity = '1';
+                void (err as HTMLElement).offsetWidth; 
+                err.classList.add('animate-shake');
+                digitInputs.forEach(i => i.value = '');
+                digitInputs[0].focus();
             }
         } catch (e) {
             err.textContent = "Sync error.";
             err.style.opacity = '1';
+            err.classList.add('animate-shake');
         }
     }
 
     document.getElementById('form-verify')?.addEventListener('submit', (e) => {
         e.preventDefault();
         handleVerification();
+    });
+
+    // Resend Logic
+    let resendCooldown = 0;
+    let resendInterval: any = null;
+
+    function startResendTimer() {
+        resendCooldown = 60;
+        const btn = document.getElementById('btn-resend-code') as HTMLButtonElement;
+        const timerSpan = document.getElementById('resend-timer');
+        if (!btn || !timerSpan) return;
+
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        
+        if (resendInterval) clearInterval(resendInterval);
+        resendInterval = setInterval(() => {
+            resendCooldown--;
+            timerSpan.textContent = `(${resendCooldown}s)`;
+            if (resendCooldown <= 0) {
+                clearInterval(resendInterval);
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                timerSpan.textContent = '';
+            }
+        }, 1000);
+    }
+
+    document.getElementById('btn-resend-code')?.addEventListener('click', async () => {
+        const email = (document.getElementById('verify-email-field') as HTMLInputElement).value;
+        try {
+            const result = await (window as any).api.resendCode(email);
+            if (result.success) {
+                if (result.code) showSimulationToast(result.code);
+                startResendTimer();
+            } else {
+                const err = document.getElementById('verify-error')!;
+                err.textContent = result.message;
+                err.style.opacity = '1';
+            }
+        } catch (e) {
+            console.error("Resend failed", e);
+        }
     });
 
     function showSimulationToast(code: string) {

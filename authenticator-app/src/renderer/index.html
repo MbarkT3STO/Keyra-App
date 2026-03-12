@@ -19,7 +19,26 @@
     <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
-    <!-- Hyper-Modern Animated Background -->
+    <!-- Premium Splash Screen Overlay -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <i data-lucide="shield-check"></i>
+                <div class="splash-ring"></div>
+            </div>
+            <div class="splash-text">
+                <h1 class="splash-title">Keyra</h1>
+                <div class="splash-status">
+                    <span id="splash-status-text">Synchronizing Secure Identity</span>
+                    <div class="splash-progress-bar">
+                        <div class="splash-progress-inner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reduced blobs for performance -->
     <div class="aura-background">
         <div class="aura-blob aura-1"></div>
         <div class="aura-blob aura-2"></div>
@@ -103,15 +122,16 @@
         </div>
     </div>
 
-    <div id="privacy-blur-overlay" class="privacy-blur-overlay hidden">
-        <div class="privacy-blur-content">
-            <div class="brand-icon" style="margin-bottom: 24px; scale: 1.5;">
-                <i data-lucide="shield-check"></i>
+        <!-- Privacy Guard Blur Overlay (Web Screen Guardian) -->
+        <div id="privacy-blur-overlay" class="modal-overlay privacy-overlay hidden">
+            <div class="privacy-content animate-fade-in">
+                <div class="privacy-shield-icon">
+                    <i data-lucide="shield-off"></i>
+                </div>
+                <h2>Vault Protected</h2>
+                <p>Screen Guardian is active. Refocus Keyra to resume your secure session.</p>
             </div>
-            <h2 style="font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px;">Vault Secured</h2>
-            <p style="opacity: 0.7; font-weight: 600;">Refocus to reveal your protected data</p>
         </div>
-    </div>
 
     <div class="app-container">
         <!-- Modern Top Navigation Bar -->
@@ -216,6 +236,45 @@
                 </div>
                 
                 <div class="settings-grid">
+                <!-- Data Synchronization Hub (New Feature) -->
+                <div class="account-card bento-card">
+                    <div class="bento-header">
+                        <div class="bento-icon" style="background: var(--accent-soft); border-color: var(--accent-primary);">
+                            <i data-lucide="cloud" style="color: var(--accent-primary);"></i>
+                        </div>
+                        <div class="bento-title-vessel">
+                            <h3 class="bento-title">Cloud Synchronization</h3>
+                            <div class="bento-subtitle">GitHub-Native Real-time Sync</div>
+                        </div>
+                    </div>
+                    <div class="bento-content">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Auto-Synchronize</div>
+                                <div class="setting-desc">Push changes instantly to GitHub</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="cloud-sync-toggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Sync Status</div>
+                                <div class="setting-desc" id="sync-status-desc">Synchronized</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; color: #28a745; font-size: 13px; font-weight: 800;">
+                                <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                                ACTIVE
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="btn-sync-now" style="margin-top: 12px; height: 48px;">
+                            <i data-lucide="refresh-cw"></i>
+                            <span>Initialize Force Sync</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Vault Maintenance Card -->
                 <div class="account-card bento-card">
                     <div class="bento-header">
@@ -448,25 +507,38 @@
             </div>
         </div>
 
-        <!-- Lock Screen PIN (Hardcoded for Static Overrides) -->
-        <div id="lock-vessel" class="modal-overlay" style="background: var(--bg-primary); z-index: 1500;">
-            <div class="modal animate-fade-in" style="max-width: 400px; padding: clamp(32px, 8vw, 64px); border: none; box-shadow: none; text-align: center; background: transparent;">
-                <div class="brand-icon" style="margin-bottom: 32px;">
-                    <i data-lucide="lock" style="width: 64px; height: 64px;"></i>
+        <!-- Lock Screen PIN (Premium Glassmorphic Redesign) -->
+        <div id="lock-vessel" class="modal-overlay pin-overlay">
+            <div class="pin-vessel animate-fade-in">
+                <div class="pin-brand">
+                    <div class="pin-lock-icon">
+                        <i data-lucide="lock"></i>
+                        <div class="lock-glow"></div>
+                    </div>
                 </div>
-                <h2 style="margin-bottom: 12px; font-weight: 850; font-size: 26px; color: var(--text-primary);">Vault Locked</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 40px; font-size: 15px; font-weight: 500;">Enter your security PIN to resume</p>
+                
+                <div class="pin-header">
+                    <h2 class="pin-title">Vault Locked</h2>
+                    <p class="pin-subtitle">Identity verification required to resume session</p>
+                </div>
+
                 <form id="form-unlock">
-                    <div class="form-group" style="position: relative;">
-                        <input type="password" id="unlock-pin" maxlength="4" placeholder="••••" class="form-input" style="text-align: center; font-size: 36px; height: 80px; letter-spacing: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-                        <div id="pin-progress" style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; margin-top: 12px;">
+                    <div class="pin-input-vessel">
+                        <input type="password" id="unlock-pin" maxlength="4" class="pin-field" autocomplete="off">
+                        <div class="pin-indicators">
                             <div class="pin-dot" data-digit="1"></div>
                             <div class="pin-dot" data-digit="2"></div>
                             <div class="pin-dot" data-digit="3"></div>
                             <div class="pin-dot" data-digit="4"></div>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; height: 56px;">Identity Verified</button>
+                    
+                    <div class="pin-helper">Secure 4-Digit Master Code</div>
+                    
+                    <button type="submit" class="btn-primary pin-submit-btn">
+                        <i data-lucide="shield-check"></i>
+                        Confirm Identity
+                    </button>
                 </form>
             </div>
         </div>
@@ -481,6 +553,12 @@
 
         <!-- Notification Feed -->
         <div id="toast-container" style="position: fixed; bottom: clamp(20px, 8vw, 40px); left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; pointer-events: none;"></div>
+        
+        <!-- Cloud Sync Floating Pill -->
+        <div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" title="Cloud Sync Active">
+            <i data-lucide="cloud-cog" class="sync-icon"></i>
+            <span>Syncing...</span>
+        </div>
     </div>
 
     <!-- Scripts -->

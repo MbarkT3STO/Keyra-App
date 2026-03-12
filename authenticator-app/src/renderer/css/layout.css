@@ -87,6 +87,23 @@ body {
     max-width: 1280px;
     margin: 0 auto;
     width: 100%;
+    /* Modern Scrollbar Tracking */
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+}
+
+.main-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+    opacity: 0.6;
 }
 
 .section-header {
