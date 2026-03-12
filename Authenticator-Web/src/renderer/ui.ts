@@ -49,12 +49,12 @@ export class UIManager {
     private getSettingsObject(): any {
         return {
             theme: this.currentTheme,
-            accentColor: localStorage.getItem('keyra_accent_color') || 'royal-purple',
+            accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
             wallpaperPreset: this.wallpaperPreset,
             privacyMode: this.privacyMode,
             screenGuardian: this.screenGuardian,
             autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0',
-            oledMode: localStorage.getItem('keyra_oled_mode') === 'true',
+            oledMode: localStorage.getItem(this.getStorageKey('oled_mode')) === 'true',
             vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
         };
     }
@@ -93,12 +93,12 @@ export class UIManager {
         // Apply to localStorage if requested (e.g. on initial sync from cloud)
         if (saveLocal) {
             if (settings.theme) localStorage.setItem(this.getStorageKey('theme'), settings.theme);
-            if (settings.accentColor) localStorage.setItem('keyra_accent_color', settings.accentColor);
+            if (settings.accentColor) localStorage.setItem(this.getStorageKey('accent_color'), settings.accentColor);
             if (settings.wallpaperPreset) localStorage.setItem(this.getStorageKey('wallpaperPreset'), settings.wallpaperPreset);
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
             if (settings.autolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(settings.autolock));
-            if (settings.oledMode !== undefined) localStorage.setItem('keyra_oled_mode', String(settings.oledMode));
+            if (settings.oledMode !== undefined) localStorage.setItem(this.getStorageKey('oled_mode'), String(settings.oledMode));
             if (settings.vaultPin) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
         }
         
@@ -236,9 +236,8 @@ export class UIManager {
         // Update legacy attribute for compatibility
         document.documentElement.setAttribute('data-theme', theme);
         
-        // Save to both storage systems
+        // Save to storage
         localStorage.setItem(this.getStorageKey('theme'), theme);
-        localStorage.setItem('keyra_theme', theme);
         
         // Update segmented control
         const segments = document.querySelectorAll('#theme-segmented .segment');
@@ -573,14 +572,14 @@ export class UIManager {
             root.style.setProperty('--aura-3', `hsla(${hue - 30}, 100%, 75%, 0.25)`);
             
             // Save to localStorage
-            localStorage.setItem('keyra_accent_color', accentColor);
+            localStorage.setItem(this.getStorageKey('accent_color'), accentColor);
             if (!silent) this.pushSettings();
         }
     }
 
     private initializeTheme() {
         // Check for saved theme preference
-        const savedTheme = localStorage.getItem('keyra_theme') as 'light' | 'dark' | null;
+        const savedTheme = localStorage.getItem(this.getStorageKey('theme')) as 'light' | 'dark' | null;
         
         if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
             // Use saved theme
@@ -590,16 +589,16 @@ export class UIManager {
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             const systemTheme = prefersDark ? 'dark' : 'light';
             this.setTheme(systemTheme);
-            localStorage.setItem('keyra_theme', systemTheme);
+            localStorage.setItem(this.getStorageKey('theme'), systemTheme);
         }
 
         // Listen for system theme changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
             // Only auto-switch if user hasn't manually set a preference
-            if (!localStorage.getItem('keyra_theme_manual_override')) {
+            if (!localStorage.getItem(this.getStorageKey('theme_manual_override'))) {
                 const newTheme = e.matches ? 'dark' : 'light';
                 this.setTheme(newTheme);
-                localStorage.setItem('keyra_theme', newTheme);
+                localStorage.setItem(this.getStorageKey('theme'), newTheme);
             }
         });
 
@@ -618,8 +617,8 @@ export class UIManager {
                 const theme = segment.getAttribute('data-val');
                 if (theme && (theme === 'light' || theme === 'dark')) {
                     this.setTheme(theme);
-                    localStorage.setItem('keyra_theme', theme);
-                    localStorage.setItem('keyra_theme_manual_override', 'true');
+                    localStorage.setItem(this.getStorageKey('theme'), theme);
+                    localStorage.setItem(this.getStorageKey('theme_manual_override'), 'true');
                     this.updateLastActivity(`Changed to ${theme} mode`);
                     this.showToast(`Switched to ${theme} mode`, 'success');
                 }
@@ -629,7 +628,7 @@ export class UIManager {
         // Setup OLED toggle
         if (oledToggle && oledModeRow) {
             // Load saved OLED preference
-            const savedOledMode = localStorage.getItem('keyra_oled_mode') === 'true';
+            const savedOledMode = localStorage.getItem(this.getStorageKey('oled_mode')) === 'true';
             oledToggle.checked = savedOledMode;
 
             // Show/hide OLED option based on theme
@@ -644,7 +643,7 @@ export class UIManager {
             // Handle OLED toggle changes
             oledToggle.addEventListener('change', () => {
                 const isEnabled = oledToggle.checked;
-                localStorage.setItem('keyra_oled_mode', isEnabled.toString());
+                localStorage.setItem(this.getStorageKey('oled_mode'), isEnabled.toString());
                 this.pushSettings();
                 
                 if (isEnabled) {
@@ -673,7 +672,7 @@ export class UIManager {
     }
 
     private loadAccentColor() {
-        const savedAccent = localStorage.getItem('keyra_accent_color') || 'royal-purple';
+        const savedAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
         
         // Set the accent color
         this.setAccentColor(savedAccent);
@@ -896,8 +895,8 @@ export class UIManager {
 
     private updateLastActivity(action: string) {
         const now = new Date().toISOString();
-        localStorage.setItem('keyra_last_activity', now);
-        localStorage.setItem('keyra_last_action', action);
+        localStorage.setItem(this.getStorageKey('last_activity'), now);
+        localStorage.setItem(this.getStorageKey('last_action'), action);
         
         // Update the display if settings are open
         this.updateLastActivityDisplay();
@@ -908,8 +907,8 @@ export class UIManager {
         const lastActionElement = document.getElementById('last-action-display');
         
         if (lastActivityElement) {
-            const lastActivity = localStorage.getItem('keyra_last_activity');
-            const lastAction = localStorage.getItem('keyra_last_action') || 'No activity';
+            const lastActivity = localStorage.getItem(this.getStorageKey('last_activity'));
+            const lastAction = localStorage.getItem(this.getStorageKey('last_action')) || 'No activity';
             
             if (lastActivity) {
                 const date = new Date(lastActivity);

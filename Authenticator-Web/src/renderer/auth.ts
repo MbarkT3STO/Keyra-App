@@ -34,20 +34,22 @@ export async function setupAuthUI() {
         }
     }
 
+    function switchState(toHide: HTMLElement, toShow: HTMLElement) {
+        toHide.classList.add('hidden');
+        toShow.classList.remove('hidden');
+    }
+
     // Navigation
     document.getElementById('btn-show-signup')?.addEventListener('click', () => {
-        boxLogin.classList.add('hidden');
-        boxSignup.classList.remove('hidden');
+        switchState(boxLogin, boxSignup);
     });
 
     document.getElementById('btn-show-login')?.addEventListener('click', () => {
-        boxSignup.classList.add('hidden');
-        boxLogin.classList.remove('hidden');
+        switchState(boxSignup, boxLogin);
     });
 
     document.getElementById('btn-show-login-from-verify')?.addEventListener('click', () => {
-        boxVerify.classList.add('hidden');
-        boxLogin.classList.remove('hidden');
+        switchState(boxVerify, boxLogin);
     });
 
     // Login Form
@@ -57,6 +59,7 @@ export async function setupAuthUI() {
         const pass = (document.getElementById('login-password') as HTMLInputElement).value;
         const err = document.getElementById('login-error')!;
 
+        err.classList.remove('animate-shake');
         err.style.opacity = '0';
         try {
             const result = await window.api.login(user, pass);
@@ -65,10 +68,13 @@ export async function setupAuthUI() {
             } else {
                 err.textContent = result.message;
                 err.style.opacity = '1';
+                void (err as HTMLElement).offsetWidth; // Trigger reflow
+                err.classList.add('animate-shake');
             }
         } catch (error: any) {
             err.textContent = "Vault access denied.";
             err.style.opacity = '1';
+            err.classList.add('animate-shake');
         }
     });
 
@@ -80,21 +86,24 @@ export async function setupAuthUI() {
         const pass = (document.getElementById('signup-password') as HTMLInputElement).value;
         const err = document.getElementById('signup-error')!;
 
+        err.classList.remove('animate-shake');
         err.style.opacity = '0';
         try {
             const result = await window.api.signup(user, email, pass);
             if (result.success) {
-                boxSignup.classList.add('hidden');
-                boxVerify.classList.remove('hidden');
+                switchState(boxSignup, boxVerify);
                 (document.getElementById('verify-email-field') as HTMLInputElement).value = email;
                 if (result.code) showSimulationToast(result.code);
             } else {
                 err.textContent = result.message;
                 err.style.opacity = '1';
+                void (err as HTMLElement).offsetWidth; // Trigger reflow
+                err.classList.add('animate-shake');
             }
         } catch (error: any) {
             err.textContent = "Registry expansion failed.";
             err.style.opacity = '1';
+            err.classList.add('animate-shake');
         }
     });
 
@@ -115,18 +124,24 @@ export async function setupAuthUI() {
         const code = Array.from(digitInputs).map(i => i.value).join('');
         const err = document.getElementById('verify-error')!;
         
+        err.classList.remove('animate-shake');
         try {
             const result = await window.api.verifyEmail(email, code);
             if (result.success) {
-                boxVerify.classList.add('hidden');
-                boxLogin.classList.remove('hidden');
+                switchState(boxVerify, boxLogin);
             } else {
                 err.textContent = result.message;
                 err.style.opacity = '1';
+                void (err as HTMLElement).offsetWidth; // Trigger reflow
+                err.classList.add('animate-shake');
+                // Clear inputs on error
+                digitInputs.forEach(i => i.value = '');
+                digitInputs[0].focus();
             }
         } catch (e) {
             err.textContent = "Sync error.";
             err.style.opacity = '1';
+            err.classList.add('animate-shake');
         }
     }
 

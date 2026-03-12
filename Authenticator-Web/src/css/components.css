@@ -394,19 +394,27 @@ input:checked + .slider:before {
 }
 
 .form-input {
-    width: 100%; padding: 18px 24px;
-    border-radius: var(--radius-md);
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-color);
+    width: 100%; padding: 16px 20px;
+    border-radius: var(--radius-lg);
+    background: hsla(var(--h), 20%, 50%, 0.05); /* Slightly transparent */
+    border: 1px solid var(--border-color);
     color: var(--text-primary);
-    font-size: 16px; font-weight: 650;
-    transition: all var(--transition-medium);
+    font-size: 16px; font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.form-input::placeholder {
+    color: var(--text-tertiary);
+    font-weight: 500;
+    opacity: 0.5;
+}
+
 .form-input:focus {
     background: var(--bg-primary);
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 5px var(--accent-soft);
-    transform: scale(1.01);
+    box-shadow: 0 0 0 4px var(--accent-soft), 
+                0 4px 12px hsla(var(--h), 100%, 70%, 0.1);
+    transform: translateY(-1px);
 }
 
 /* PIN Progress Dots */
@@ -714,4 +722,43 @@ input:checked + .slider:before {
 
 .cloud-sync-indicator.hidden {
     display: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   VERIFICATION DIGITS - HIGH TECH GRID
+   ───────────────────────────────────────────────────────────────────────────── */
+.verify-digit {
+    width: clamp(40px, 10vw, 56px) !important;
+    height: clamp(52px, 12vw, 68px) !important;
+    text-align: center !important;
+    font-size: 28px !important;
+    padding: 0 !important;
+    border-radius: var(--radius-md) !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-weight: 800 !important;
+    background: hsla(var(--h), 20%, 50%, 0.08) !important;
+    border: 1.5px solid var(--border-color) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.verify-digit:focus {
+    background: hsla(var(--h), 100%, 70%, 0.05) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 15px var(--accent-soft) !important;
+    transform: translateY(-4px) scale(1.05) !important;
+}
+
+.auth-modal h2 {
+    font-size: clamp(24px, 5vw, 32px);
+    font-weight: 900;
+    letter-spacing: -1.2px;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.auth-modal p {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    opacity: 0.8;
 }

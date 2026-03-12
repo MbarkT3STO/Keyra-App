@@ -141,21 +141,52 @@ body {
 .modal-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
 
 .auth-overlay {
-    background: var(--bg-primary) !important;
+    background: radial-gradient(circle at 50% 50%, var(--bg-secondary) 0%, var(--bg-primary) 100%) !important;
     z-index: 2500 !important;
-    align-items: flex-start !important; /* Allow top scrolling if content overflows */
-    padding-top: clamp(20px, 10vh, 100px);
-    padding-bottom: 40px;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    padding: 20px !important; /* Minimal padding to prevent clipping but keep breathing room */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Dynamic light ray for auth screens */
+.auth-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, transparent 40%, hsla(var(--h), 100%, 80%, 0.03) 50%, transparent 60%);
+    background-size: 300% 300%;
+    animation: auroraFlow 15s linear infinite;
+    pointer-events: none;
 }
 
 .auth-modal {
-    max-width: 480px !important;
-    padding: clamp(24px, 10vw, 60px) !important;
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    transform: none !important;
-    overflow: visible !important;
+    width: 100% !important;
+    max-width: 460px !important;
+    padding: clamp(32px, 8vw, 64px) !important;
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(40px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--radius-2xl) !important;
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.4), 
+                inset 0 0 0 1px hsla(0, 0%, 100%, 0.05) !important;
+    margin: auto !important; /* True auto centering within the flex parent */
+    max-height: none !important;
+    animation: authEntry 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    position: relative !important;
+}
+
+@keyframes authEntry {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes auroraFlow {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
 }
 
 .modal {
@@ -288,21 +319,32 @@ body {
     .modal-overlay.show .modal { transform: translateY(0); }
 
     /* Auth Specific Responsibility */
-    #auth-vessel .modal {
-        padding: 40px 24px !important;
-        height: auto;
-        min-height: 100%;
-        max-height: none;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
     .auth-overlay {
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
+        align-items: flex-end !important;
+        padding: 0 !important;
+        overflow-y: auto !important;
     }
-    #auth-vessel h1 { font-size: 38px !important; }
-    #auth-vessel .form-input { padding: 14px 18px !important; font-size: 15px !important; }
+
+    .auth-modal {
+        max-width: 100% !important;
+        margin-top: auto !important;
+        margin-bottom: 0 !important;
+        border-radius: 32px 32px 0 0 !important;
+        padding: 40px 24px clamp(40px, 8vh, 80px) !important; /* Dynamic bottom padding for mobile browsers */
+        min-height: auto !important;
+        max-height: 98vh !important; /* Allow almost full screen if needed */
+        overflow-y: auto !important;
+        transform: translateY(100%);
+        animation: authMobileEntry 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
+        border-bottom: none !important;
+    }
+
+    @keyframes authMobileEntry {
+        to { transform: translateY(0); }
+    }
+
+    #auth-vessel h1 { font-size: 38px !important; letter-spacing: -2px !important; }
+    .auth-modal .form-input { padding: 16px 20px !important; font-size: 16px !important; }
 }
 
 /* ULTRA NARROW - Full Consolidation Pinning */
