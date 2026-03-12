@@ -518,19 +518,31 @@ export class UIManager {
     private renderAccounts() {
         const grid = document.getElementById('accounts-grid');
         const emptyState = document.getElementById('empty-state');
-        if (!grid || !emptyState) return;
+        const searchEmptyState = document.getElementById('search-empty-state');
+        if (!grid || !emptyState || !searchEmptyState) return;
 
         const filtered = this.accounts.filter(acc =>
             acc.issuer.toLowerCase().includes(this.searchQuery) ||
             acc.account.toLowerCase().includes(this.searchQuery)
         );
 
+        // State 1: Completely Empty Vault
         if (this.accounts.length === 0) {
             grid.classList.add('hidden');
             emptyState.classList.remove('hidden');
-        } else {
+            searchEmptyState.classList.add('hidden');
+        } 
+        // State 2: No Results Found for Search
+        else if (filtered.length === 0) {
+            grid.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            searchEmptyState.classList.remove('hidden');
+        }
+        // State 3: Active Results
+        else {
             grid.classList.remove('hidden');
             emptyState.classList.add('hidden');
+            searchEmptyState.classList.add('hidden');
             grid.innerHTML = '';
             filtered.forEach((acc, index) => grid.appendChild(this.createAccountCard(acc, index)));
         }

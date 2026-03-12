@@ -239,7 +239,7 @@
                     <!-- Cards dynamically inserted by JS -->
                 </div>
                 
-                <!-- Empty State -->
+                <!-- Empty State (No Accounts) -->
                 <div id="empty-state" class="hidden">
                     <div class="empty-state-vessel">
                         <i data-lucide="fingerprint" style="width: 100px; height: 100px; opacity: 0.8;"></i>
@@ -249,6 +249,15 @@
                             <i data-lucide="plus" style="width: 24px; height: 24px;"></i>
                             <span>Add Token</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- Search Empty State (No Results) -->
+                <div id="search-empty-state" class="hidden">
+                    <div class="empty-state-vessel">
+                        <i data-lucide="search-x" style="width: 80px; height: 80px; opacity: 0.6;"></i>
+                        <h2>Identity Not Found</h2>
+                        <p>We couldn't find a match for your search. Try refining your keywords.</p>
                     </div>
                 </div>
             </section>

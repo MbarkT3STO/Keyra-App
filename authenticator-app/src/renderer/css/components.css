@@ -915,19 +915,83 @@ input:checked+.slider:before {
     }
 }
 
-@media (max-width: 540px) {
-    .search-vessel {
-        flex: 1;
-        min-width: 0;
+/* ─────────────────────────────────────────────────────────────────────────────
+   EMPTY STATES SYSTEM
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.empty-state-vessel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: clamp(60px, 12vh, 100px) var(--space-md);
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    animation: slideUpFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.empty-state-vessel i {
+    margin-bottom: var(--space-lg);
+    color: var(--accent-primary);
+    filter: drop-shadow(0 0 20px var(--aura-1));
+    transition: all 0.5s ease;
+}
+
+.empty-state-vessel h2 {
+    margin-bottom: var(--space-sm);
+    font-size: clamp(24px, 5vw, 32px);
+    font-weight: 950;
+    letter-spacing: -1.2px;
+    color: var(--text-primary);
+}
+
+.empty-state-vessel p {
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    font-size: clamp(14px, 1.8vw, 16px);
+    line-height: 1.6;
+    font-weight: 500;
+    max-width: 400px;
+}
+
+/* Search Specific Empty State Adjustments */
+#search-empty-state .empty-state-vessel {
+    padding: clamp(40px, 8vh, 60px) var(--space-md);
+    opacity: 0.9;
+}
+
+#search-empty-state i {
+    color: var(--text-tertiary);
+    filter: none;
+    opacity: 0.5;
+    margin-bottom: var(--space-md);
+}
+
+#search-empty-state h2 {
+    font-size: 24px;
+    letter-spacing: -0.5px;
+    opacity: 0.9;
+}
+
+#search-empty-state p {
+    font-size: 14px;
+    margin-bottom: 0;
+    opacity: 0.8;
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
-    .search-input {
-        height: 42px;
-        padding-left: 44px;
-    }
-    .search-icon {
-        left: 14px;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PREMIUM GLASS TOGGLE SWITCH
