@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer } from 'electron';
 import * as path from 'path';
 import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates } from '../core/auth';
 import { generateTOTP, getRemainingSeconds } from '../core/totp';
@@ -182,6 +182,54 @@ ipcMain.handle('perform-vault-import', async (event, salt, encryptedVaultData, p
 ipcMain.handle('set-content-protection', (event, enabled) => {
     mainWindow?.setContentProtection(enabled);
     return true;
+});
+
+ipcMain.handle('get-desktop-sources', async () => {
+    return await desktopCapturer.getSources({ types: ['window', 'screen'] });
+});
+
+let captureWindow: BrowserWindow | null = null;
+
+ipcMain.on('open-capture-window', () => {
+    if (captureWindow) return;
+
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width, height } = primaryDisplay.bounds;
+
+    captureWindow = new BrowserWindow({
+        width,
+        height,
+        x: 0,
+        y: 0,
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        fullscreen: process.platform !== 'darwin',
+        enableLargerThanScreen: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: false,
+            contextIsolation: true
+        }
+    });
+
+    captureWindow.loadFile(path.join(__dirname, '../renderer/renderer/capture.html'));
+    
+    captureWindow.on('closed', () => {
+        captureWindow = null;
+    });
+});
+
+ipcMain.on('capture-result', (event, data) => {
+    mainWindow?.webContents.send('capture-result', data);
+    if (captureWindow) {
+        captureWindow.close();
+    }
+});
+
+ipcMain.on('close-capture-window', () => {
+    captureWindow?.close();
 });
 
 // Basic window controls for custom titlebar

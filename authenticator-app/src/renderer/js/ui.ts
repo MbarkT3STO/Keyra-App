@@ -28,6 +28,13 @@ export class UIManager {
         this.loadInitialData();
         this.initFromCloud();
         this.startLiveSync();
+        this.initCaptureResults();
+    }
+
+    private initCaptureResults() {
+        (window as any).api.onCaptureResult(async (data: string) => {
+            await this.handleScannedData(data);
+        });
     }
 
     private getStorageKey(key: string): string {
@@ -652,6 +659,32 @@ export class UIManager {
         return card;
     }
 
+    private async handleScannedData(data: string) {
+        try {
+            if (!data.startsWith('otpauth://totp/')) {
+                this.showToast("Invalid QR Format", "error");
+                return;
+            }
+
+            const parsed = await (window as any).api.parseURI(data);
+            await (window as any).api.generateTOTP(parsed.secret);
+
+            await (window as any).api.saveAccount({
+                id: Date.now().toString(),
+                issuer: parsed.issuer,
+                account: parsed.account,
+                secret: parsed.secret
+            });
+
+            await this.refreshAccounts();
+            this.showToast(`Added ${parsed.issuer} account!`, "success");
+            this.updateLastActivity('Added token via Scan');
+        } catch (err) {
+            console.error("Invalid QR Format", err);
+            this.showToast("Invalid QR Format", "error");
+        }
+    }
+
     private async updateCardOTP(card: HTMLElement, secret: string) {
         const codeElement = card.querySelector('.otp-code');
         if (!codeElement) return;
@@ -876,11 +909,24 @@ export class UIManager {
                         <i data-lucide="shield-plus"></i>
                         Save Token
                     </button>
+                    <button class="user-button" id="btn-scan-screen-trigger" style="justify-content: center; white-space: nowrap;">
+                        <i data-lucide="monitor"></i>
+                        Scan
+                    </button>
                     <button class="user-button" id="cancel-add-btn" style="justify-content: center;">Cancel</button>
                 </div>
             </div>
         `;
         this.showModal(content);
+        
+        document.getElementById('btn-scan-screen-trigger')?.addEventListener('click', () => {
+            this.hideModal();
+            (window as any).api.openCaptureWindow();
+        });
+
+        // Listen for capture results (globally once or every time? Better in constructor or persistent)
+        // I'll add handleScannedData to UIManager for reuse
+
         document.getElementById('save-new-account')?.addEventListener('click', async () => {
             const issuer = (document.getElementById('new-issuer') as HTMLInputElement).value;
             const account = (document.getElementById('new-account') as HTMLInputElement).value;

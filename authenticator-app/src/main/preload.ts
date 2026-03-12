@@ -23,6 +23,13 @@ contextBridge.exposeInMainWorld('api', {
     importVault: () => ipcRenderer.invoke('import-vault'),
     performVaultImport: (salt: string, encryptedVaultData: string, pass: string) => ipcRenderer.invoke('perform-vault-import', salt, encryptedVaultData, pass),
     setContentProtection: (enabled: boolean) => ipcRenderer.invoke('set-content-protection', enabled),
+    getDesktopSources: () => ipcRenderer.invoke('get-desktop-sources'),
+    openCaptureWindow: () => ipcRenderer.send('open-capture-window'),
+    closeCaptureWindow: () => ipcRenderer.send('close-capture-window'),
+    sendCaptureResult: (data: string) => ipcRenderer.send('capture-result', data),
+    onCaptureResult: (callback: (data: string) => void) => {
+        ipcRenderer.on('capture-result', (_event, data) => callback(data));
+    },
 
     // Custom window controls
     minimize: () => ipcRenderer.send('window-minimize'),

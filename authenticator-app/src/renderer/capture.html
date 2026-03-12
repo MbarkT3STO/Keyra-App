@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Overlay</title>
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        body {
+            background: transparent !important;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        .screen-capture-overlay {
+            display: flex !important; /* Always show in this window */
+        }
+    </style>
+</head>
+<body>
+    <div id="screen-capture-overlay" class="screen-capture-overlay">
+        <div class="capture-hint">Drag a box over the QR code (Esc to Cancel)</div>
+        <div id="selection-box" class="selection-box"></div>
+    </div>
+
+    <!-- jsQR dependency -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script type="module" src="js/capture-renderer.js"></script>
+</body>
+</html>

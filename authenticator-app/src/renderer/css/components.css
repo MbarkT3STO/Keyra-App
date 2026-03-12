@@ -2074,6 +2074,51 @@ body.light-theme .setting-row:hover {
     visibility: hidden;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCREEN CAPTURE OVERLAY
+   ───────────────────────────────────────────────────────────────────────────── */
+.screen-capture-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 5000;
+    cursor: crosshair;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.screen-capture-overlay.hidden {
+    display: none;
+}
+
+.capture-hint {
+    position: absolute;
+    top: 40px;
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    padding: 12px 24px;
+    border-radius: var(--radius-full);
+    font-weight: 800;
+    font-size: 14px;
+    box-shadow: var(--shadow-hard);
+    border: 1.5px solid var(--accent-primary);
+    pointer-events: none;
+}
+
+.selection-box {
+    position: absolute;
+    border: 3px solid var(--accent-primary);
+    background: hsla(var(--h), 100%, 68%, 0.1);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    border-radius: 4px;
+}
+
 .cloud-sync-indicator.sync-pulse {
     animation: islandEntry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
         syncPulseAnim 1s ease-in-out infinite;
