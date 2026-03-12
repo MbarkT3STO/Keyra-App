@@ -70,6 +70,7 @@
     --radius-md: 16px;  /* Buttons / Standard Inputs */
     --radius-lg: 24px;  /* Cards / Standard Modals */
     --radius-xl: 32px;  /* Large Containers */
+    --radius-auth: clamp(28px, 6vw, 44px); /* Premium Responsive Radius */
     --radius-full: 999px; /* Capsule Shapes */
     
     --transition-fast: 0.25s cubic-bezier(0.4, 0, 0.2, 1);

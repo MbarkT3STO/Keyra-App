@@ -25,6 +25,7 @@ export class UIManager {
     }
 
     public userId: string;
+    private oledMode: boolean = false;
 
     constructor(userId: string = 'default') {
         this.userId = userId;
@@ -84,22 +85,29 @@ export class UIManager {
             this.updateSegmentedUI('autolock-segmented', String(settings.autolock));
         }
 
-        const oledToggle = document.getElementById('oled-mode-toggle') as HTMLInputElement;
-        if (oledToggle && settings.oledMode !== undefined) {
-            oledToggle.checked = settings.oledMode;
-            document.body.classList.toggle('oled-optimized', settings.oledMode);
+        if (settings.oledMode !== undefined) {
+            this.oledMode = !!settings.oledMode;
+            const oledToggle = document.getElementById('oled-mode-toggle') as HTMLInputElement;
+            if (oledToggle) oledToggle.checked = this.oledMode;
+            document.body.classList.toggle('oled-optimized', this.oledMode);
         }
 
         // Apply to localStorage if requested (e.g. on initial sync from cloud)
-        if (saveLocal) {
+        if (saveLocal || settings.vaultPin !== undefined || settings.privacyMode !== undefined) {
             if (settings.theme) localStorage.setItem(this.getStorageKey('theme'), settings.theme);
             if (settings.accentColor) localStorage.setItem(this.getStorageKey('accent_color'), settings.accentColor);
             if (settings.wallpaperPreset) localStorage.setItem(this.getStorageKey('wallpaperPreset'), settings.wallpaperPreset);
+            
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
+            
             if (settings.autolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(settings.autolock));
-            if (settings.oledMode !== undefined) localStorage.setItem(this.getStorageKey('oled_mode'), String(settings.oledMode));
-            if (settings.vaultPin) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
+            if (settings.oledMode !== undefined) localStorage.setItem(this.getStorageKey('oled_mode'), String(this.oledMode));
+            
+            // Critical: Ensure the PIN is persisted to local storage
+            if (settings.vaultPin) {
+                localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
+            }
         }
         
         this.updateLockVaultVisibility();
@@ -223,7 +231,7 @@ export class UIManager {
 
     private initTheme() {
         const savedTheme = localStorage.getItem(this.getStorageKey('theme')) as 'light' | 'dark' || 'light';
-        this.setTheme(savedTheme);
+        this.setTheme(savedTheme, true); // Silent init to avoid push-default overwrite
     }
 
     public setTheme(theme: 'light' | 'dark', silent: boolean = false) {
@@ -703,7 +711,7 @@ export class UIManager {
         const savedAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
         
         // Set the accent color
-        this.setAccentColor(savedAccent);
+        this.setAccentColor(savedAccent, true); // Silent init to avoid push-default overwrite
         
         // Update active state in UI
         const accentOptions = document.querySelectorAll('.accent-color-option');
