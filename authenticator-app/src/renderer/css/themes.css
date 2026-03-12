@@ -162,6 +162,25 @@ input {
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
+/* Scientific Selection System */
+::selection {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* Global Tactile Feedback */
+button:active {
+    transform: scale(0.965);
+}
+
+.nav-tab:active {
+    transform: scale(0.94);
+}
+
+.user-button:active {
+    transform: scale(0.96);
+}
+
 /* Premium Global Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }

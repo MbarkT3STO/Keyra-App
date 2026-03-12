@@ -24,13 +24,14 @@
 }
 
 .brand-text {
-    font-weight: 900;
-    font-size: clamp(22px, 3vw, 28px);
-    letter-spacing: -2px;
+    font-weight: 950;
+    font-size: clamp(23px, 3.2vw, 29px);
+    letter-spacing: -2.5px;
     background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 /* Connectivity Indicator - Cute & Modern */
@@ -170,24 +171,25 @@ i[data-lucide] {
 
 .dropdown-menu {
     position: absolute;
-    top: calc(100% + 10px);
+    top: calc(100% + 12px);
     right: 0;
-    min-width: 230px;
+    min-width: 240px;
     background: var(--glass-bg);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    backdrop-filter: blur(64px) saturate(210%);
+    -webkit-backdrop-filter: blur(64px) saturate(210%);
     border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg); /* Softer corners for premium feel */
     box-shadow:
         var(--shadow-hard),
+        0 0 0 1px hsla(0, 0%, 100%, 0.1) inset, /* Edge glow */
         0 0 0 1px hsla(var(--h), 100%, 80%, 0.04) inset;
-    padding: 8px;
+    padding: 10px;
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(8px) scale(0.96);
+    transform: translateY(12px) scale(0.95);
     transform-origin: top right;
-    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), visibility 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.2s ease;
 }
 
 .dropdown-menu.show {
@@ -831,10 +833,34 @@ input:checked+.slider {
     border-color: var(--accent-primary);
 }
 
-input:checked+.slider:before {
-    left: calc(100% - var(--t-size) - (var(--sw-h) * 0.16));
-    background-color: var(--accent-primary);
-    box-shadow: 0 4px 12px hsla(var(--h), var(--s), 68%, 0.4);
+/* Glass Shine Effect for Cards */
+.account-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent,
+        hsla(0, 0%, 100%, 0.08),
+        transparent
+    );
+    transform: skewX(-25deg);
+    transition: none;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.account-card:hover::before {
+    left: 150%;
+    transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.account-card:active {
+    transform: scale(0.975);
+    opacity: 0.9;
 }
 
 .search-vessel {
