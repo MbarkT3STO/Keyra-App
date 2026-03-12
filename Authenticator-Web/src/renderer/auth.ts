@@ -16,9 +16,23 @@ export async function setupAuthUI() {
     try {
         const auto = await window.api.checkSession();
         if (auto.success) {
-            completeLogin(true);
+            await completeLogin(true);
+        } else {
+            // No session, show login box and hide splash
+            hideSplashScreen();
         }
-    } catch (e) { console.error("Session resume failed", e); }
+    } catch (e) { 
+        console.error("Session resume failed", e);
+        hideSplashScreen();
+    }
+    
+    function hideSplashScreen() {
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+            splash.classList.add('fade-out');
+            setTimeout(() => splash.style.display = 'none', 1000);
+        }
+    }
 
     async function completeLogin(resumed: boolean = false) {
         if (vessel) {
@@ -30,7 +44,12 @@ export async function setupAuthUI() {
 
         // Let UIManager handle initial data loading
         if ((window as any).ui) {
-            (window as any).ui.refreshAccounts();
+            await (window as any).ui.refreshAccounts();
+        }
+
+        // Final fade out if coming from session resume
+        if (resumed) {
+            hideSplashScreen();
         }
     }
 

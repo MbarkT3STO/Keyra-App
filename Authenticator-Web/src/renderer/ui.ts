@@ -467,12 +467,11 @@ export class UIManager {
             const numericValue = value.replace(/[^0-9]/g, '');
             if (value !== numericValue) {
                 (e.target as HTMLInputElement).value = numericValue;
-                return;
+                // Don't return here, we want to update dots even if cleaned
             }
             
-            if (numericValue.length === 4) {
-                this.validateAndAutoUnlock(numericValue);
-            }
+            // Call validation/update logic for EVERY change (it has its own 4-char guard for success/error)
+            this.validateAndAutoUnlock(numericValue);
         });
 
         // Add keyboard support for PIN input
@@ -1155,7 +1154,7 @@ export class UIManager {
     private validateAndAutoUnlock(pinValue: string) {
         const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
         const saved = localStorage.getItem(this.getStorageKey('vault_pin'));
-        const progressDots = document.querySelectorAll('.pin-dot');
+        const progressDots = document.querySelectorAll('.pin-vessel .pin-dot');
         
         // Update progress dots based on input length
         progressDots.forEach((dot, index) => {
@@ -1165,60 +1164,40 @@ export class UIManager {
             }
         });
         
-        // Add visual feedback for validation
         if (pinValue.length === 4) {
-            pinIn.style.borderColor = 'var(--accent-primary)';
-            pinIn.style.boxShadow = '0 0 0 3px rgba(199, 125, 255, 0.1)';
-            
             if (pinValue === saved) {
                 // Success feedback
-                pinIn.style.borderColor = '#28a745';
-                pinIn.style.boxShadow = '0 0 0 3px rgba(40, 167, 69, 0.2)';
-                
-                // Animate progress dots to success state
                 progressDots.forEach((dot, index) => {
                     setTimeout(() => {
                         dot.classList.remove('filled');
                         dot.classList.add('success');
-                    }, index * 100);
+                    }, index * 80);
                 });
                 
-                // Auto-unlock after brief delay for visual feedback
                 setTimeout(() => {
                     document.getElementById('lock-vessel')?.classList.remove('show');
-                    pinIn.style.borderColor = '';
-                    pinIn.style.boxShadow = '';
                     pinIn.value = '';
-                    // Reset progress dots
-                    progressDots.forEach(dot => {
-                        dot.classList.remove('filled', 'error', 'success');
-                    });
-                }, 600);
+                    progressDots.forEach(dot => dot.classList.remove('filled', 'error', 'success'));
+                }, 800);
                 
-                this.showToast("Vault unlocked successfully", "success");
+                this.showToast("Identity Verified", "success");
             } else {
                 // Error feedback
-                pinIn.style.borderColor = '#ff3b30';
-                pinIn.style.boxShadow = '0 0 0 3px rgba(255, 59, 48, 0.2)';
-                
-                // Animate progress dots to error state
+                const vessel = document.querySelector('.pin-vessel');
+                vessel?.classList.add('animate-shake');
                 progressDots.forEach(dot => {
                     dot.classList.remove('filled');
                     dot.classList.add('error');
                 });
                 
                 setTimeout(() => {
-                    pinIn.style.borderColor = '';
-                    pinIn.style.boxShadow = '';
+                    vessel?.classList.remove('animate-shake');
                     pinIn.value = '';
                     pinIn.focus();
-                    // Reset progress dots
-                    progressDots.forEach(dot => {
-                        dot.classList.remove('filled', 'error', 'success');
-                    });
+                    progressDots.forEach(dot => dot.classList.remove('filled', 'error', 'success'));
                 }, 1000);
                 
-                this.showToast("Invalid PIN", "error");
+                this.showToast("Verification Failed", "error");
             }
         }
     }
@@ -1242,36 +1221,58 @@ export class UIManager {
 
     private showPinSetup() {
         const content = `
-            <div style="padding: clamp(24px, 5vw, 40px);">
-                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary);">
-                        <i data-lucide="key-round" style="color: var(--accent-primary);"></i>
+            <div style="padding: clamp(32px, 8vw, 48px);">
+                <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 32px;">
+                    <div class="pin-lock-icon" style="width: 68px; height: 68px; flex-shrink: 0;">
+                        <i data-lucide="shield-ellipsis" style="width: 28px; height: 28px;"></i>
                     </div>
                     <div>
-                        <h2 style="font-weight: 850; font-size: 24px; color: var(--text-primary);">Vault Security</h2>
-                        <div class="modal-help-text">Set a 4-digit master access PIN</div>
+                        <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 32px); color: var(--text-primary); letter-spacing: -1.5px; opacity: 0; animation: splashContentUp 0.6s 0.1s forwards;">Core Security</h2>
+                        <div class="modal-help-text" style="font-weight: 700; color: var(--accent-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; opacity: 0; animation: splashContentUp 0.6s 0.2s forwards;">Establish 4-Digit Master Code</div>
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">Access PIN</label>
-                    <input type="password" id="new-pin" maxlength="4" class="form-input" style="text-align: center; font-size: 32px; letter-spacing: 16px; height: 80px;" placeholder="••••">
-                    <div class="modal-help-text">Must be exactly 4 numeric digits</div>
+                <div class="form-group" style="opacity: 0; animation: splashContentUp 0.6s 0.3s forwards;">
+                    <label class="form-label" style="text-align: center; display: block; margin-bottom: 16px;">Set Access PIN</label>
+                    <div class="pin-input-vessel">
+                        <input type="password" id="new-pin" maxlength="4" class="pin-field" style="height: 80px; font-size: 36px;" autocomplete="off">
+                        <div class="pin-indicators">
+                            <div class="pin-dot-setup" data-setup-digit="1"></div>
+                            <div class="pin-dot-setup" data-setup-digit="2"></div>
+                            <div class="pin-dot-setup" data-setup-digit="3"></div>
+                            <div class="pin-dot-setup" data-setup-digit="4"></div>
+                        </div>
+                    </div>
+                    <div class="modal-help-text" style="text-align: center; margin-top: 12px; font-weight: 600;">Used for immediate vault recovery</div>
                 </div>
                 
-                <div style="display: flex; gap: 16px; margin-top: 40px;">
-                    <button class="btn-primary" id="save-pin" style="flex: 2; height: var(--btn-h-lg);">Lock Vault</button>
-                    <button class="user-button" id="cancel-pin-btn" style="flex: 1; justify-content: center; height: var(--btn-h-lg);">Discard</button>
+                <div style="display: flex; gap: 16px; margin-top: 48px; opacity: 0; animation: splashContentUp 0.6s 0.4s forwards;">
+                    <button class="btn-primary" id="save-pin" style="flex: 2; height: 60px; font-size: 16px; font-weight: 800; border-radius: var(--radius-lg);">Activate Security</button>
+                    <button class="user-button" id="cancel-pin-btn" style="flex: 1; justify-content: center; height: 60px; font-weight: 800;">Discard</button>
                 </div>
             </div>
         `;
         this.showModal(content);
+        
+        const pinField = document.getElementById('new-pin') as HTMLInputElement;
+        const setupDots = document.querySelectorAll('.pin-dot-setup');
+        
+        pinField?.addEventListener('input', (e) => {
+            const val = (e.target as HTMLInputElement).value;
+            const numeric = val.replace(/[^0-9]/g, '');
+            if (val !== numeric) (e.target as HTMLInputElement).value = numeric;
+            
+            setupDots.forEach((dot, idx) => {
+                dot.classList.toggle('filled', idx < numeric.length);
+            });
+        });
+
         document.getElementById('save-pin')?.addEventListener('click', () => {
-            const pin = (document.getElementById('new-pin') as HTMLInputElement).value;
+            const pin = pinField.value;
             if (pin.length === 4) {
                 localStorage.setItem(this.getStorageKey('vault_pin'), pin);
                 this.pushSettings();
-                this.updateLockVaultVisibility(); // Update visibility immediately
+                this.updateLockVaultVisibility();
                 this.showToast("PIN established successfully", "success");
                 this.hideModal();
             } else {

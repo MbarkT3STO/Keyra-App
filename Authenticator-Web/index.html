@@ -18,6 +18,25 @@
     <link rel="stylesheet" href="/src/css/animations.css">
 </head>
 <body>
+    <!-- Premium Splash Screen Overlay -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <i data-lucide="shield-check"></i>
+                <div class="splash-ring"></div>
+            </div>
+            <div class="splash-text">
+                <h1 class="splash-title">Keyra</h1>
+                <div class="splash-status">
+                    <span id="splash-status-text">Synchronizing Secure Identity</span>
+                    <div class="splash-progress-bar">
+                        <div class="splash-progress-inner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Reduced blobs for performance -->
     <div class="aura-background">
         <div class="aura-blob aura-1"></div>
@@ -460,25 +479,38 @@
             </div>
         </div>
 
-        <!-- Lock Screen PIN (Hardcoded for Static Overrides) -->
-        <div id="lock-vessel" class="modal-overlay" style="background: var(--bg-primary); z-index: 1500;">
-            <div class="modal animate-fade-in" style="max-width: 400px; padding: clamp(32px, 8vw, 64px); border: none; box-shadow: none; text-align: center; background: transparent;">
-                <div class="brand-icon" style="margin-bottom: 32px;">
-                    <i data-lucide="lock" style="width: 64px; height: 64px;"></i>
+        <!-- Lock Screen PIN (Premium Glassmorphic Redesign) -->
+        <div id="lock-vessel" class="modal-overlay pin-overlay">
+            <div class="pin-vessel animate-fade-in">
+                <div class="pin-brand">
+                    <div class="pin-lock-icon">
+                        <i data-lucide="lock"></i>
+                        <div class="lock-glow"></div>
+                    </div>
                 </div>
-                <h2 style="margin-bottom: 12px; font-weight: 850; font-size: 26px; color: var(--text-primary);">Vault Locked</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 40px; font-size: 15px; font-weight: 500;">Enter your security PIN to resume</p>
+                
+                <div class="pin-header">
+                    <h2 class="pin-title">Vault Locked</h2>
+                    <p class="pin-subtitle">Identity verification required to resume session</p>
+                </div>
+
                 <form id="form-unlock">
-                    <div class="form-group" style="position: relative;">
-                        <input type="password" id="unlock-pin" maxlength="4" placeholder="••••" class="form-input" style="text-align: center; font-size: 36px; height: 80px; letter-spacing: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-                        <div id="pin-progress" style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; margin-top: 12px;">
+                    <div class="pin-input-vessel">
+                        <input type="password" id="unlock-pin" maxlength="4" class="pin-field" autocomplete="off">
+                        <div class="pin-indicators">
                             <div class="pin-dot" data-digit="1"></div>
                             <div class="pin-dot" data-digit="2"></div>
                             <div class="pin-dot" data-digit="3"></div>
                             <div class="pin-dot" data-digit="4"></div>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; height: 56px;">Identity Verified</button>
+                    
+                    <div class="pin-helper">Secure 4-Digit Master Code</div>
+                    
+                    <button type="submit" class="btn-primary pin-submit-btn">
+                        <i data-lucide="shield-check"></i>
+                        Confirm Identity
+                    </button>
                 </form>
             </div>
         </div>
