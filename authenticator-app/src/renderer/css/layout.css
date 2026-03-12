@@ -30,15 +30,32 @@ body {
     background-color: var(--bg-primary);
     z-index: -1;
     overflow: hidden;
-    filter: blur(100px);
+    filter: blur(140px); /* Increased blur for smoother blending */
+    transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tactile Noise Overlay */
+.aura-background::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: url(#noiseFilter);
+    opacity: 0.04; /* Very subtle micro-grain */
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    z-index: 1;
 }
 
 .aura-blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.6;
-    animation: blobFloat 25s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+    filter: blur(100px);
+    opacity: 0.5;
+    animation: blobFloat 30s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity; /* Hardware acceleration */
 }
 
 .aura-1 {

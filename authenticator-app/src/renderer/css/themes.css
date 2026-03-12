@@ -179,69 +179,81 @@ input {
 }
 
 /* ── Premium Dark Mode — Rich Deep Navy Glassmorphic ── */
+/* ── Premium Dark Mode — Scientific Deep Chroma & Aurora Mesh ── */
 body.dark-theme {
-    /* Background hue vars — set by JS per wallpaper preset */
+    /* Scientific Root Chroma Variables */
+    --h: 258;
     --bg-hue-a: 258;
     --bg-hue-b: 288;
 
-    /* Deep Navy backgrounds */
-    --bg-primary: hsl(var(--h, 258), 28%, 5%);
-    --bg-secondary: hsl(var(--h, 258), 24%, 8%);
-    --bg-tertiary: hsl(var(--h, 258), 20%, 12%);
+    /* Chroma-aware Deep Navy Surfaces */
+    --bg-primary: hsl(var(--h), 45%, 2.5%); /* Deeper floor for better contrast */
+    --bg-secondary: hsl(var(--h), 35%, 5%);
+    --bg-tertiary: hsl(var(--h), 25%, 8%);
 
-    /* High contrast text */
-    --text-primary: hsl(0, 0%, 96%);
-    --text-secondary: hsl(var(--h, 258), 15%, 68%);
-    --text-tertiary: hsl(var(--h, 258), 10%, 45%);
+    /* High contrast text with subtle chroma bias */
+    --text-primary: hsl(var(--h), 10%, 98%);
+    --text-secondary: hsl(var(--h), 15%, 75%);
+    --text-tertiary: hsl(var(--h), 10%, 52%);
 
-    /* Vibrant accent for dark surfaces */
-    --accent-primary: hsl(var(--dynamic-accent-hue, 258), 100%, 72%);
-    --accent-secondary: hsl(calc(var(--dynamic-accent-hue, 258) + 20), 100%, 78%);
-    --accent-hover: hsl(var(--dynamic-accent-hue, 258), 100%, 66%);
-    --accent-soft: hsla(var(--dynamic-accent-hue, 258), 100%, 72%, 0.14);
+    /* Hyper-Vibrant Accents for Dark UI */
+    --accent-primary: hsl(var(--dynamic-accent-hue, 258), 100%, 75%);
+    --accent-secondary: hsl(calc(var(--dynamic-accent-hue, 258) + 20), 100%, 80%);
+    --accent-hover: hsl(var(--dynamic-accent-hue, 258), 100%, 68%);
+    --accent-soft: hsla(var(--dynamic-accent-hue, 258), 100%, 75%, 0.16);
 
-    /* Borders */
-    --border-color: hsla(0, 0%, 100%, 0.07);
-    --glass-border: hsla(0, 0%, 100%, 0.10);
+    /* Precise Borders & Glass */
+    --border-color: hsla(var(--h), 100%, 90%, 0.08);
+    --glass-border: hsla(0, 0%, 100%, 0.12);
+    --glass-bg: hsla(var(--h), 45%, 4%, 0.85);
 
-    /* Glassmorphic panels */
-    --glass-bg: hsla(var(--h, 258), 28%, 8%, 0.80);
+    /* Aura Logic: Refined for Deep Space */
+    --aura-1: hsla(var(--dynamic-accent-hue, 258), 100%, 70%, 0.25);
+    --aura-2: hsla(calc(var(--dynamic-accent-hue, 258) + 30), 100%, 80%, 0.15);
+    --aura-3: hsla(calc(var(--dynamic-accent-hue, 258) - 30), 100%, 80%, 0.12);
 
-    /* Aura blobs — dialled in for deeper background */
-    --aura-1: hsla(var(--dynamic-accent-hue, 258), 100%, 68%, 0.30);
-    --aura-2: hsla(calc(var(--dynamic-accent-hue, 258) + 30), 100%, 75%, 0.18);
-    --aura-3: hsla(calc(var(--dynamic-accent-hue, 258) - 30), 100%, 75%, 0.14);
+    /* Deep Hard Shadows */
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-medium: 0 16px 64px rgba(0, 0, 0, 0.7);
+    --shadow-hard: 0 32px 128px rgba(0, 0, 0, 0.9);
 
-    /* Deep shadows */
-    --shadow-soft:   0 4px 24px rgba(0, 0, 0, 0.4);
-    --shadow-medium: 0 16px 48px rgba(0, 0, 0, 0.6);
-    --shadow-hard:   0 32px 80px rgba(0, 0, 0, 0.8);
-
-    /*
-     * Reactive Multi-Radial Mesh Background
-     * --bg-hue-a/b updated by applyWallpaper() per preset.
-     * Glow lightness set high enough (22-25%) to be clearly visible
-     * against the deep 3% base floor.
+    /* 
+     * ADVANCED 4-LAYER RADIAL MESH SYSTEM
+     * 1. Core floor (Base)
+     * 2. Top-Edge Bloom (Light Leak)
+     * 3. Accent-A Nebula (Primary Glow)
+     * 4. Accent-B Core (Secondary Depth)
+     * 5. Corner Vignette (Focus Control)
      */
-    background:
+    background: 
+        /* Top-Edge Boundary Bloom */
         radial-gradient(
-            ellipse 90% 55% at 50% -5%,
-            hsla(var(--bg-hue-a, 258), 60%, 22%, 0.85) 0%,
-            transparent 65%
+            ellipse 120% 50% at 50% -10%,
+            hsla(var(--dynamic-accent-hue, 258), 80%, 30%, 0.22) 0%,
+            transparent 70%
         ),
+        /* Primary Mesh (Top Left) */
         radial-gradient(
-            ellipse 55% 40% at 95% 100%,
-            hsla(var(--bg-hue-b, 288), 55%, 18%, 0.65) 0%,
-            transparent 60%
+            circle 60vw at -10% -10%,
+            hsla(var(--bg-hue-a, 258), 65%, 12%, 0.8) 0%,
+            transparent 100%
         ),
+        /* Secondary Mesh (Bottom Right) */
         radial-gradient(
-            ellipse 42% 32% at 3% 85%,
-            hsla(var(--bg-hue-a, 258), 50%, 14%, 0.45) 0%,
-            transparent 58%
+            circle 50vw at 110% 110%,
+            hsla(var(--bg-hue-b, 288), 60%, 10%, 0.6) 0%,
+            transparent 100%
         ),
-        hsl(var(--h, 258), 20%, 3%);
+        /* Edge Vignette for Focus */
+        radial-gradient(
+            circle at center,
+            transparent 40%,
+            rgba(0, 0, 0, 0.45) 100%
+        ),
+        var(--bg-primary);
 
-    transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    background-attachment: fixed;
+    transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Enhanced Light Mode */
