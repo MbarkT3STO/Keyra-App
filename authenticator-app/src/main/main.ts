@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron';
+import { app, BrowserWindow, ipcMain, globalShortcut, screen } from 'electron';
 import * as path from 'path';
 import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates } from '../core/auth';
 import { generateTOTP, getRemainingSeconds } from '../core/totp';
@@ -8,9 +8,15 @@ import { dialog } from 'electron';
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+    
+    const initialWidth = Math.floor(screenWidth * 0.8);
+    const initialHeight = Math.floor(screenHeight * 0.8);
+
     mainWindow = new BrowserWindow({
-        width: 450,
-        height: 700,
+        width: initialWidth,
+        height: initialHeight,
         minWidth: 380,
         minHeight: 500,
         titleBarStyle: 'hidden', // Apple style clean top

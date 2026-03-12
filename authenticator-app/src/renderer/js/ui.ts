@@ -80,7 +80,7 @@ export class UIManager {
         if (settings.theme) this.setTheme(settings.theme, true);
         if (settings.accentColor) this.setAccentColor(settings.accentColor, true);
         if (settings.wallpaperPreset) this.applyWallpaper(settings.wallpaperPreset, true);
-        
+
         this.privacyMode = !!settings.privacyMode;
         const privacyToggle = document.getElementById('privacy-mode-toggle') as HTMLInputElement;
         if (privacyToggle) privacyToggle.checked = this.privacyMode;
@@ -111,7 +111,7 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('oled_mode'), String(this.oledMode));
             if (settings.vaultPin) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
         }
-        
+
         this.updateLockVaultVisibility();
         this.renderAccounts();
     }
@@ -127,17 +127,17 @@ export class UIManager {
         body.classList.remove('light-theme', 'dark-theme');
         body.classList.add(`${theme}-theme`);
         document.documentElement.setAttribute('data-theme', theme);
-        
+
         localStorage.setItem(this.getStorageKey('theme'), theme);
         localStorage.setItem('keyra_theme', theme);
-        
+
         this.updateSegmentedUI('theme-segmented', theme);
-        
+
         const themeIcon = document.getElementById('theme-icon-lucide');
         const themeText = document.getElementById('theme-text');
         if (themeIcon) themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
         if (themeText) themeText.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
-        
+
         this.refreshLucide();
         if (!silent) this.pushSettings();
     }
@@ -158,13 +158,13 @@ export class UIManager {
             root.style.setProperty('--accent-secondary', `hsl(${hue + 20}, 100%, 75%)`);
             root.style.setProperty('--accent-hover', `hsl(${hue}, 100%, 62%)`);
             root.style.setProperty('--accent-soft', `hsla(${hue}, 100%, 68%, 0.12)`);
-            
+
             root.style.setProperty('--aura-1', `hsla(${hue}, 100%, 68%, 0.35)`);
             root.style.setProperty('--aura-2', `hsla(${hue + 30}, 100%, 75%, 0.25)`);
             root.style.setProperty('--aura-3', `hsla(${hue - 30}, 100%, 75%, 0.25)`);
-            
+
             localStorage.setItem(this.getStorageKey('accent_color'), accentColor);
-            
+
             // Update active state in UI
             document.querySelectorAll('.accent-color-option').forEach(option => {
                 option.classList.toggle('active', option.getAttribute('data-accent') === accentColor);
@@ -196,7 +196,7 @@ export class UIManager {
     private applyWallpaper(preset: string, silent: boolean = false) {
         this.wallpaperPreset = preset;
         localStorage.setItem(this.getStorageKey('wallpaperPreset'), preset);
-        
+
         document.querySelectorAll('.wallpaper-card').forEach(card => {
             card.classList.toggle('active', card.getAttribute('data-preset') === preset);
         });
@@ -219,7 +219,7 @@ export class UIManager {
     private handleMouseMove(e: MouseEvent) {
         this.auraX = (e.clientX / window.innerWidth - 0.5) * 40;
         this.auraY = (e.clientY / window.innerHeight - 0.5) * 40;
-        
+
         if (!this.isMovingAura) {
             this.isMovingAura = true;
             requestAnimationFrame(() => this.updateAuraBlobs());
@@ -238,7 +238,7 @@ export class UIManager {
     private initSegmentedStates() {
         const theme = localStorage.getItem(this.getStorageKey('theme')) || 'light';
         this.updateSegmentedUI('theme-segmented', theme);
-        
+
         const autolock = localStorage.getItem(this.getStorageKey('autolock')) || '0';
         this.updateSegmentedUI('autolock-segmented', autolock);
     }
@@ -249,7 +249,7 @@ export class UIManager {
 
         const segments = container.querySelectorAll('.segment');
         const indicator = container.querySelector('.segment-indicator') as HTMLElement;
-        
+
         let activeIdx = 0;
         segments.forEach((seg, idx) => {
             const isActive = seg.getAttribute('data-val') === value;
@@ -357,7 +357,7 @@ export class UIManager {
             this.privacyMode = target.checked;
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             this.pushSettings();
-            this.renderAccounts(); 
+            this.renderAccounts();
             this.showToast(this.privacyMode ? "Privacy Mode Enabled" : "Privacy Mode Disabled", "info");
             this.updateLastActivity(`Privacy Mode ${this.privacyMode ? 'Enabled' : 'Disabled'}`);
         });
@@ -420,7 +420,11 @@ export class UIManager {
         pinInput?.addEventListener('input', (e) => {
             const value = (e.target as HTMLInputElement).value.replace(/[^0-9]/g, '');
             pinInput.value = value;
-            if (value.length === 4) this.validateAndAutoUnlock(value);
+            this.validateAndAutoUnlock(value);
+        });
+
+        document.getElementById('lock-vessel')?.addEventListener('click', () => {
+            pinInput?.focus();
         });
 
         pinInput?.addEventListener('keydown', (e) => {
@@ -487,16 +491,16 @@ export class UIManager {
 
         const lastActivity = localStorage.getItem(this.getStorageKey('last_activity'));
         const lastAction = localStorage.getItem(this.getStorageKey('last_action')) || 'No activity';
-        
+
         if (lastActivity) {
             const date = new Date(lastActivity);
             const diffMins = Math.floor((new Date().getTime() - date.getTime()) / 60000);
-            
+
             let timeAgo = 'Just now';
             if (diffMins >= 1 && diffMins < 60) timeAgo = `${diffMins}m ago`;
             else if (diffMins >= 60 && diffMins < 1440) timeAgo = `${Math.floor(diffMins / 60)}h ago`;
             else if (diffMins >= 1440) timeAgo = `${Math.floor(diffMins / 1440)}d ago`;
-            
+
             lastActivityElement.textContent = timeAgo;
         }
         if (lastActionElement) lastActionElement.textContent = lastAction;
@@ -521,8 +525,8 @@ export class UIManager {
         const emptyState = document.getElementById('empty-state');
         if (!grid || !emptyState) return;
 
-        const filtered = this.accounts.filter(acc => 
-            acc.issuer.toLowerCase().includes(this.searchQuery) || 
+        const filtered = this.accounts.filter(acc =>
+            acc.issuer.toLowerCase().includes(this.searchQuery) ||
             acc.account.toLowerCase().includes(this.searchQuery)
         );
 
@@ -542,42 +546,39 @@ export class UIManager {
         const card = document.createElement('div');
         card.className = 'account-card animate-fade-in';
         card.style.animationDelay = `${index * 0.05}s`;
-        
+
         card.innerHTML = `
             <div class="account-header">
                 <div class="account-icon">
                     <i data-lucide="${this.getIcon(account.issuer)}"></i>
                 </div>
-                <div style="flex: 1; min-width: 0;">
+                <div class="account-info">
                     <div class="service-name">${account.issuer}</div>
                     <div class="account-identity">${account.account}</div>
                 </div>
                 <div class="card-actions">
-                     <button class="btn-icon danger delete-btn" title="Remove Token">
+                    <button class="btn-icon edit-btn" title="Refine Metadata">
+                        <i data-lucide="settings-2"></i>
+                    </button>
+                    <button class="btn-icon danger delete-btn" title="Remove Token">
                         <i data-lucide="trash-2"></i>
                     </button>
                 </div>
             </div>
             
-            <div class="otp-box">
+            <div class="otp-hero">
                 <div class="otp-code ${this.privacyMode ? 'privacy-hidden' : ''}">
                     ${this.privacyMode ? '••••••' : '------'}
                 </div>
-                <div class="timer-container">
-                    <svg viewBox="0 0 60 60">
-                        <circle cx="30" cy="30" r="26" fill="none" class="timer-bg"></circle>
-                        <circle class="timer-progress" cx="30" cy="30" r="26" fill="none"></circle>
-                    </svg>
+                <div class="timer-linear-vessel">
+                    <div class="timer-linear-progress"></div>
                 </div>
             </div>
 
-            <div class="card-footer">
-                <button class="btn-primary copy-btn">
+            <div class="card-footer" style="padding: 0;">
+                <button class="btn-primary copy-btn" style="width: 100%;">
                     <i data-lucide="copy"></i>
                     <span>Secure Copy</span>
-                </button>
-                <button class="user-button edit-btn" title="Refine Metadata">
-                    <i data-lucide="settings-2"></i>
                 </button>
             </div>
         `;
@@ -603,7 +604,7 @@ export class UIManager {
             e.stopPropagation();
             this.showEditModal(account);
         });
-        
+
         card.querySelector('.delete-btn')?.addEventListener('click', (e) => {
             e.stopPropagation();
             this.showDeleteConfirm(account);
@@ -623,10 +624,11 @@ export class UIManager {
         }
 
         const remaining = await (window as any).api.getRemainingSeconds();
-        const progressCircle = card.querySelector('.timer-progress') as HTMLElement;
-        if (progressCircle) {
-            progressCircle.style.strokeDashoffset = (163.36 * (1 - remaining / 30)).toString();
-            progressCircle.style.stroke = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+        const progressBar = card.querySelector('.timer-linear-progress') as HTMLElement;
+        if (progressBar) {
+            const percentage = (remaining / 30) * 100;
+            progressBar.style.width = `${percentage}%`;
+            progressBar.style.backgroundColor = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
         }
     }
 
@@ -707,9 +709,9 @@ export class UIManager {
     private validateAndAutoUnlock(pinValue: string) {
         const saved = localStorage.getItem(this.getStorageKey('vault_pin'));
         const dots = document.querySelectorAll('.pin-dot');
-        
+
         dots.forEach((dot, i) => dot.classList.toggle('filled', i < pinValue.length));
-        
+
         if (pinValue.length === 4) {
             if (pinValue === saved) {
                 dots.forEach(dot => dot.classList.add('success'));
@@ -757,15 +759,28 @@ export class UIManager {
 
     private showPinSetup() {
         const content = `
-            <div style="padding: 32px;">
-                <h2 style="font-weight: 900; font-size: 28px; margin-bottom: 24px;">Core Security</h2>
-                <div class="form-group">
-                    <label class="form-label">Establish 4-Digit PIN</label>
-                    <input type="password" id="new-pin" maxlength="4" class="form-input" style="font-size: 32px; text-align: center; letter-spacing: 12px;">
+            <div style="padding: var(--space-lg);">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2>Core Security</h2>
+                        <p>ESTABLISH A 4-DIGIT VAULT ACCESS KEY</p>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 16px; margin-top: 32px;">
-                    <button class="btn-primary" id="save-pin" style="flex: 2;">Activate</button>
-                    <button class="user-button" id="cancel-pin-btn" style="flex: 1;">Cancel</button>
+                <div class="modal-body">
+                    <div class="form-group" style="text-align: center;">
+                        <label class="form-label" style="display: inline-block; margin-bottom: 12px;">Establish PIN Code</label>
+                        <input type="password" id="new-pin" maxlength="4" class="form-input" 
+                               style="font-size: 36px; text-align: center; letter-spacing: 24px; padding: 24px; height: 80px; font-family: monospace;" 
+                               placeholder="••••">
+                        <p class="modal-help-text" style="margin-top: 16px;">This PIN will be required to unlock your encrypted local vault.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary" id="save-pin">Activate Key</button>
+                    <button class="user-button" id="cancel-pin-btn">Discard</button>
                 </div>
             </div>
         `;
@@ -785,16 +800,29 @@ export class UIManager {
 
     private showAddModal() {
         const content = `
-            <div style="padding: 24px;">
-                <h2 style="font-weight: 900; font-size: 24px; margin-bottom: 20px;">Initialize Identity</h2>
-                <div class="form-group">
-                    <input type="text" id="new-issuer" class="form-input" placeholder="Service Label">
+            <div style="padding: var(--space-lg);">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
+                        <i data-lucide="plus-circle"></i>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2>Initialize Token</h2>
+                        <p>SECURE A NEW DIGITAL IDENTITY IN YOUR VAULT</p>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input type="text" id="new-account" class="form-input" placeholder="User Reference">
-                </div>
-                <div class="form-group">
-                    <input type="text" id="new-secret" class="form-input" placeholder="Base32 Secret">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Service Issuer</label>
+                        <input type="text" id="new-issuer" class="form-input" placeholder="e.g. GitHub, Google">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account Identity</label>
+                        <input type="text" id="new-account" class="form-input" placeholder="name@domain.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Base32 Secret</label>
+                        <input type="text" id="new-secret" class="form-input" placeholder="Enter security key">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn-primary" id="save-new-account">Verify & Secure</button>
@@ -820,16 +848,28 @@ export class UIManager {
 
     private showEditModal(account: any) {
         const content = `
-            <div style="padding: 24px;">
-                <h2 style="font-weight: 900; font-size: 24px; margin-bottom: 20px;">Refine Metadata</h2>
-                <div class="form-group">
-                    <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
+            <div style="padding: var(--space-lg);">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
+                        <i data-lucide="settings-2"></i>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2>Refine Metadata</h2>
+                        <p>UPDATE IDENTITY DETAILS OR SERVICE LABEL</p>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input type="text" id="edit-account" class="form-input" value="${account.account}">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Service Issuer</label>
+                        <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account Identity</label>
+                        <input type="text" id="edit-account" class="form-input" value="${account.account}">
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn-primary" id="update-account">Commit</button>
+                    <button class="btn-primary" id="update-account">Commit Change</button>
                     <button class="user-button" id="cancel-edit-btn">Discard</button>
                 </div>
             </div>
@@ -851,10 +891,18 @@ export class UIManager {
 
     private showDeleteConfirm(account: any) {
         const content = `
-            <div style="padding: 32px; text-align: center;">
-                <h2 style="font-weight: 850; font-size: 24px; margin-bottom: 32px;">Destroy Token?</h2>
+            <div style="padding: var(--space-xl); text-align: center;">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel" style="background: hsla(0, 100%, 50%, 0.1); border-color: #ff3b30; color: #ff3b30; box-shadow: 0 0 30px rgba(255, 59, 48, 0.2);">
+                        <i data-lucide="trash-2"></i>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2 style="color: #ff3b30;">Destroy Token?</h2>
+                        <p>THIS ACTION IS PERMANENT AND CANNOT BE REVERSED</p>
+                    </div>
+                </div>
                 <div class="modal-footer">
-                    <button class="btn-primary" id="confirm-delete" style="background: #ff3b30; box-shadow: 0 8px 16px -4px rgba(255, 59, 48, 0.3);">Confirm Erase</button>
+                    <button class="btn-primary" id="confirm-delete" style="background: #ff3b30; box-shadow: 0 8px 32px rgba(255, 59, 48, 0.3);">Confirm Erase</button>
                     <button class="user-button" id="cancel-delete-btn">Cancel</button>
                 </div>
             </div>
@@ -872,13 +920,24 @@ export class UIManager {
 
     private showImportPasswordModal(salt: string, encryptedVaultData: string) {
         const content = `
-            <div style="padding: 24px;">
-                <h2 style="font-weight: 900; font-size: 24px; margin-bottom: 20px;">Restore Vault</h2>
-                <div class="form-group">
-                    <input type="password" id="import-pass" class="form-input" placeholder="Backup Password">
+            <div style="padding: var(--space-lg);">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
+                        <i data-lucide="shield-lock"></i>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2>Restore Vault</h2>
+                        <p>VERIFY MASTER KEY TO IMPORT SECURE BACKUP</p>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Backup Password</label>
+                        <input type="password" id="import-pass" class="form-input" placeholder="••••••••">
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn-primary" id="confirm-import">Restore</button>
+                    <button class="btn-primary" id="confirm-import">Restore Identity</button>
                     <button class="user-button" id="cancel-import">Cancel</button>
                 </div>
             </div>
@@ -904,7 +963,7 @@ export class UIManager {
 
     private async checkForUpdates() {
         // Don't sync if user is active in sensitive areas or typing
-        if (document.activeElement?.tagName === 'INPUT' || 
+        if (document.activeElement?.tagName === 'INPUT' ||
             document.querySelector('.modal.show')) {
             return;
         }
@@ -913,7 +972,7 @@ export class UIManager {
             const result = await (window as any).api.pollForUpdates();
             if (result.changed) {
                 this.setSyncing(true);
-                
+
                 // If settings changed, apply them
                 if (result.settings) {
                     this.applySettings(result.settings, true); // Update local cache too
@@ -926,7 +985,7 @@ export class UIManager {
                 const indicator = document.getElementById('cloud-sync-indicator');
                 indicator?.classList.add('sync-pulse');
                 setTimeout(() => indicator?.classList.remove('sync-pulse'), 2000);
-                
+
                 this.setSyncing(false);
             }
         } catch (e) {

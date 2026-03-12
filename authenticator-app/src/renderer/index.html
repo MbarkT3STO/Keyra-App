@@ -507,42 +507,6 @@
             </div>
         </div>
 
-        <!-- Lock Screen PIN (Premium Glassmorphic Redesign) -->
-        <div id="lock-vessel" class="modal-overlay pin-overlay">
-            <div class="pin-vessel animate-fade-in">
-                <div class="pin-brand">
-                    <div class="pin-lock-icon">
-                        <i data-lucide="lock"></i>
-                        <div class="lock-glow"></div>
-                    </div>
-                </div>
-                
-                <div class="pin-header">
-                    <h2 class="pin-title">Vault Locked</h2>
-                    <p class="pin-subtitle">Identity verification required to resume session</p>
-                </div>
-
-                <form id="form-unlock">
-                    <div class="pin-input-vessel">
-                        <input type="password" id="unlock-pin" maxlength="4" class="pin-field" autocomplete="off">
-                        <div class="pin-indicators">
-                            <div class="pin-dot" data-digit="1"></div>
-                            <div class="pin-dot" data-digit="2"></div>
-                            <div class="pin-dot" data-digit="3"></div>
-                            <div class="pin-dot" data-digit="4"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="pin-helper">Secure 4-Digit Master Code</div>
-                    
-                    <button type="submit" class="btn-primary pin-submit-btn">
-                        <i data-lucide="shield-check"></i>
-                        Confirm Identity
-                    </button>
-                </form>
-            </div>
-        </div>
-
         <!-- Simulation Toast (Dynamic Backup) -->
         <div id="simulation-toast" class="hidden" style="position: fixed; top: 24px; right: 24px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 2.5px solid var(--accent-primary); padding: 24px; border-radius: var(--radius-lg); z-index: 3000; box-shadow: var(--shadow-hard); animation: slideDown 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); max-width: calc(100% - 48px);">
             <div style="font-size: 14px; font-weight: 850; color: var(--accent-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
@@ -558,6 +522,42 @@
         <div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" title="Cloud Sync Active">
             <i data-lucide="cloud-cog" class="sync-icon"></i>
             <span>Syncing...</span>
+        </div>
+    </div>
+
+    <!-- Lock Screen PIN (Premium Glassmorphic Redesign) -->
+    <div id="lock-vessel" class="modal-overlay pin-overlay">
+        <div class="pin-vessel animate-fade-in">
+            <div class="pin-brand">
+                <div class="pin-lock-icon">
+                    <i data-lucide="lock"></i>
+                    <div class="lock-glow"></div>
+                </div>
+            </div>
+            
+            <div class="pin-header">
+                <h2 class="pin-title">Vault Locked</h2>
+                <p class="pin-subtitle">Identity verification required to resume session</p>
+            </div>
+
+            <form id="form-unlock">
+                <div class="pin-input-vessel">
+                    <input type="password" id="unlock-pin" maxlength="4" class="pin-field" autocomplete="off">
+                    <div class="pin-indicators">
+                        <div class="pin-dot" data-digit="1"></div>
+                        <div class="pin-dot" data-digit="2"></div>
+                        <div class="pin-dot" data-digit="3"></div>
+                        <div class="pin-dot" data-digit="4"></div>
+                    </div>
+                </div>
+                
+                <div class="pin-helper">Secure 4-Digit Master Code</div>
+                
+                <button type="submit" class="btn-primary pin-submit-btn">
+                    <i data-lucide="shield-check"></i>
+                    Confirm Identity
+                </button>
+            </form>
         </div>
     </div>
 
