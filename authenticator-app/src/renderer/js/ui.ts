@@ -18,6 +18,7 @@ export class UIManager {
 
     constructor(public userId: string = 'default') {
         this.initTheme();
+        this.initOSThemeDetection();
         this.initPrivacyMode();
         this.initScreenGuardian();
         this.initPerformanceMode();
@@ -211,8 +212,29 @@ export class UIManager {
     }
 
     private initTheme() {
-        const savedTheme = localStorage.getItem(this.getStorageKey('theme')) as 'light' | 'dark' || 'light';
-        this.setTheme(savedTheme, true);
+        const savedTheme = localStorage.getItem(this.getStorageKey('theme')) as 'light' | 'dark';
+        if (savedTheme) {
+            this.setTheme(savedTheme, true);
+        } else {
+            // Default to OS theme
+            const osTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            this.setTheme(osTheme, true);
+        }
+    }
+
+    private initOSThemeDetection() {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', (e) => {
+            // Only auto-switch if user hasn't manually set a theme in this session or if it's the auth screen
+            const hasManualTheme = !!localStorage.getItem(this.getStorageKey('theme'));
+            const authVessel = document.getElementById('auth-vessel');
+            const isAuthActive = authVessel && authVessel.classList.contains('show');
+
+            if (!hasManualTheme || isAuthActive) {
+                const newTheme = e.matches ? 'dark' : 'light';
+                this.setTheme(newTheme, false);
+            }
+        });
     }
 
     public setTheme(theme: 'light' | 'dark', silent: boolean = false) {
