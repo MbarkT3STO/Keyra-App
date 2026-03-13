@@ -310,6 +310,19 @@ export class UIManager {
         const toggle = document.getElementById('performance-mode-toggle') as HTMLInputElement;
         if (toggle) toggle.checked = this.performanceMode;
         document.body.classList.toggle('performance-mode', this.performanceMode);
+        
+        // If performance mode is active, we significantly reduce animation complexity at the root
+        if (this.performanceMode) {
+            document.documentElement.style.setProperty('--transition-fast', '0s');
+            document.documentElement.style.setProperty('--transition-medium', '0s');
+        }
+    }
+
+    private initOledMode() {
+        this.oledMode = localStorage.getItem(this.getStorageKey('oled_mode')) === 'true';
+        const toggle = document.getElementById('oled-mode-toggle') as HTMLInputElement;
+        if (toggle) toggle.checked = this.oledMode;
+        document.body.classList.toggle('oled-optimized', this.oledMode);
     }
 
     private initMenuExitIntegration() {
@@ -507,6 +520,17 @@ export class UIManager {
             this.performanceMode = target.checked;
             localStorage.setItem(this.getStorageKey('performance_mode'), String(this.performanceMode));
             document.body.classList.toggle('performance-mode', this.performanceMode);
+            
+            // Immediate CSS variable update for root-level speed
+            const root = document.documentElement;
+            if (this.performanceMode) {
+                root.style.setProperty('--transition-fast', '0s');
+                root.style.setProperty('--transition-medium', '0s');
+            } else {
+                root.style.removeProperty('--transition-fast');
+                root.style.removeProperty('--transition-medium');
+            }
+
             this.pushSettings();
             this.showToast(this.performanceMode ? "Ultra Performance Active" : "Visual Effects Restored", "info");
             this.updateLastActivity(`Performance Mode ${this.performanceMode ? 'Enabled' : 'Disabled'}`);
@@ -903,9 +927,16 @@ export class UIManager {
         const codeElement = card.querySelector('.otp-code');
         if (!codeElement) return;
 
+        // Skip heavy generateTOTP calls frequently in performance mode if possible
+        // But for TOTP, correctness is more important than 1 FPS gain.
+        // Instead, we optimize the CSS/DOM side of it.
         const otp = await (window as any).api.generateTOTP(secret);
+        const formattedOtp = otp.substring(0, 3) + ' ' + otp.substring(3);
+        
         if (!this.privacyMode) {
-            codeElement.textContent = otp.substring(0, 3) + ' ' + otp.substring(3);
+            if (codeElement.textContent !== formattedOtp) {
+                codeElement.textContent = formattedOtp;
+            }
         }
 
         const remaining = await (window as any).api.getRemainingSeconds();

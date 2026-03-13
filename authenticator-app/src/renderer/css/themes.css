@@ -377,95 +377,54 @@ body.light-theme {
     --shadow-hard:   0 20px 60px rgba(0, 0, 0, 0.16);
 }
 
-/* OLED Optimization Classes */
-.oled-optimized {
-    /* Additional optimizations for OLED displays */
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-}
-
-/* High contrast mode for accessibility */
-@media (prefers-contrast: high) {
-    body.dark-theme {
-        --text-primary: #ffffff;
-        --text-secondary: #f0f0f0;
-        --border-color: rgba(255, 255, 255, 0.2);
-    }
+/* OLED Optimization Classes - Force True Black #000000 */
+body.dark-theme.oled-optimized {
+    --bg-primary: #000000 !important;
+    --bg-secondary: #000000 !important;
+    --bg-tertiary: #010101 !important; /* Extremely subtle diff for bento layering if needed */
     
-    body.light-theme {
-        --text-primary: #000000;
-        --text-secondary: #333333;
-        --border-color: rgba(0, 0, 0, 0.2);
-    }
+    --nm-surface: #000000 !important;
+    --nm-shadow-out: none !important;
+    --nm-shadow-in: none !important;
+    --nm-shadow-out-sm: none !important;
+    --nm-shadow-in-sm: none !important;
+    
+    --border-color: rgba(255, 255, 255, 0.12) !important;
+    
+    background: #000000 !important;
 }
 
-/* Enhanced Scrollbar Styling */
-body.dark-theme ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+body.dark-theme.oled-optimized .aura-background,
+body.dark-theme.oled-optimized .aura-blob {
+    display: none !important;
 }
 
-body.dark-theme ::-webkit-scrollbar-track {
-    background: #0a0a0a;
-}
-
-body.dark-theme ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-}
-
-body.dark-theme ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-body.dark-theme.oled-optimized ::-webkit-scrollbar-track {
-    background: #000000;
-}
-
-/* Enhanced Focus Indicators */
-body.dark-theme *:focus {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
-}
-
-body.dark-theme .form-input:focus {
-    box-shadow: 0 0 0 4px var(--accent-soft), 0 0 20px rgba(var(--dynamic-accent-hue, 258), 100%, 70%, 0.3);
-}
-
-/* Enhanced Button Styling for OLED */
-body.dark-theme.oled-optimized .btn-primary {
-    background: var(--accent-primary);
-    box-shadow: 0 4px 16px rgba(var(--dynamic-accent-hue, 258), 100%, 70%, 0.4);
-}
-
-body.dark-theme.oled-optimized .btn-primary:hover {
-    box-shadow: 0 6px 24px rgba(var(--dynamic-accent-hue, 258), 100%, 70%, 0.6);
-    transform: translateY(-1px);
-}
-
-/* Enhanced Card Styling for OLED */
-body.dark-theme.oled-optimized .account-card {
-    background: rgba(10, 10, 10, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-}
-
-/* Enhanced Modal Styling for OLED */
-body.dark-theme.oled-optimized .modal-overlay {
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-}
-
-body.dark-theme.oled-optimized .modal-content {
-    background: #0a0a0a;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-}
-
-/* Enhanced Navigation for OLED */
+body.dark-theme.oled-optimized .bento-card,
+body.dark-theme.oled-optimized .account-card,
+body.dark-theme.oled-optimized .modal-content,
 body.dark-theme.oled-optimized .navbar {
-    background: #000000;
-    border-bottom: 2px solid var(--nm-shadow-dark);
+    background: #000000 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
+body.dark-theme.oled-optimized .setting-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme.oled-optimized .nav-tab.active {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--accent-primary) !important;
+}
+
+/* Enhanced Scrollbar Styling for OLED */
+body.dark-theme.oled-optimized ::-webkit-scrollbar-track {
+    background: #000000 !important;
+}
+
+body.dark-theme.oled-optimized ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25) !important;
 }
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(16px); }
@@ -479,10 +438,15 @@ body.dark-theme.oled-optimized .navbar {
     100% { transform: translate(0, 0) scale(1); }
 }
 
-/* 🚀 Ultra Performance Mode — Zero Latency Interface 🚀 */
+/* 🚀 Ultra Performance Mode — Zero Latency, Zero Depth Interface 🚀 */
 body.performance-mode {
     --transition-fast: 0s !important;
     --transition-medium: 0s !important;
+    --shadow-soft: none !important;
+    --shadow-medium: none !important;
+    --shadow-hard: none !important;
+    --nm-shadow-out: none !important;
+    --nm-shadow-in: none !important;
 }
 
 body.performance-mode *,
@@ -492,28 +456,21 @@ body.performance-mode *::after {
     transition: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    box-shadow: none !important; /* Fast rendering */
+    box-shadow: none !important;
+    text-shadow: none !important;
 }
 
-/* 🚨 FIX: Force visibility ONLY for elements that are actually active/shown 🚨 */
+/* 🚨 FIX: Force visibility ONLY for functional elements 🚨 */
 body.performance-mode .modal-overlay.show,
 body.performance-mode .modal-overlay.show .modal,
 body.performance-mode .dropdown-menu.show,
-body.performance-mode .animate-fade-in,
 body.performance-mode .view-section,
 body.performance-mode .account-card,
-body.performance-mode .bento-card,
-body.performance-mode .toast.show {
+body.performance-mode .badge,
+body.performance-mode .toast {
     opacity: 1 !important;
     visibility: visible !important;
     transform: none !important;
-}
-
-/* 🔒 Vault Locked Screen: High-Performance Background 🔒 */
-body.performance-mode .pin-overlay {
-    background: var(--bg-primary) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
 }
 
 /* Ensure hidden elements STAY hidden in performance mode (excluding our privacy overlay when active) */
@@ -525,27 +482,11 @@ body.performance-mode .hidden {
     display: none !important;
 }
 
-/* 🎨 Performance Mode: High-Contrast Toggles 🎨 */
-body.performance-mode .slider {
-    background-color: var(--bg-tertiary) !important;
-    border: 2px solid var(--border-color) !important;
-}
-
-body.performance-mode input:checked + .slider {
-    background-color: var(--accent-primary) !important;
-    border-color: var(--accent-primary) !important;
-}
-
-body.performance-mode .slider:before {
-    background-color: #fff !important;
-    border: 1px solid rgba(0,0,0,0.1) !important;
-    box-shadow: none !important;
-}
-
-body.performance-mode input:checked + .slider:before {
-    background-color: #fff !important;
-    /* Force movement if it was transition-based or subtle */
-    transform: translateY(-50%) translateX(22px) !important; 
+/* 🔒 Vault Locked Screen: High-Performance Background 🔒 */
+body.performance-mode .pin-overlay {
+    background: var(--bg-primary) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* Hide heavy background blobs */
@@ -558,26 +499,53 @@ body.performance-mode .splash-screen {
     background: var(--bg-primary) !important;
 }
 
-/* Ensure glass panels remain visible but flat */
-body.performance-mode .nm-surface-out,
+/* Ensure glass panels remain visible but perfectly flat */
+body.performance-mode .bento-card,
 body.performance-mode .account-card,
-body.performance-mode .modal,
-body.performance-mode .privacy-overlay,
-body.performance-mode .dropdown-menu {
-    background: var(--nm-surface) !important;
+body.performance-mode .modal-content,
+body.performance-mode .navbar,
+body.performance-mode .user-button,
+body.performance-mode .segment,
+body.performance-mode .pin-dot {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
     box-shadow: none !important;
-    border: 1px solid var(--nm-shadow-dark) !important;
 }
 
+body.performance-mode .btn-primary {
+    background: var(--accent-primary) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+
+body.performance-mode .btn-danger {
+    background: #ff3b30 !important;
+    color: #fff !important;
+}
+
+/* Flat Privacy Overlay */
 body.performance-mode .privacy-overlay.show {
-    background-color: hsl(var(--h), 45%, 4%) !important;
-    background-image: 
-        repeating-linear-gradient(45deg, transparent, transparent 10px, hsla(var(--h), 100%, 80%, 0.02) 10px, hsla(var(--h), 100%, 80%, 0.02) 11px),
-        radial-gradient(circle at center, hsla(var(--h), 100%, 70%, 0.05) 0%, transparent 80%) !important;
+    background: var(--bg-primary) !important;
+    background-image: none !important;
     opacity: 1 !important;
     visibility: visible !important;
     z-index: 99999 !important;
     display: flex !important;
+}
+
+/* Simplified Sliders */
+body.performance-mode .slider {
+    background-color: var(--bg-tertiary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+body.performance-mode input:checked + .slider {
+    background-color: var(--accent-primary) !important;
+}
+
+body.performance-mode .slider:before {
+    background-color: #fff !important;
+    box-shadow: none !important;
 }
 
 [data-theme="light"] body.performance-mode .privacy-overlay.show {
