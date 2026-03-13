@@ -44,6 +44,21 @@ export class UIManager {
         this.updateConnectivityStatus();
         window.addEventListener('online', () => this.updateConnectivityStatus());
         window.addEventListener('offline', () => this.updateConnectivityStatus());
+
+        // Interactive Expansion
+        const statusEl = document.getElementById('connectivity-status');
+        if (statusEl) {
+            statusEl.addEventListener('click', () => {
+                statusEl.classList.toggle('expanded');
+                
+                // Auto-collapse after 5 seconds if expanded
+                if (statusEl.classList.contains('expanded')) {
+                    setTimeout(() => {
+                        statusEl.classList.remove('expanded');
+                    }, 5000);
+                }
+            });
+        }
     }
 
     private updateConnectivityStatus() {

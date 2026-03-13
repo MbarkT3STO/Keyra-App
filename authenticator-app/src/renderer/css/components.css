@@ -38,8 +38,10 @@
 .connectivity-indicator {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
+    gap: 0;
+    padding: 6px;
+    width: 32px;
+    height: 32px;
     background: var(--glass-bg);
     border: 1.5px solid var(--glass-border);
     border-radius: var(--radius-full);
@@ -48,10 +50,27 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-secondary);
-    transition: all var(--transition-medium);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     margin-right: 12px;
     backdrop-filter: blur(12px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    justify-content: center;
+}
+
+.connectivity-indicator:hover {
+    transform: scale(1.05);
+    border-color: var(--accent-primary);
+}
+
+.connectivity-indicator.expanded {
+    width: auto;
+    max-width: 120px;
+    padding: 6px 14px;
+    gap: 8px;
+    justify-content: flex-start;
 }
 
 .connectivity-indicator.online {
@@ -86,14 +105,30 @@
     50% { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 12px rgba(255, 59, 48, 0.4); }
 }
 
-/* Responsive: Hide text on narrow screens */
-@media (max-width: 600px) {
-    .connectivity-indicator #status-text {
-        display: none;
-    }
-    .connectivity-indicator {
+.connectivity-indicator #status-text {
+    opacity: 0;
+    width: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    display: inline-block;
+    pointer-events: none;
+}
+
+.connectivity-indicator.expanded #status-text {
+    opacity: 1;
+    width: auto;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+/* Responsive: Always compact on very narrow screens if needed, otherwise leave it interactive */
+@media (max-width: 480px) {
+    .connectivity-indicator.expanded {
+        max-width: 40px;
         padding: 8px;
-        margin-right: 8px;
+    }
+    .connectivity-indicator #status-text {
+        display: none !important;
     }
 }
 
