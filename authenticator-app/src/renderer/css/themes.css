@@ -407,3 +407,91 @@ body.dark-theme.oled-optimized .navbar {
     66% { transform: translate(-20px, 20px) scale(0.9); }
     100% { transform: translate(0, 0) scale(1); }
 }
+
+/* 🚀 Ultra Performance Mode — Zero Latency Interface 🚀 */
+body.performance-mode {
+    --transition-fast: 0s !important;
+    --transition-medium: 0s !important;
+}
+
+body.performance-mode *,
+body.performance-mode *::before,
+body.performance-mode *::after {
+    animation: none !important;
+    transition: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important; /* Fast rendering */
+}
+
+/* 🚨 FIX: Force visibility ONLY for elements that are actually active/shown 🚨 */
+body.performance-mode .modal-overlay.show,
+body.performance-mode .modal-overlay.show .modal,
+body.performance-mode .dropdown-menu.show,
+body.performance-mode .animate-fade-in,
+body.performance-mode .view-section,
+body.performance-mode .account-card,
+body.performance-mode .bento-card,
+body.performance-mode .toast.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+}
+
+/* 🔒 Vault Locked Screen: High-Performance Background 🔒 */
+body.performance-mode .pin-overlay {
+    background: var(--bg-primary) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Ensure hidden elements STAY hidden in performance mode */
+body.performance-mode .modal-overlay:not(.show),
+body.performance-mode .dropdown-menu:not(.show),
+body.performance-mode .hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+}
+
+/* 🎨 Performance Mode: High-Contrast Toggles 🎨 */
+body.performance-mode .slider {
+    background-color: var(--bg-tertiary) !important;
+    border: 2px solid var(--border-color) !important;
+}
+
+body.performance-mode input:checked + .slider {
+    background-color: var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+}
+
+body.performance-mode .slider:before {
+    background-color: #fff !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    box-shadow: none !important;
+}
+
+body.performance-mode input:checked + .slider:before {
+    background-color: #fff !important;
+    /* Force movement if it was transition-based or subtle */
+    transform: translateY(-50%) translateX(22px) !important; 
+}
+
+/* Hide heavy background blobs */
+body.performance-mode .aura-background {
+    display: none !important;
+}
+
+/* Splash screen transparency for performance if still visible */
+body.performance-mode .splash-screen {
+    background: var(--bg-primary) !important;
+}
+
+/* Ensure glass panels remain visible but flat */
+body.performance-mode .glass,
+body.performance-mode .account-card,
+body.performance-mode .modal,
+body.performance-mode .dropdown-menu {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+}

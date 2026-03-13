@@ -8,6 +8,7 @@ export class UIManager {
     private privacyMode: boolean = false;
     private screenGuardian: boolean = false;
     private oledMode: boolean = false;
+    private performanceMode: boolean = false;
     private wallpaperPreset: string = 'nebula';
     private searchQuery: string = '';
     private syncCount: number = 0;
@@ -17,6 +18,7 @@ export class UIManager {
         this.initTheme();
         this.initPrivacyMode();
         this.initScreenGuardian();
+        this.initPerformanceMode();
         this.initSegmentedStates();
         this.setupEventListeners();
         this.updateLockVaultVisibility();
@@ -89,6 +91,7 @@ export class UIManager {
             screenGuardian: this.screenGuardian,
             autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0',
             oledMode: this.oledMode,
+            performanceMode: this.performanceMode,
             vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
         };
     }
@@ -129,6 +132,13 @@ export class UIManager {
             document.body.classList.toggle('oled-optimized', this.oledMode);
         }
 
+        if (settings.performanceMode !== undefined) {
+            this.performanceMode = !!settings.performanceMode;
+            const perfToggle = document.getElementById('performance-mode-toggle') as HTMLInputElement;
+            if (perfToggle) perfToggle.checked = this.performanceMode;
+            document.body.classList.toggle('performance-mode', this.performanceMode);
+        }
+
         if (saveLocal) {
             if (settings.theme) localStorage.setItem(this.getStorageKey('theme'), settings.theme);
             if (settings.accentColor) localStorage.setItem(this.getStorageKey('accent_color'), settings.accentColor);
@@ -137,6 +147,7 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
             if (settings.autolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(settings.autolock));
             localStorage.setItem(this.getStorageKey('oled_mode'), String(this.oledMode));
+            localStorage.setItem(this.getStorageKey('performance_mode'), String(this.performanceMode));
             if (settings.vaultPin) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
         }
 
@@ -234,6 +245,13 @@ export class UIManager {
         const toggle = document.getElementById('screen-guardian-toggle') as HTMLInputElement;
         if (toggle) toggle.checked = this.screenGuardian;
         (window as any).api.setContentProtection(this.screenGuardian);
+    }
+
+    private initPerformanceMode() {
+        this.performanceMode = localStorage.getItem(this.getStorageKey('performance_mode')) === 'true';
+        const toggle = document.getElementById('performance-mode-toggle') as HTMLInputElement;
+        if (toggle) toggle.checked = this.performanceMode;
+        document.body.classList.toggle('performance-mode', this.performanceMode);
     }
 
     private initSegmentedStates() {
@@ -347,6 +365,17 @@ export class UIManager {
             this.pushSettings();
             this.showToast(this.oledMode ? "OLED Mode Enabled" : "OLED Mode Disabled", "info");
             this.updateLastActivity(`OLED Mode ${this.oledMode ? 'Enabled' : 'Disabled'}`);
+        });
+
+        // Performance Mode Toggle
+        document.getElementById('performance-mode-toggle')?.addEventListener('change', (e) => {
+            const target = e.target as HTMLInputElement;
+            this.performanceMode = target.checked;
+            localStorage.setItem(this.getStorageKey('performance_mode'), String(this.performanceMode));
+            document.body.classList.toggle('performance-mode', this.performanceMode);
+            this.pushSettings();
+            this.showToast(this.performanceMode ? "Ultra Performance Active" : "Visual Effects Restored", "info");
+            this.updateLastActivity(`Performance Mode ${this.performanceMode ? 'Enabled' : 'Disabled'}`);
         });
 
         // Settings PIN
