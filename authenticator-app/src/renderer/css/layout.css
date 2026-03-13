@@ -27,14 +27,14 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--bg-primary);
+    background-color: var(--nm-surface);
     z-index: -1;
     overflow: hidden;
-    filter: blur(140px); /* Increased blur for smoother blending */
+    /* Soft blending for a molded look */
     transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Tactile Noise Overlay */
+/* Tactile Noise Overlay - Enhanced for subtle texture */
 .aura-background::after {
     content: '';
     position: absolute;
@@ -43,7 +43,7 @@ body {
     width: 100%;
     height: 100%;
     filter: url(#noiseFilter);
-    opacity: 0.04; /* Very subtle micro-grain */
+    opacity: 0.03; /* Very subtle for premium feel */
     pointer-events: none;
     mix-blend-mode: overlay;
     z-index: 1;
@@ -52,48 +52,50 @@ body {
 .aura-blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(100px);
-    opacity: 0.5;
-    animation: blobFloat 30s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform, opacity; /* Hardware acceleration */
+    filter: blur(120px); /* Increased blur for smoother highlights */
+    opacity: 0.25; /* Softer integration */
+    animation: blobFloat 40s infinite alternate ease-in-out;
+    will-change: transform, opacity;
 }
 
 .aura-1 {
-    width: clamp(400px, 60vw, 800px);
-    height: clamp(400px, 60vw, 800px);
-    background: var(--aura-1);
-    top: -15%;
+    width: 70vw;
+    height: 70vw;
+    background: radial-gradient(circle at center, var(--aura-1), transparent 70%);
+    top: -20%;
     left: -10%;
+    opacity: 0.3;
 }
 
 .aura-2 {
-    width: clamp(300px, 50vw, 600px);
-    height: clamp(300px, 50vw, 600px);
-    background: var(--aura-2);
-    bottom: -10%;
-    right: -5%;
-    animation-delay: -7s;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle at center, var(--aura-2), transparent 70%);
+    bottom: -15%;
+    right: -10%;
+    animation-delay: -10s;
+    opacity: 0.25;
 }
 
 .aura-3 {
-    width: clamp(250px, 40vw, 500px);
-    height: clamp(250px, 40vw, 500px);
-    background: var(--aura-3);
-    top: 35%;
-    right: 15%;
-    animation-delay: -12s;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle at center, var(--aura-3), transparent 70%);
+    top: 30%;
+    right: 10%;
+    animation-delay: -20s;
+    opacity: 0.15;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   NAVBAR & HEADER
+   NAVBAR & HEADER - Neuomorphic Elevation
    ───────────────────────────────────────────────────────────────────────────── */
 
 .navbar {
     height: clamp(64px, 10vh, 88px);
-    background: var(--glass-bg);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border-bottom: 1px solid var(--glass-border);
+    background: var(--nm-surface);
+    border-bottom: none;
+    box-shadow: var(--nm-shadow-out-sm); /* Using standard NM tokens */
     z-index: 100;
     position: sticky;
     top: 0;
@@ -112,6 +114,15 @@ body {
     padding: 0 clamp(var(--space-sm), 5vw, var(--space-xl));
     max-width: 1600px;
     margin: 0 auto;
+}
+
+.window-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 16px;
+    padding-left: 20px;
+    border-left: 1px solid var(--nm-shadow-dark);
 }
 
 .navbar-section {
@@ -216,9 +227,10 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: hsla(var(--h), 20%, 5%, 0.5);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: hsla(var(--h), 20%, 5%, 0.6);
+    /* Reduced blur for better performance and focus on surface */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -238,18 +250,15 @@ body {
 }
 
 .modal {
-    background: var(--glass-bg);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-xl);
+    background: var(--nm-surface);
+    border: none;
+    border-radius: var(--radius-lg);
     width: 100%;
     max-width: 520px;
-    box-shadow: var(--shadow-hard),
-        0 0 0 1px hsla(var(--h), 100%, 80%, 0.04) inset;
+    box-shadow: var(--nm-shadow-out);
     transform: translateY(24px) scale(0.97);
     opacity: 0;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
         opacity 0.25s ease;
     position: relative;
     max-height: min(92vh, 680px);
@@ -280,11 +289,12 @@ body {
 }
 
 /* Light mode: force solid background so text always contrasts cleanly */
+/* Light mode: Neuomorphic surfaces */
 [data-theme="light"] .modal,
 body.light-theme .modal {
-    background: rgba(255, 255, 255, 0.97);
-    border-color: rgba(0, 0, 0, 0.08);
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.06);
+    background: var(--nm-surface);
+    border: none;
+    box-shadow: var(--nm-shadow-out);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -358,7 +368,8 @@ body.light-theme .modal {
     .nav-tabs {
         background: var(--bg-tertiary);
         padding: 4px;
-        border: 1px solid var(--border-color);
+        border: none;
+        box-shadow: var(--nm-shadow-in-sm);
         border-radius: var(--radius-full);
     }
 

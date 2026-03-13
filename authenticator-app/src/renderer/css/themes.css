@@ -66,8 +66,6 @@
     --space-3: hsla(200, 100%, 40%, 0.2);
     
     --border-color: hsla(var(--h), 40%, 8%, 0.05);
-    --glass-bg: hsla(0, 0%, 100%, 0.75);
-    --glass-border: hsla(0, 0%, 100%, 0.4);
     
     /* Modular Spacing (8pt Grid) */
     --space-2xs: 4px;
@@ -81,15 +79,32 @@
     --shadow-soft: 0 4px 20px hsla(var(--h), var(--s), 20%, 0.04);
     --shadow-medium: 0 12px 36px hsla(var(--h), var(--s), 20%, 0.08);
     --shadow-hard: 0 24px 64px hsla(var(--h), var(--s), 20%, 0.12);
+
+    /* Neuomorphic Design System - Light (Soft Clay) */
+    --nm-surface: hsl(var(--h), 20%, 94%);
+    --nm-shadow-light: hsla(0, 0%, 100%, 0.95);
+    --nm-shadow-dark: hsla(var(--h), 25%, 82%, 0.6);
+    --nm-shadow-out: 
+        10px 10px 20px var(--nm-shadow-dark), 
+        -10px -10px 20px var(--nm-shadow-light);
+    --nm-shadow-in: 
+        inset 8px 8px 16px var(--nm-shadow-dark), 
+        inset -8px -8px 16px var(--nm-shadow-light);
+    --nm-shadow-out-sm: 
+        4px 4px 10px var(--nm-shadow-dark), 
+        -4px -4px 10px var(--nm-shadow-light);
+    --nm-shadow-in-sm: 
+        inset 4px 4px 8px var(--nm-shadow-dark), 
+        inset -4px -4px 8px var(--nm-shadow-light);
     
-    --radius-sm: 8px;   /* Inner Icons / Menus */
-    --radius-md: 16px;  /* Buttons / Standard Inputs */
-    --radius-lg: 24px;  /* Cards / Standard Modals */
-    --radius-xl: 32px;  /* Large Containers */
+    --radius-sm: 12px;   /* Inner Icons / Menus */
+    --radius-md: 20px;  /* Buttons / Standard Inputs */
+    --radius-lg: 32px;  /* Cards / Standard Modals */
+    --radius-xl: 48px;  /* Large Containers */
     --radius-full: 999px; /* Capsule Shapes */
     
-    --transition-fast: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-medium: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Scientific Dimensional Scaling */
     --btn-h-lg: 60px;   /* Hero / Main Actions */
@@ -112,12 +127,27 @@
     --aura-3: hsla(200, 100%, 75%, 0.1);
     
     --border-color: hsla(0, 0%, 100%, 0.06);
-    --glass-bg: hsla(var(--h), 25%, 6%, 0.75);
-    --glass-border: hsla(0, 0%, 100%, 0.08);
     
     --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
     --shadow-medium: 0 16px 48px rgba(0, 0, 0, 0.6);
     --shadow-hard: 0 32px 80px rgba(0, 0, 0, 0.8);
+
+    /* Neuomorphic Design System - Dark (Deep Graphite) */
+    --nm-surface: hsl(var(--h), 14%, 10%);
+    --nm-shadow-light: hsla(var(--h), 20%, 18%, 0.4);
+    --nm-shadow-dark: hsla(0, 0%, 0%, 0.7);
+    --nm-shadow-out: 
+        12px 12px 24px var(--nm-shadow-dark), 
+        -12px -12px 24px var(--nm-shadow-light);
+    --nm-shadow-in: 
+        inset 10px 10px 20px var(--nm-shadow-dark), 
+        inset -10px -10px 20px var(--nm-shadow-light);
+    --nm-shadow-out-sm: 
+        5px 5px 12px var(--nm-shadow-dark), 
+        -5px -5px 12px var(--nm-shadow-light);
+    --nm-shadow-in-sm: 
+        inset 5px 5px 10px var(--nm-shadow-dark), 
+        inset -5px -5px 10px var(--nm-shadow-light);
 }
 
 * {
@@ -223,8 +253,6 @@ body.dark-theme {
 
     /* Precise Borders & Glass */
     --border-color: hsla(var(--h), 100%, 90%, 0.08);
-    --glass-border: hsla(0, 0%, 100%, 0.12);
-    --glass-bg: hsla(var(--h), 45%, 4%, 0.85);
 
     /* Aura Logic: Refined for Deep Space */
     --aura-1: hsla(var(--dynamic-accent-hue, 258), 100%, 70%, 0.25);
@@ -293,8 +321,6 @@ body.light-theme {
     --accent-soft: hsla(var(--dynamic-accent-hue, 258), 85%, 58%, 0.08);
 
     --border-color: rgba(0, 0, 0, 0.06);
-    --glass-bg: rgba(255, 255, 255, 0.95);
-    --glass-border: rgba(0, 0, 0, 0.07);
 
     --aura-1: hsla(var(--dynamic-accent-hue, 258), 80%, 55%, 0.22);
     --aura-2: hsla(calc(var(--dynamic-accent-hue, 258) + 30), 80%, 62%, 0.16);
@@ -392,9 +418,8 @@ body.dark-theme.oled-optimized .modal-content {
 
 /* Enhanced Navigation for OLED */
 body.dark-theme.oled-optimized .navbar {
-    background: rgba(0, 0, 0, 0.95);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
+    background: #000000;
+    border-bottom: 2px solid var(--nm-shadow-dark);
 }
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(16px); }
@@ -488,13 +513,14 @@ body.performance-mode .splash-screen {
 }
 
 /* Ensure glass panels remain visible but flat */
-body.performance-mode .glass,
+body.performance-mode .nm-surface-out,
 body.performance-mode .account-card,
 body.performance-mode .modal,
 body.performance-mode .privacy-overlay,
 body.performance-mode .dropdown-menu {
-    background: var(--bg-secondary) !important;
-    border: 1px solid var(--border-color) !important;
+    background: var(--nm-surface) !important;
+    box-shadow: none !important;
+    border: 1px solid var(--nm-shadow-dark) !important;
 }
 
 body.performance-mode .privacy-overlay.show {
