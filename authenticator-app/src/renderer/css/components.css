@@ -869,6 +869,17 @@ body.light-theme .user-button {
 input:checked+.slider {
     background-color: var(--accent-soft);
     border-color: var(--accent-primary);
+    box-shadow: 0 0 15px var(--accent-soft);
+}
+
+input:checked+.slider:before {
+    transform: translateX(calc(var(--sw-w) - var(--t-size) - (var(--sw-h) * 0.32))) translateY(-50%);
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+.slider:active:before {
+    width: calc(var(--t-size) * 1.2);
 }
 
 /* Glass Shine Effect for Cards */
