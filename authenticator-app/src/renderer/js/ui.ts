@@ -627,6 +627,11 @@ export class UIManager {
                 if (e.target === aboutModal) this.hideAboutModal();
             });
         }
+
+        // Remove PIN Logic
+        document.getElementById('remove-pin-btn')?.addEventListener('click', () => {
+            this.showRemovePinConfirm();
+        });
     }
 
     private showAboutModal() {
@@ -1033,6 +1038,7 @@ export class UIManager {
         const hasPin = !!localStorage.getItem(this.getStorageKey('vault_pin'));
         const badge = document.getElementById('pin-status-badge');
         const setupBtn = document.getElementById('setup-pin-btn');
+        const removeBtn = document.getElementById('remove-pin-btn');
 
         if (badge) {
             badge.className = 'badge ' + (hasPin ? 'success' : 'danger');
@@ -1058,6 +1064,57 @@ export class UIManager {
         if (setupBtn) {
             setupBtn.textContent = hasPin ? 'Change PIN' : 'Setup PIN';
         }
+
+        if (removeBtn) {
+            removeBtn.classList.toggle('hidden', !hasPin);
+            this.refreshLucide();
+        }
+    }
+
+    private showRemovePinConfirm() {
+        const content = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel danger">
+                        <i data-lucide="shield-off"></i>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2 class="danger">Deactivate Security?</h2>
+                        <p>VAULT WILL BE UNPROTECTED</p>
+                    </div>
+                </div>
+                <div class="modal-divider"></div>
+                <div class="modal-body">
+                    <div class="modal-entity-badge">
+                        <div class="entity-icon">
+                            <i data-lucide="lock"></i>
+                        </div>
+                        <div class="entity-info">
+                            <span class="entity-name">Master PIN Policy</span>
+                            <span class="entity-label">Active Protection</span>
+                        </div>
+                    </div>
+                    <p class="modal-help-text">Removing the PIN means anyone with access to this device can view your identities. This action is immediate.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-danger" id="confirm-remove-pin">
+                        <i data-lucide="trash-2"></i>
+                        Remove Security
+                    </button>
+                    <button class="user-button" id="cancel-remove-pin" style="justify-content: center;">Keep PIN Active</button>
+                </div>
+            </div>
+        `;
+        this.showModal(content);
+        document.getElementById('confirm-remove-pin')?.addEventListener('click', () => {
+            localStorage.removeItem(this.getStorageKey('vault_pin'));
+            this.pushSettings();
+            this.updateLockVaultVisibility();
+            this.updatePinStatus();
+            this.showToast("Security Policy Removed", "info");
+            this.hideModal();
+        });
+        document.getElementById('cancel-remove-pin')?.addEventListener('click', () => this.hideModal());
     }
 
     private refreshLucide() {
