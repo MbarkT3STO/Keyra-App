@@ -318,24 +318,20 @@ export class UIManager {
         document.documentElement.addEventListener('mouseleave', (e) => {
             // Check if it's actually leaving the window (not just a child element)
             if (!e.relatedTarget) {
-                console.log("[Privacy] Mouse left window viewport");
                 if (this.privacyBlur) this.showPrivacyOverlay();
             }
         });
 
         document.documentElement.addEventListener('mouseenter', () => {
-            console.log("[Privacy] Mouse entered window viewport");
             if (this.privacyBlur) this.hidePrivacyOverlay();
         });
 
         // Unified Focus logic
         window.addEventListener('blur', () => {
-            console.log("[Privacy] App blurred (lost focus)");
             if (this.privacyBlur || this.screenGuardian) this.showPrivacyOverlay();
         });
 
         window.addEventListener('focus', () => {
-            console.log("[Privacy] App focused");
             this.hidePrivacyOverlay();
         });
     }
@@ -348,20 +344,17 @@ export class UIManager {
         if (!isAuthActive) {
             const overlay = document.getElementById('privacy-blur-overlay');
             if (overlay) {
-                console.log("[Privacy] Adding .show class to overlay");
                 overlay.classList.add('show');
                 this.refreshLucide();
             } else {
                 console.error("[Privacy] Overlay element NOT FOUND");
             }
         } else {
-            console.log("[Privacy] Suppression: Auth Screen is active");
         }
     }
 
     private hidePrivacyOverlay() {
         const overlay = document.getElementById('privacy-blur-overlay');
-        console.log("[Privacy] Removing .show class from overlay");
         overlay?.classList.remove('show');
     }
 
@@ -603,15 +596,10 @@ export class UIManager {
 
         // About Modal
         const brandBtn = document.getElementById('navbar-brand');
-        const closeAboutBtn = document.getElementById('btn-close-about');
         const aboutModal = document.getElementById('about-modal');
 
         if (brandBtn) {
             brandBtn.addEventListener('click', () => this.showAboutModal());
-        }
-
-        if (closeAboutBtn) {
-            closeAboutBtn.addEventListener('click', () => this.hideAboutModal());
         }
 
         if (aboutModal) {

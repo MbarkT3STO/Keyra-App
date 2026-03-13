@@ -23,7 +23,6 @@ export async function sendActivationEmail(options: MailOptions): Promise<{ succe
     const fromName = process.env.MAIL_FROM_NAME || 'Keyra Authenticator';
 
     if (!host || !user || !pass) {
-        console.log(`[MAILER] No SMTP credentials found. Falling back to simulation for ${options.to}`);
         return { success: false, message: "Simulation mode active." };
     }
 
@@ -85,7 +84,6 @@ export async function sendActivationEmail(options: MailOptions): Promise<{ succe
             html: htmlContent
         });
 
-        console.log(`[MAILER] Activation email sent successfully to ${options.to}`);
         return { success: true, message: "Email sent." };
     } catch (error: any) {
         if (error.code === 'EAUTH') {

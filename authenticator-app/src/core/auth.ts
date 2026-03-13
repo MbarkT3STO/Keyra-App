@@ -12,7 +12,6 @@ let currentKey: Buffer | null = null;
 // Email helper with Real/Simulation fallback
 async function deliverActivationCode(email: string, code: string) {
     const msg = `[KEYRA] Activation code for ${email}: ${code}`;
-    console.log(msg);
 
     // Try real email
     const result = await sendActivationEmail({
