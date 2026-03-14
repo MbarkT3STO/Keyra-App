@@ -783,6 +783,56 @@ input:checked + .slider:before {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   SETTINGS CONTAINER & SCROLLBAR
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.settings-container {
+    position: fixed;
+    top: 80px; /* Header height */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: clamp(var(--space-xl), 8vw, var(--space-4xl)) clamp(var(--space-sm), 4vw, var(--space-xl)) var(--space-xl) clamp(var(--space-sm), 4vw, var(--space-xl));
+    background: var(--bg-primary);
+    z-index: 1;
+}
+
+/* Premium Custom Scrollbar */
+.settings-container::-webkit-scrollbar {
+    width: 12px;
+}
+
+.settings-container::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    margin: 8px 0;
+}
+
+.settings-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+    border-radius: 6px;
+    border: 2px solid var(--bg-secondary);
+    transition: all 0.3s ease;
+}
+
+.settings-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--accent-hover), var(--accent-primary));
+    transform: scale(1.1);
+}
+
+.settings-container::-webkit-scrollbar-thumb:active {
+    transform: scale(0.95);
+}
+
+/* Scrollbar for Firefox */
+.settings-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) var(--bg-secondary);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    BENTO SETTINGS
    ───────────────────────────────────────────────────────────────────────────── */
 

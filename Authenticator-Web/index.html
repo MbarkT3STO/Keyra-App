@@ -229,105 +229,15 @@
             </section>
 
             <!-- Settings View -->
-            <section id="settings-view" class="view-section hidden">
+            <section id="settings-view" class="view-section hidden settings-container">
                 <div class="section-header" style="margin-bottom: var(--space-xl);">
                     <div>
                         <h1 class="section-title">Configurations</h1>
                         <p class="section-subtitle">VAULT CORE & INTERFACE PREFERENCES</p>
                     </div>
                 </div>
-                
+
                 <div class="settings-grid">
-                <!-- Vault Maintenance Card -->
-                <div class="account-card bento-card">
-                    <div class="bento-header">
-                        <div class="bento-icon">
-                            <i data-lucide="shield"></i>
-                        </div>
-                        <div class="bento-title-vessel">
-                            <h3 class="bento-title">Vault Maintenance</h3>
-                            <div class="bento-subtitle">Backup & Recovery Hub</div>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
-                        <button class="btn-primary btn-maintenance" id="btn-export-vault">
-                            <i data-lucide="download"></i>
-                            <span>Export Encrypted Backup</span>
-                        </button>
-                        <button class="btn-primary btn-maintenance" id="btn-import-vault">
-                            <i data-lucide="upload"></i>
-                            <span>Restore from Backup</span>
-                        </button>
-                        <button class="btn-primary btn-maintenance nm-button-sync" id="btn-manual-sync">
-                            <i data-lucide="refresh-cw" id="sync-btn-icon"></i>
-                            <span>Synchronize Now</span>
-                        </button>
-                    </div>
-                    <div style="margin-top: 16px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5;">
-                        <i data-lucide="alert-circle" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>
-                        Backups are encrypted using your master password.
-                    </div>
-                </div>
-
-                <!-- Security Enclave Card -->
-                    <div class="account-card bento-card">
-                        <div class="bento-header">
-                            <div class="bento-icon">
-                                <i data-lucide="shield-check"></i>
-                            </div>
-                            <div class="bento-title-vessel">
-                                <h3 class="bento-title">Security Enclave</h3>
-                                <div class="bento-subtitle">Access & Privacy Controls</div>
-                            </div>
-                        </div>
-                        <div class="bento-content">
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-name">Privacy Mode</div>
-                                    <div class="setting-desc">Mask OTP codes until requested</div>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="privacy-mode-toggle">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-name">Auto-Lock Vault</div>
-                                    <div class="setting-desc">Timeout after inactivity</div>
-                                </div>
-                                <div class="segmented-control" id="autolock-segmented">
-                                    <button class="segment" data-val="0">Off</button>
-                                    <button class="segment" data-val="1">1m</button>
-                                    <button class="segment" data-val="5">5m</button>
-                                    <button class="segment" data-val="15">15m</button>
-                                    <div class="segment-indicator"></div>
-                                </div>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-name">Access PIN</div>
-                                    <div class="setting-desc">Multi-factor verification core</div>
-                                </div>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="user-button" id="setup-pin-btn" style="min-width: 100px; justify-content: center;">Setup PIN</button>
-                                    <button class="user-button danger" id="remove-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Remove PIN</button>
-                                </div>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-name">Screen Guardian</div>
-                                    <div class="setting-desc">Prevent screenshots & recordings</div>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="screen-guardian-toggle">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Visual Interface Card -->
                     <div class="account-card bento-card">
                         <div class="bento-header">
@@ -432,8 +342,97 @@
                                     <div class="segment-indicator"></div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
+                    <!-- Security Enclave Card -->
+                    <div class="account-card bento-card">
+                        <div class="bento-header">
+                            <div class="bento-icon">
+                                <i data-lucide="shield-check"></i>
+                            </div>
+                            <div class="bento-title-vessel">
+                                <h3 class="bento-title">Security Enclave</h3>
+                                <div class="bento-subtitle">Access & Privacy Controls</div>
+                            </div>
+                        </div>
+                        <div class="bento-content">
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Access PIN</div>
+                                    <div class="setting-desc">Multi-factor verification core</div>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="user-button" id="setup-pin-btn" style="min-width: 100px; justify-content: center;">Setup PIN</button>
+                                    <button class="user-button danger" id="remove-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Remove PIN</button>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Auto-Lock Vault</div>
+                                    <div class="setting-desc">Timeout after inactivity</div>
+                                </div>
+                                <div class="segmented-control" id="autolock-segmented">
+                                    <button class="segment" data-val="0">Off</button>
+                                    <button class="segment" data-val="1">1m</button>
+                                    <button class="segment" data-val="5">5m</button>
+                                    <button class="segment" data-val="15">15m</button>
+                                    <div class="segment-indicator"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Privacy Mode</div>
+                                    <div class="setting-desc">Mask OTP codes until requested</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="privacy-mode-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Screen Guardian</div>
+                                    <div class="setting-desc">Prevent screenshots & recordings</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="screen-guardian-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- Data Management Card -->
+                    <div class="account-card bento-card">
+                        <div class="bento-header">
+                            <div class="bento-icon">
+                                <i data-lucide="database"></i>
+                            </div>
+                            <div class="bento-title-vessel">
+                                <h3 class="bento-title">Data Management</h3>
+                                <div class="bento-subtitle">Backup & Synchronization</div>
+                            </div>
+                        </div>
+                        <div class="bento-content">
+                            <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                                <button class="btn-primary btn-maintenance" id="btn-export-vault">
+                                    <i data-lucide="download"></i>
+                                    <span>Export Encrypted Backup</span>
+                                </button>
+                                <button class="btn-primary btn-maintenance" id="btn-import-vault">
+                                    <i data-lucide="upload"></i>
+                                    <span>Restore from Backup</span>
+                                </button>
+                                <button class="btn-primary btn-maintenance nm-button-sync" id="btn-manual-sync">
+                                    <i data-lucide="refresh-cw" id="sync-btn-icon"></i>
+                                    <span>Synchronize Now</span>
+                                </button>
+                            </div>
+                            <div style="margin-top: 16px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5;">
+                                <i data-lucide="alert-circle" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>
+                                Backups are encrypted using your master password.
+                            </div>
                         </div>
                     </div>
 
@@ -468,12 +467,12 @@
                             </div>
                             <div class="setting-row">
                                 <div class="setting-info">
-                                    <div class="setting-name">Vault Analytics</div>
-                                    <div class="setting-desc">Optimized security state</div>
+                                    <div class="setting-name">Cloud Sync Status</div>
+                                    <div class="setting-desc" id="cloud-status-display">Connected</div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: #28a745; font-size: 13px; font-weight: 800;">
-                                    <i data-lucide="check-circle-2" style="width: 16px; height: 16px;"></i>
-                                    OPERATIONAL
+                                <div style="display: flex; align-items: center; gap: 6px; color: var(--success); font-size: 13px; font-weight: 700;">
+                                    <i data-lucide="cloud" style="width: 16px; height: 16px;"></i>
+                                    <span>Active</span>
                                 </div>
                             </div>
                         </div>

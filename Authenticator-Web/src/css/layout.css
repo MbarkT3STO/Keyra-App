@@ -77,6 +77,11 @@ body {
     width: 100%;
 }
 
+/* Hide main content scrollbar when settings are visible */
+body:has(.settings-container:not(.hidden)) .main-content {
+    overflow-y: hidden;
+}
+
 .section-header {
     display: flex; 
     justify-content: space-between; 

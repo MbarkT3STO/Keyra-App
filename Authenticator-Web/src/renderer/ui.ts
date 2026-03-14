@@ -483,19 +483,10 @@ export class UIManager {
     }
 
     private setupAccentColorSelector() {
-        console.log('Setting up accent color selector...');
-        
         const toggle = document.getElementById('accent-color-toggle');
         const dropdown = document.getElementById('accent-dropdown');
         const currentAccent = document.getElementById('current-accent');
         const accentLabel = document.querySelector('.accent-label');
-        
-        console.log('Elements found:', { 
-            toggle: !!toggle, 
-            dropdown: !!dropdown, 
-            currentAccent: !!currentAccent, 
-            accentLabel: !!accentLabel 
-        });
         
         if (!toggle || !dropdown) {
             console.error('Accent color selector elements not found!');
@@ -508,23 +499,19 @@ export class UIManager {
         
         // Bind methods to maintain context
         this.handleToggleClick = (e: Event) => {
-            console.log('Toggle clicked!');
             e.preventDefault();
             e.stopPropagation();
             
             const isOpen = dropdown.classList.contains('show');
-            console.log('Current state:', isOpen);
             
             if (isOpen) {
                 dropdown.classList.remove('show');
                 toggle.classList.remove('active');
                 toggle.parentElement?.classList.remove('open');
-                console.log('Closing dropdown');
             } else {
                 dropdown.classList.add('show');
                 toggle.classList.add('active');
                 toggle.parentElement?.classList.add('open');
-                console.log('Opening dropdown');
             }
         };
         
@@ -533,7 +520,6 @@ export class UIManager {
                 dropdown.classList.remove('show');
                 toggle.classList.remove('active');
                 toggle.parentElement?.classList.remove('open');
-                console.log('Closed dropdown due to outside click');
             }
         };
         
@@ -544,7 +530,6 @@ export class UIManager {
         // Handle color selection
         document.querySelectorAll('.accent-item').forEach(item => {
             item.addEventListener('click', (e) => {
-                console.log('Color item clicked:', item.getAttribute('data-accent'));
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -569,7 +554,6 @@ export class UIManager {
                     dropdown.classList.remove('show');
                     toggle.classList.remove('active');
                     toggle.parentElement?.classList.remove('open');
-                    console.log('Color selected and dropdown closed');
                 }
             });
         });
@@ -579,8 +563,6 @@ export class UIManager {
         
         // Ensure Lucide icons are created for the chevron
         this.refreshLucide();
-        
-        console.log('Accent color selector setup complete');
     }
     
     // Store methods as properties to maintain context
