@@ -2,7 +2,7 @@ import { syncVault } from './store.js';
 
 export class UIManager {
     private currentTheme: 'light' | 'dark' = 'light';
-    private currentTab: 'vault' | 'settings' = 'vault';
+    private currentTab: 'vault' | 'settings' | 'account' = 'vault';
     private accounts: any[] = [];
     private timerInterval: any = null;
     private privacyMode: boolean = false;
@@ -15,6 +15,8 @@ export class UIManager {
     private searchQuery: string = '';
     private syncCount: number = 0;
     private liveSyncInterval: any = null;
+    private emailResendTimer: number = 0;
+    private emailResendInterval: any = null;
 
     constructor(public userId: string = 'default') {
         this.initTheme();
@@ -444,11 +446,20 @@ export class UIManager {
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
                 const target = e.currentTarget as HTMLElement;
-                const tabName = target.getAttribute('data-tab') as 'vault' | 'settings';
+                const tabName = target.getAttribute('data-tab') as 'vault' | 'settings' | 'account';
                 this.switchTab(tabName);
                 this.updateLastActivity(`Switched to ${tabName}`);
             });
         });
+
+        // Account navigation from dropdown
+        document.getElementById('account-settings-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('user-dropdown')?.classList.remove('show');
+            this.switchTab('account');
+            this.updateLastActivity('Opened Account Settings');
+        });
+
 
         // User Dropdown Logic
         const dropdownBtn = document.getElementById('user-dropdown-btn');
@@ -675,7 +686,275 @@ export class UIManager {
         document.getElementById('remove-pin-btn')?.addEventListener('click', () => {
             this.showRemovePinConfirm();
         });
+
+        this.setupAccountEvents();
     }
+
+    private setupAccountEvents() {
+        // Change Username
+        document.getElementById('form-change-username')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newName = (document.getElementById('new-username') as HTMLInputElement).value.trim();
+            if (newName.length < 4) return;
+
+            this.setLoading(true, "Updating Identity", "SECURE VAULT RENAMING");
+            try {
+                const res = await (window as any).api.changeUsername(newName);
+                if (res.success) {
+                    this.showToast("Display name updated", "success");
+                    await this.loadAccountInfo();
+                    // Update main name display
+                    const userNameDisp = document.getElementById('user-name-display');
+                    if (userNameDisp) userNameDisp.textContent = newName;
+                    const dropUserName = document.getElementById('dropdown-user-name');
+                    if (dropUserName) dropUserName.textContent = newName;
+                } else {
+                    this.showToast(res.message, "error");
+                }
+            } finally {
+                this.setLoading(false);
+            }
+        });
+
+        // Request Email Change
+        document.getElementById('form-request-email-change')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newEmail = (document.getElementById('new-email') as HTMLInputElement).value.trim();
+            if (!newEmail) return;
+
+            this.setLoading(true, "Requesting Change", "INITIATING EMAIL ROTATION");
+            try {
+                const res = await (window as any).api.requestEmailChange(newEmail);
+                if (res.success) {
+                    this.showToast("Verification code sent", "success");
+                    
+                    const modal = document.getElementById('modal-email-verify');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('show');
+                    }
+                    this.startEmailResendTimer();
+                    this.refreshLucide();
+                    await this.loadAccountInfo();
+                } else {
+                    this.showToast(res.message, "error");
+                }
+            } finally {
+                this.setLoading(false);
+            }
+        });
+
+        // Verify Email Modal (Manual Trigger from Pending Box)
+        document.getElementById('btn-show-email-verify')?.addEventListener('click', async () => {
+            // Requirement: Send a new activation code and show the activation modal
+            this.setLoading(true, "Requesting Code", "ROTATING VERIFICATION KEY");
+            try {
+                const res = await (window as any).api.resendEmailChangeCode();
+                if (res.success) {
+                    const modal = document.getElementById('modal-email-verify');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('show');
+                    }
+                    this.startEmailResendTimer();
+                    this.refreshLucide();
+                    this.showToast("New code sent", "success");
+                } else {
+                    this.showToast(res.message, "error");
+                }
+            } finally {
+                this.setLoading(false);
+            }
+        });
+
+        // Verify Email Modal UI Helpers
+        document.getElementById('btn-cancel-email-modal')?.addEventListener('click', () => {
+            const modal = document.getElementById('modal-email-verify');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        });
+
+        // Email Verification Digits
+        const digits = document.querySelectorAll('.email-verify-digit') as NodeListOf<HTMLInputElement>;
+        digits.forEach((input, idx) => {
+            input.addEventListener('input', () => {
+                if (input.value && digits[idx + 1]) digits[idx + 1].focus();
+                if (Array.from(digits).every(i => i.value)) this.handleEmailVerification();
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && digits[idx - 1]) digits[idx - 1].focus();
+            });
+        });
+
+        document.getElementById('btn-confirm-email-change')?.addEventListener('click', () => this.handleEmailVerification());
+
+        document.getElementById('btn-resend-email-code')?.addEventListener('click', async () => {
+            if (this.emailResendTimer > 0) return;
+            
+            try {
+                const res = await (window as any).api.resendEmailChangeCode();
+                if (res.success) {
+                    this.showToast("New code sent", "success");
+                    this.startEmailResendTimer();
+                }
+            } catch (e) {
+                this.showToast("Failed to resend code", "error");
+            }
+        });
+
+        document.getElementById('btn-cancel-email-change')?.addEventListener('click', async () => {
+            this.setLoading(true, "Cancelling", "REVERTING IDENTITY CHANGES");
+            try {
+                await (window as any).api.cancelEmailChange();
+                await this.loadAccountInfo();
+                this.showToast("Email change cancelled", "info");
+            } finally {
+                this.setLoading(false);
+            }
+        });
+
+        // Change Password
+        document.getElementById('form-change-password')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPass = (document.getElementById('new-master-password') as HTMLInputElement).value;
+            const confPass = (document.getElementById('confirm-master-password') as HTMLInputElement).value;
+
+            if (newPass !== confPass) {
+                this.showToast("Passwords do not match", "error");
+                return;
+            }
+
+            if (newPass.length < 8) {
+                this.showToast("Password too short", "error");
+                return;
+            }
+
+            this.setLoading(true, "Re-encrypting Vault", "MASTER KEY ROTATION IN PROGRESS");
+            try {
+                const res = await (window as any).api.changePassword(newPass);
+                if (res.success) {
+                    this.showToast("Master key updated", "success");
+                    (document.getElementById('new-master-password') as HTMLInputElement).value = '';
+                    (document.getElementById('confirm-master-password') as HTMLInputElement).value = '';
+                } else {
+                    this.showToast(res.message, "error");
+                }
+            } finally {
+                this.setLoading(false);
+            }
+        });
+    }
+
+    private async handleEmailVerification() {
+        const digits = document.querySelectorAll('.email-verify-digit') as NodeListOf<HTMLInputElement>;
+        const code = Array.from(digits).map(i => i.value).join('');
+        const err = document.getElementById('email-verify-error');
+
+        if (code.length < 6) return;
+
+        this.setLoading(true, "Verifying", "FINALIZING EMAIL IDENTITY");
+        try {
+            const res = await (window as any).api.confirmEmailChange(code);
+            if (res.success) {
+                const modal = document.getElementById('modal-email-verify');
+                if (modal) {
+                    modal.classList.remove('show');
+                    setTimeout(() => modal.classList.add('hidden'), 300);
+                }
+                await this.loadAccountInfo();
+                this.showToast("Email updated successfully", "success");
+                digits.forEach(i => i.value = '');
+            } else {
+                if (err) {
+                    err.textContent = res.message;
+                    err.classList.remove('opacity-0');
+                    setTimeout(() => err.classList.add('opacity-0'), 3000);
+                }
+                digits.forEach(i => i.value = '');
+                digits[0].focus();
+            }
+        } finally {
+            this.setLoading(false);
+        }
+    }
+
+    private startEmailResendTimer() {
+        if (this.emailResendInterval) clearInterval(this.emailResendInterval);
+        this.emailResendTimer = 30;
+        this.updateResendBtnUI();
+
+        this.emailResendInterval = setInterval(() => {
+            this.emailResendTimer--;
+            this.updateResendBtnUI();
+            if (this.emailResendTimer <= 0) {
+                clearInterval(this.emailResendInterval);
+            }
+        }, 1000);
+    }
+
+    private updateResendBtnUI() {
+        const btn = document.getElementById('btn-resend-email-code') as HTMLButtonElement;
+        const timerText = document.getElementById('email-resend-timer');
+        if (!btn || !timerText) return;
+
+        if (this.emailResendTimer > 0) {
+            btn.disabled = true;
+            timerText.textContent = `(${this.emailResendTimer}s)`;
+        } else {
+            btn.disabled = false;
+            timerText.textContent = '';
+        }
+    }
+
+    private async loadAccountInfo() {
+        const user = await (window as any).api.getCurrentUser();
+        if (!user) return;
+
+        const dispName = document.getElementById('acc-display-username');
+        const dispEmail = document.getElementById('acc-primary-email');
+        const initialsEl = document.getElementById('acc-initials');
+        const avatarEl = document.getElementById('acc-avatar');
+
+        if (dispName) dispName.textContent = user.username;
+        if (dispEmail) dispEmail.textContent = user.email;
+
+        // Initials Logic
+        if (initialsEl) {
+            const names = user.username.split(' ');
+            initialsEl.textContent = names.length > 1 
+                ? (names[0][0] + names[1][0]).toUpperCase()
+                : user.username.slice(0, 2).toUpperCase();
+        }
+
+        // Pending UI
+        const badge = document.getElementById('pending-email-badge');
+        const actionBox = document.getElementById('pending-email-action-box');
+        const pendingText = document.getElementById('pending-email-text');
+
+        if (user.pendingEmail) {
+            badge?.classList.remove('hidden');
+            if (badge) {
+                badge.textContent = 'NOT VERIFIED';
+                badge.style.background = 'rgba(255, 59, 48, 0.1)';
+                badge.style.color = '#ff3b30';
+                badge.style.border = '1px solid rgba(255, 59, 48, 0.2)';
+                badge.style.fontSize = '10px';
+                badge.style.fontWeight = '850';
+                badge.style.padding = '4px 10px';
+                badge.style.borderRadius = '20px';
+            }
+            actionBox?.classList.remove('hidden');
+            if (pendingText) pendingText.textContent = `Verify: ${user.pendingEmail}`;
+        } else {
+            badge?.classList.add('hidden');
+            actionBox?.classList.add('hidden');
+        }
+
+        this.refreshLucide();
+    }
+
 
     private showAboutModal() {
         const modal = document.getElementById('about-modal');
@@ -803,14 +1082,32 @@ export class UIManager {
         return date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + `, ${timeStr}`;
     }
 
-    private switchTab(tab: 'vault' | 'settings') {
+    public switchTab(tab: 'vault' | 'settings' | 'account') {
         this.currentTab = tab;
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.getAttribute('data-tab') === tab));
-        document.getElementById('vault-view')?.classList.toggle('hidden', tab !== 'vault');
-        document.getElementById('settings-view')?.classList.toggle('hidden', tab !== 'settings');
-        if (tab === 'settings') this.updateLastActivityDisplay();
+
+        // Update Nav Tabs UI
+        document.querySelectorAll('.nav-tab').forEach(t => {
+            t.classList.toggle('active', t.getAttribute('data-tab') === tab);
+        });
+
+        // Toggle View Sections
+        ['vault-view', 'settings-view', 'account-view'].forEach(viewId => {
+            const el = document.getElementById(viewId);
+            if (el) {
+                const shouldShow = viewId === `${tab}-view`;
+                el.classList.toggle('hidden', !shouldShow);
+            }
+        });
+
+        if (tab === 'account') {
+            this.loadAccountInfo();
+        } else if (tab === 'settings') {
+            this.updateLastActivityDisplay();
+        }
+
         this.refreshLucide();
     }
+
 
     public async refreshAccounts() {
         this.accounts = await (window as any).api.getAccounts();

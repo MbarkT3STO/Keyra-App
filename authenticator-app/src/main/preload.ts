@@ -11,6 +11,13 @@ contextBridge.exposeInMainWorld('api', {
     getCurrentUser: () => ipcRenderer.invoke('get-current-user'),
     pollForUpdates: () => ipcRenderer.invoke('poll-for-updates'),
     updateUserSettings: (settings: any) => ipcRenderer.invoke('update-user-settings', settings),
+    changeUsername: (newUsername: string) => ipcRenderer.invoke('change-username', newUsername),
+    changePassword: (newPassword: string) => ipcRenderer.invoke('change-password', newPassword),
+    requestEmailChange: (newEmail: string) => ipcRenderer.invoke('request-email-change', newEmail),
+    confirmEmailChange: (code: string) => ipcRenderer.invoke('confirm-email-change', code),
+    resendEmailChangeCode: () => ipcRenderer.invoke('resend-email-change-code'),
+    cancelEmailChange: () => ipcRenderer.invoke('cancel-email-change'),
+
 
     // Operations
     getAccounts: () => ipcRenderer.invoke('get-accounts'),

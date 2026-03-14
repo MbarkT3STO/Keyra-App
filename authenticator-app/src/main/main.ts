@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer } from 'electron';
 import * as path from 'path';
-import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates } from '../core/auth';
+import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates, changeUsername, changePassword, requestEmailChange, confirmEmailChange, resendEmailChangeCode, cancelEmailChange } from '../core/auth';
 import { generateTOTP, getRemainingSeconds } from '../core/totp';
 import * as fs from 'fs';
 import { dialog } from 'electron';
@@ -76,6 +76,15 @@ ipcMain.handle('check-session', () => checkSession());
 ipcMain.handle('logout', () => logout());
 ipcMain.handle('get-current-user', () => getCurrentUser());
 ipcMain.handle('poll-for-updates', () => pollForUpdates());
+
+// -- Account Management --
+ipcMain.handle('change-username', (event, newUsername) => changeUsername(newUsername));
+ipcMain.handle('change-password', (event, newPassword) => changePassword(newPassword));
+ipcMain.handle('request-email-change', (event, newEmail) => requestEmailChange(newEmail));
+ipcMain.handle('confirm-email-change', (event, code) => confirmEmailChange(code));
+ipcMain.handle('resend-email-change-code', () => resendEmailChangeCode());
+ipcMain.handle('cancel-email-change', () => cancelEmailChange());
+
 
 // -- Vault Access (Requires Active User) --
 ipcMain.handle('get-accounts', async () => {

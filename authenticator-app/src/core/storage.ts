@@ -37,6 +37,8 @@ export interface UserRecord {
     salt: string;
     isActivated: boolean;
     activationCode?: string;
+    pendingEmail?: string;
+    emailChangeCode?: string;
     encryptedVaultData: string;
     settings?: UserSettings;
     "Desktop Settings"?: UserSettings;
@@ -191,6 +193,37 @@ export async function pollCloudUpdates(username: string): Promise<{ usersChanged
     }
 
     return { usersChanged, dataChanged, userData };
+}
+
+export async function renameUserFolder(oldUsername: string, newUsername: string): Promise<void> {
+    const oldPath = `users/${oldUsername}/data.json`;
+    const newPath = `users/${newUsername}/data.json`;
+
+    try {
+        // 1. Get old data
+        const oldFile: any = await githubRequest(oldPath, 'GET');
+        if (!oldFile) return;
+
+        // 2. Create new file with same content
+        await githubRequest(newPath, 'PUT', {
+            message: `Rename user folder: ${oldUsername} -> ${newUsername}`,
+            content: oldFile.content
+        });
+
+        // 3. Delete old file
+        await githubRequest(oldPath, 'DELETE', {
+            message: `Cleanup after rename: ${oldUsername} -> ${newUsername}`,
+            sha: oldFile.sha
+        });
+
+        // 4. Update local SHA tracking if exists
+        if (lastUserDataSHAs[oldUsername]) {
+            delete lastUserDataSHAs[oldUsername];
+        }
+    } catch (e) {
+        console.error("Failed to rename user folder in cloud:", e);
+        throw e;
+    }
 }
 
 export function backupUsers(filePath: string, users: UserRecord[]): void {
