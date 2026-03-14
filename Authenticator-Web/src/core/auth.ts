@@ -1,4 +1,4 @@
-import { getUsers, saveUsers, getUserData, syncUserData } from './storage';
+import { getUsers, saveUsers, getUserData, syncUserData, renameUserFolder } from './storage';
 import type { UserRecord } from './storage';
 import { hashPassword, verifyPassword, deriveKey, encryptVault, decryptVault } from './crypto';
 import type { AuthenticatorAccount } from './crypto';
@@ -314,10 +314,16 @@ export async function changeUsername(newUsername: string): Promise<{ success: bo
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
     if (userIndex === -1) throw new Error("User missing from storage.");
 
+    const oldUsername = currentUser.username;
     users[userIndex].username = newUsername;
     currentUser.username = newUsername; // Sync local session
 
     await saveUsers(users);
+    
+    // Rename cloud folder (move the record)
+    await renameUserFolder(oldUsername, newUsername);
+    
+    // Final sync to the new path to ensure latest metadata is preserved
     await syncUserData(newUsername, users[userIndex]);
 
     // Update local storage session

@@ -98,6 +98,36 @@ export const handler = async (event: any, context: Context) => {
             };
         }
 
+        if (action === 'move') {
+            const { oldPath, newPath } = data;
+            
+            // 1. Get original file content and sha
+            const existingFile = await githubRequest(oldPath, 'GET');
+            if (!existingFile) {
+                return {
+                    statusCode: 404,
+                    body: JSON.stringify({ success: false, message: "Source file not found." })
+                };
+            }
+
+            // 2. Create new file with same content
+            await githubRequest(newPath, 'PUT', {
+                message: `Move from ${oldPath} to ${newPath}`,
+                content: existingFile.content
+            });
+
+            // 3. Delete old file
+            await githubRequest(oldPath, 'DELETE', {
+                message: `Delete old path after move to ${newPath}`,
+                sha: existingFile.sha
+            });
+
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ success: true, message: "Folder/File moved successfully." })
+            };
+        }
+
         return {
             statusCode: 400,
             body: JSON.stringify({ success: false, message: "Invalid action." })

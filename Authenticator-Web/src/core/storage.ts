@@ -36,7 +36,7 @@ const USERS_KEY = 'keyra_users';
 
 const syncQueues: Record<string, { timer: any, data: any }> = {};
 
-async function callSync(action: 'get' | 'put', path: string, data?: any) {
+async function callSync(action: 'get' | 'put' | 'move', path: string, data?: any) {
     // For 'put' actions, we debounce per-path to avoid race conditions
     if (action === 'put') {
         return new Promise((resolve) => {
@@ -66,7 +66,7 @@ async function callSync(action: 'get' | 'put', path: string, data?: any) {
         });
     }
 
-    // Default 'get' or immediate action
+    // Default 'get', 'move' or immediate action
     try {
         const response = await fetch('/.netlify/functions/github-sync', {
             method: 'POST',
@@ -118,6 +118,12 @@ export async function saveUsers(users: UserRecord[]): Promise<void> {
 export async function syncUserData(username: string, data: Partial<UserRecord>): Promise<void> {
     const path = `users/${username}/data.json`;
     await callSync('put', path, data);
+}
+
+export async function renameUserFolder(oldUsername: string, newUsername: string): Promise<void> {
+    const oldPath = `users/${oldUsername}/data.json`;
+    const newPath = `users/${newUsername}/data.json`;
+    await callSync('move', '', { oldPath, newPath });
 }
 
 export async function getUserData(username: string): Promise<any | null> {
