@@ -253,15 +253,31 @@ export async function updateUserSettings(settings: any): Promise<void> {
     await syncUserData(currentUser.username, users[userIndex]);
 }
 
-export function getBackupData(): { salt: string, encryptedVaultData: string } {
+export function getBackupData(): { 
+    salt: string, 
+    encryptedVaultData: string, 
+    autolock?: string, 
+    "Desktop Settings"?: any, 
+    "Web Settings"?: any 
+} {
     if (!currentUser) throw new Error("No active user session.");
     return {
         salt: currentUser.salt,
-        encryptedVaultData: currentUser.encryptedVaultData
+        encryptedVaultData: currentUser.encryptedVaultData,
+        autolock: currentUser.autolock,
+        "Desktop Settings": currentUser["Desktop Settings"],
+        "Web Settings": currentUser["Web Settings"]
     };
 }
 
-export async function importVaultData(salt: string, encryptedVaultData: string, password: string): Promise<{ success: boolean, message: string }> {
+export async function importVaultData(
+    salt: string, 
+    encryptedVaultData: string, 
+    password: string, 
+    autolock?: string, 
+    desktopSettings?: any, 
+    webSettings?: any
+): Promise<{ success: boolean, message: string }> {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
 
     try {
@@ -269,8 +285,35 @@ export async function importVaultData(salt: string, encryptedVaultData: string, 
         const decryptedJson = decryptVault(encryptedVaultData, key);
         const accounts = JSON.parse(decryptedJson) as AuthenticatorAccount[];
 
+        // 1. Restore Vault Data
         await saveActiveAccounts(accounts);
-        return { success: true, message: "Vault successfully merged." };
+
+        // 2. Restore Settings if present in backup
+        if (autolock !== undefined || desktopSettings || webSettings) {
+            const users = await getUsers();
+            const userIndex = users.findIndex(u => u.id === currentUser!.id);
+            if (userIndex !== -1) {
+                if (autolock !== undefined) {
+                    users[userIndex].autolock = autolock;
+                    currentUser.autolock = autolock;
+                }
+                if (desktopSettings) {
+                    users[userIndex]["Desktop Settings"] = desktopSettings;
+                    currentUser["Desktop Settings"] = desktopSettings;
+                }
+                if (webSettings) {
+                    users[userIndex]["Web Settings"] = webSettings;
+                    currentUser["Web Settings"] = webSettings;
+                }
+                await saveUsers(users);
+                await syncUserData(currentUser.username, users[userIndex]);
+                
+                // Update session state
+                currentUser.settings = currentUser["Web Settings"];
+            }
+        }
+
+        return { success: true, message: "Vault and settings successfully restored." };
     } catch (err) {
         console.error("Vault Import Error:", err);
         return { success: false, message: "Decryption failed." };

@@ -406,7 +406,7 @@ export class UIManager {
             const res = await (window as any).api.importVault();
             if (res.success && res.data) {
                 // Show a modal to ask for the password of that backup
-                this.showImportPasswordModal(res.data.salt, res.data.encryptedVaultData);
+                this.showImportPasswordModal(res.data);
             } else if (res.message) {
                 this.showToast(res.message, "error");
             }
@@ -1846,7 +1846,8 @@ export class UIManager {
         document.getElementById('cancel-delete-btn')?.addEventListener('click', () => this.hideModal());
     }
 
-    private showImportPasswordModal(salt: string, encryptedVaultData: string) {
+    private showImportPasswordModal(data: any) {
+        const { salt, encryptedVaultData, autolock, "Desktop Settings": desktopSettings, "Web Settings": webSettings } = data;
         const content = `
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
@@ -1880,8 +1881,7 @@ export class UIManager {
                 this.showToast("Password required", "error");
                 return;
             }
-
-            const res = await (window as any).api.performVaultImport(salt, encryptedVaultData, pass);
+            const res = await (window as any).api.performVaultImport(salt, encryptedVaultData, pass, autolock, desktopSettings, webSettings);
             if (res.success) {
                 this.hideModal();
                 this.showToast("Vault successfully restored!", "success");

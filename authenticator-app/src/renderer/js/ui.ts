@@ -631,7 +631,7 @@ export class UIManager {
         document.getElementById('btn-import-vault')?.addEventListener('click', async () => {
             const res = await (window as any).api.importVault();
             if (res.success && res.data) {
-                this.showImportPasswordModal(res.data.salt, res.data.encryptedVaultData);
+                this.showImportPasswordModal(res.data);
             }
         });
 
@@ -1741,7 +1741,8 @@ export class UIManager {
         document.getElementById('cancel-delete-btn')?.addEventListener('click', () => this.hideModal());
     }
 
-    private showImportPasswordModal(salt: string, encryptedVaultData: string) {
+    private showImportPasswordModal(data: any) {
+        const { salt, encryptedVaultData, autolock, "Desktop Settings": desktopSettings, "Web Settings": webSettings } = data;
         const content = `
             <div class="modal-content">
                 <div class="modal-header">
@@ -1782,7 +1783,7 @@ export class UIManager {
         this.showModal(content);
         document.getElementById('confirm-import')?.addEventListener('click', async () => {
             const pass = (document.getElementById('import-pass') as HTMLInputElement).value;
-            const res = await (window as any).api.performVaultImport(salt, encryptedVaultData, pass);
+            const res = await (window as any).api.performVaultImport(salt, encryptedVaultData, pass, autolock, desktopSettings, webSettings);
             if (res.success) {
                 this.hideModal();
                 this.showToast("Vault restored", "success");

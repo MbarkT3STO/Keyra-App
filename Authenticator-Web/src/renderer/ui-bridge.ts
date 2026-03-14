@@ -113,8 +113,8 @@ export const bridge = {
             input.click();
         });
     },
-    performVaultImport: async (salt: string, encryptedVaultData: string, pass: string) => 
-        syncWrapper(() => auth.importVaultData(salt, encryptedVaultData, pass)),
+    performVaultImport: async (salt: string, encryptedVaultData: string, pass: string, autolock?: string, desktopSettings?: any, webSettings?: any) => 
+        syncWrapper(() => auth.importVaultData(salt, encryptedVaultData, pass, autolock, desktopSettings, webSettings)),
     
     setContentProtection: async (enabled: boolean) => {
         console.log("Content protection requested:", enabled);
