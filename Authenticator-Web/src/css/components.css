@@ -1037,11 +1037,15 @@ input:checked + .slider:before {
 /* ─────────────────────────────────────────────────────────────────────────────
    PREMIUM SPLASH SCREEN
    ───────────────────────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────────
+   NEUMORPHIC SPLASH SCREEN
+   ───────────────────────────────────────────────────────────────────────────── */
+
 .splash-screen {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: #08080a;
+    background: var(--bg-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1059,7 +1063,7 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 40px;
+    gap: clamp(32px, 6vw, 48px);
     animation: splashContentUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
@@ -1070,37 +1074,52 @@ input:checked + .slider:before {
 
 .splash-logo {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: clamp(100px, 15vw, 140px);
+    height: clamp(100px, 15vw, 140px);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--accent-primary);
+    background: var(--bg-primary);
+    border-radius: var(--radius-full);
+    box-shadow: var(--nm-raised);
+    animation: logoFloat 6s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
 }
 
 .splash-logo i {
-    width: 64px;
-    height: 64px;
+    width: clamp(48px, 8vw, 64px);
+    height: clamp(48px, 8vw, 64px);
+    color: var(--accent-primary);
     filter: drop-shadow(0 0 20px var(--accent-primary));
     z-index: 2;
+    animation: iconGlow 3s ease-in-out infinite;
+}
+
+@keyframes iconGlow {
+    0%, 100% { filter: drop-shadow(0 0 20px var(--accent-primary)); }
+    50% { filter: drop-shadow(0 0 30px var(--accent-hover)); }
 }
 
 .splash-ring {
     position: absolute;
-    inset: 0;
+    inset: -8px;
     border: 2px solid var(--accent-soft);
     border-radius: var(--radius-full);
-    animation: splashRingPulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: splashRingPulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .splash-ring::after {
     content: '';
     position: absolute;
-    inset: -10px;
+    inset: -12px;
     border: 1px solid var(--accent-primary);
     border-radius: var(--radius-full);
     opacity: 0.3;
-    animation: splashRingPulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite reverse;
+    animation: splashRingPulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite reverse;
 }
 
 @keyframes splashRingPulse {
@@ -1110,58 +1129,65 @@ input:checked + .slider:before {
 }
 
 .splash-title {
-    font-size: 56px;
+    font-size: clamp(42px, 8vw, 64px);
     font-weight: 900;
     letter-spacing: -3px;
-    color: #fff;
+    color: var(--text-primary);
     margin: 0;
     text-align: center;
-    background: linear-gradient(to bottom, #fff, rgba(255,255,255,0.7));
+    background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .splash-status {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: clamp(12px, 2vw, 16px);
 }
 
 #splash-status-text {
-    font-size: 13px;
+    font-size: clamp(11px, 2vw, 13px);
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 2px;
     color: var(--accent-primary);
-    opacity: 0.7;
+    opacity: 0.8;
     animation: splashType 2s steps(40, end);
 }
 
 .splash-progress-bar {
-    width: 200px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 2px;
+    width: clamp(180px, 25vw, 240px);
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-full);
     overflow: hidden;
     position: relative;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1),
+                inset -2px -2px 5px rgba(255, 255, 255, 0.05);
 }
 
 .splash-progress-inner {
     position: absolute;
-    inset: 0;
-    background: var(--accent-primary);
+    inset: 2px;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover));
     width: 40%;
-    border-radius: 2px;
+    border-radius: var(--radius-full);
     animation: splashProgress 2.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
     box-shadow: 0 0 15px var(--accent-primary);
 }
 
 @keyframes splashProgress {
-    0% { left: -40%; width: 20%; }
-    50% { left: 40%; width: 60%; }
-    100% { left: 100%; width: 20%; }
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(250%); }
+}
+
+@keyframes splashType {
+    from { width: 0; }
+    to { width: 100%; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
