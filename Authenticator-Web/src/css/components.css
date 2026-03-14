@@ -1038,14 +1038,14 @@ input:checked + .slider:before {
    PREMIUM SPLASH SCREEN
    ───────────────────────────────────────────────────────────────────────────── */
 /* ─────────────────────────────────────────────────────────────────────────────
-   NEUMORPHIC SPLASH SCREEN
+   NEUMORPHIC SPLASH SCREEN - ALWAYS LIGHT THEME
    ───────────────────────────────────────────────────────────────────────────── */
 
 .splash-screen {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: var(--bg-primary);
+    background: #f8f4ff; /* Crystal Mauve - Light theme background */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1079,9 +1079,10 @@ input:checked + .slider:before {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-primary);
+    background: #f8f4ff; /* Light theme background */
     border-radius: var(--radius-full);
-    box-shadow: var(--nm-raised);
+    box-shadow: 8px 8px 16px rgba(139, 92, 246, 0.15), /* Soft purple shadow */
+                -8px -8px 16px rgba(255, 255, 255, 0.9); /* Strong white highlight */
     animation: logoFloat 6s ease-in-out infinite;
 }
 
@@ -1093,21 +1094,21 @@ input:checked + .slider:before {
 .splash-logo i {
     width: clamp(48px, 8vw, 64px);
     height: clamp(48px, 8vw, 64px);
-    color: var(--accent-primary);
-    filter: drop-shadow(0 0 20px var(--accent-primary));
+    color: #7b2cbf; /* Royal Violet - Light theme accent */
+    filter: drop-shadow(0 0 20px rgba(123, 44, 191, 0.3));
     z-index: 2;
     animation: iconGlow 3s ease-in-out infinite;
 }
 
 @keyframes iconGlow {
-    0%, 100% { filter: drop-shadow(0 0 20px var(--accent-primary)); }
-    50% { filter: drop-shadow(0 0 30px var(--accent-hover)); }
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(123, 44, 191, 0.3)); }
+    50% { filter: drop-shadow(0 0 30px rgba(123, 44, 191, 0.5)); }
 }
 
 .splash-ring {
     position: absolute;
     inset: -8px;
-    border: 2px solid var(--accent-soft);
+    border: 2px solid rgba(123, 44, 191, 0.2); /* Light purple */
     border-radius: var(--radius-full);
     animation: splashRingPulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
@@ -1116,7 +1117,7 @@ input:checked + .slider:before {
     content: '';
     position: absolute;
     inset: -12px;
-    border: 1px solid var(--accent-primary);
+    border: 1px solid #7b2cbf; /* Royal Violet */
     border-radius: var(--radius-full);
     opacity: 0.3;
     animation: splashRingPulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite reverse;
@@ -1132,62 +1133,14 @@ input:checked + .slider:before {
     font-size: clamp(42px, 8vw, 64px);
     font-weight: 900;
     letter-spacing: -3px;
-    color: var(--text-primary);
+    color: #240046; /* Dark text for light theme */
     margin: 0;
     text-align: center;
-    background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
+    background: linear-gradient(135deg, #240046, #7b2cbf); /* Dark to Royal Violet */
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.splash-status {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: clamp(12px, 2vw, 16px);
-}
-
-#splash-status-text {
-    font-size: clamp(11px, 2vw, 13px);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--accent-primary);
-    opacity: 0.8;
-    animation: splashType 2s steps(40, end);
-}
-
-.splash-progress-bar {
-    width: clamp(180px, 25vw, 240px);
-    height: 8px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    position: relative;
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1),
-                inset -2px -2px 5px rgba(255, 255, 255, 0.05);
-}
-
-.splash-progress-inner {
-    position: absolute;
-    inset: 2px;
-    background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover));
-    width: 40%;
-    border-radius: var(--radius-full);
-    animation: splashProgress 2.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-    box-shadow: 0 0 15px var(--accent-primary);
-}
-
-@keyframes splashProgress {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(250%); }
-}
-
-@keyframes splashType {
-    from { width: 0; }
-    to { width: 100%; }
+    text-shadow: 0 4px 12px rgba(36, 0, 70, 0.1);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -1789,32 +1742,36 @@ body.vault-is-locked .main-app-content,
 .pin-input-vessel {
     position: relative;
     margin-bottom: var(--space-lg);
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: 16px;
+    box-shadow: var(--nm-raised);
+    border: 1px solid var(--border-secondary);
 }
 
 .pin-field {
     width: 100%;
-    height: 90px;
+    height: 70px;
     background: var(--bg-primary);
-    box-shadow: var(--nm-pressed);
+    box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.1),
+                inset -4px -4px 8px rgba(255, 255, 255, 0.05);
     border-radius: var(--radius-auth);
-    text-align: center;
-    font-size: 38px;
-    letter-spacing: 20px;
-    color: transparent; /* Hide native password dots */
-    caret-color: transparent;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
-}
-
-.pin-field::placeholder {
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 24px;
     color: transparent;
+    caret-color: transparent;
+    outline: none;
+    padding: 0 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pin-field:focus {
-    box-shadow: var(--nm-pressed);
-    background: var(--bg-primary);
-    outline: none;
-    border: none;
+    box-shadow: inset 6px 6px 12px rgba(0, 0, 0, 0.15),
+                inset -6px -6px 12px rgba(255, 255, 255, 0.08),
+                0 0 0 2px var(--accent-soft);
 }
 
 .pin-indicators {
@@ -1823,40 +1780,97 @@ body.vault-is-locked .main-app-content,
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: clamp(16px, 3vw, 24px);
     pointer-events: none; /* Let clicks pass through to input */
+    padding: 0 24px;
 }
 
 .pin-dot, .pin-dot-setup {
-    width: 14px;
-    height: 14px;
-    background: var(--bg-primary);
-    box-shadow: var(--nm-pressed); /* Pure Neumorphic "excluded" depth */
+    width: clamp(12px, 2.5vw, 16px);
+    height: clamp(12px, 2.5vw, 16px);
+    background: var(--bg-secondary);
     border-radius: var(--radius-full);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.1),
+                inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.pin-dot::before, .pin-dot-setup::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
+    border-radius: var(--radius-full);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .pin-dot.filled, .pin-dot-setup.filled {
-    background: var(--accent-primary);
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
     box-shadow: 
-        0 0 15px var(--accent-soft),
-        inset 1px 1px 2px rgba(255, 255, 255, 0.4),
-        inset -1px -1px 2px rgba(0, 0, 0, 0.3); /* Physical elevated feel within the hole */
-    transform: scale(1.1);
+        0 0 20px var(--accent-soft),
+        0 0 40px var(--accent-primary),
+        inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+        inset -2px -2px 4px rgba(0, 0, 0, 0.2);
+    transform: scale(1.15);
+    animation: dotPulse 2s ease-in-out infinite;
+}
+
+.pin-dot.filled::before, .pin-dot-setup.filled::before {
+    opacity: 1;
+}
+
+@keyframes dotPulse {
+    0%, 100% { 
+        transform: scale(1.15);
+        box-shadow: 
+            0 0 20px var(--accent-soft),
+            0 0 40px var(--accent-primary),
+            inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+            inset -2px -2px 4px rgba(0, 0, 0, 0.2);
+    }
+    50% { 
+        transform: scale(1.25);
+        box-shadow: 
+            0 0 30px var(--accent-soft),
+            0 0 60px var(--accent-primary),
+            inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+            inset -2px -2px 4px rgba(0, 0, 0, 0.3);
+    }
 }
 
 .pin-dot.success, .pin-dot-setup.success {
-    background: #28a745;
-    border-color: #28a745;
-    box-shadow: 0 0 15px #28a745;
-    transform: scale(1.4);
+    background: linear-gradient(135deg, #28a745, #20c997);
+    box-shadow: 
+        0 0 25px #28a745,
+        0 0 50px rgba(40, 167, 69, 0.5),
+        inset 2px 2px 4px rgba(255, 255, 255, 0.4);
+    transform: scale(1.3);
+    animation: successPulse 0.8s ease-in-out;
 }
 
 .pin-dot.error, .pin-dot-setup.error {
-    background: #ff3b30;
-    border-color: #ff3b30;
-    box-shadow: 0 0 15px #ff3b30;
-    transform: scale(1.4);
+    background: linear-gradient(135deg, #ff3b30, #ff6b6b);
+    box-shadow: 
+        0 0 25px #ff3b30,
+        0 0 50px rgba(255, 59, 48, 0.5),
+        inset 2px 2px 4px rgba(255, 255, 255, 0.3);
+    transform: scale(1.3);
+    animation: errorShake 0.6s ease-in-out;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1.3); }
+    50% { transform: scale(1.6); }
+    100% { transform: scale(1.3); }
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: scale(1.3) translateX(0); }
+    25% { transform: scale(1.3) translateX(-6px); }
+    75% { transform: scale(1.3) translateX(6px); }
 }
 
 .pin-helper {
