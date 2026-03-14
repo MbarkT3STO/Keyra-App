@@ -43,47 +43,105 @@ export class UIManager {
 
     private getSettingsObject(): any {
         return {
-            theme: this.currentTheme,
-            accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
-            privacyMode: this.privacyMode,
-            screenGuardian: this.screenGuardian,
-            autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0',
-            vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
+            Settings: {
+                theme: this.currentTheme,
+                accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
+                privacyMode: this.privacyMode,
+                screenGuardian: this.screenGuardian,
+                autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0',
+                vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
+            },
+            "Web Settings": {
+                theme: this.currentTheme,
+                accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
+                privacyMode: this.privacyMode,
+                screenGuardian: this.screenGuardian,
+                autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0'
+            }
         };
     }
 
     public async pushSettings() {
-        const settings = this.getSettingsObject();
-        await (window as any).api.updateUserSettings(settings);
+        try {
+            this.setSyncing(true);
+            const settings = this.getSettingsObject();
+            console.log('Pushing settings to cloud:', settings);
+            await (window as any).api.updateUserSettings(settings);
+            console.log('Settings pushed successfully');
+        } catch (error) {
+            console.error('Failed to push settings:', error);
+            throw error;
+        } finally {
+            this.setSyncing(false);
+        }
+    }
+
+    public async pushWebSettings() {
+        try {
+            this.setSyncing(true);
+            const webSettings = this.getWebSettingsObject();
+            const settingsPayload = {
+                "Web Settings": webSettings
+            };
+            console.log('Pushing web settings to cloud:', settingsPayload);
+            await (window as any).api.updateUserSettings(settingsPayload);
+            console.log('Web settings pushed successfully');
+        } catch (error) {
+            console.error('Failed to push web settings:', error);
+            throw error;
+        } finally {
+            this.setSyncing(false);
+        }
+    }
+
+    private getWebSettingsObject(): any {
+        return {
+            theme: this.currentTheme,
+            accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
+            privacyMode: this.privacyMode,
+            screenGuardian: this.screenGuardian,
+            autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0'
+        };
     }
 
     public applySettings(settings: any, saveLocal: boolean = true) {
         if (!settings) return;
 
-        // Apply to local variables & DOM
-        if (settings.theme) this.setTheme(settings.theme, true);
-        if (settings.accentColor) this.setAccentColor(settings.accentColor, true);
+        console.log('Applying settings:', settings);
+
+        // Handle new structure with separate "Settings" and "Web Settings"
+        const settingsToApply = settings.Settings || settings;
+        const webSettingsToApply = settings["Web Settings"] || settings;
+
+        console.log('Settings to apply:', settingsToApply);
+        console.log('Web settings to apply:', webSettingsToApply);
+
+        // Apply general settings to local variables & DOM
+        if (settingsToApply.theme) this.setTheme(settingsToApply.theme, true);
+        if (settingsToApply.accentColor) this.setAccentColor(settingsToApply.accentColor, true);
         
-        this.privacyMode = !!settings.privacyMode;
+        this.privacyMode = !!settingsToApply.privacyMode;
+        this.screenGuardian = !!settingsToApply.screenGuardian;
 
         // Apply to localStorage if requested (e.g. on initial sync from cloud)
-        if (saveLocal || settings.vaultPin !== undefined || settings.privacyMode !== undefined) {
-            if (settings.theme) localStorage.setItem(this.getStorageKey('theme'), settings.theme);
-            if (settings.accentColor) localStorage.setItem(this.getStorageKey('accent_color'), settings.accentColor);
+        if (saveLocal || settingsToApply.vaultPin !== undefined || settingsToApply.privacyMode !== undefined) {
+            if (settingsToApply.theme) localStorage.setItem(this.getStorageKey('theme'), settingsToApply.theme);
+            if (settingsToApply.accentColor) localStorage.setItem(this.getStorageKey('accent_color'), settingsToApply.accentColor);
             
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
             
-            if (settings.autolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(settings.autolock));
+            if (settingsToApply.autolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(settingsToApply.autolock));
             
-            // Critical: Ensure the PIN is persisted to local storage
-            if (settings.vaultPin) {
-                localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
+            // Critical, Ensure the PIN is persisted to local storage
+            if (settingsToApply.vaultPin) {
+                localStorage.setItem(this.getStorageKey('vault_pin'), settingsToApply.vaultPin);
             }
         }
         
         this.updateLockVaultVisibility();
         this.renderAccounts();
+        console.log('Settings applied successfully');
     }
 
     private initSegmentedStates() {
@@ -200,7 +258,7 @@ export class UIManager {
         }
         
         this.refreshLucide();
-        if (!silent) this.pushSettings();
+        if (!silent) this.pushWebSettings();
     }
 
     private refreshLucide(root?: HTMLElement) {
@@ -286,7 +344,7 @@ export class UIManager {
                 const val = target.getAttribute('data-val')!;
                 localStorage.setItem(this.getStorageKey('autolock'), val);
                 this.updateSegmentedUI('autolock-segmented', val);
-                this.pushSettings();
+                this.pushWebSettings();
                 this.showToast(`Vault Auto-lock: ${val === '0' ? 'Off' : val + 'm'}`, "info");
             });
         });
@@ -300,7 +358,7 @@ export class UIManager {
             const target = e.target as HTMLInputElement;
             this.privacyMode = target.checked;
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
-            this.pushSettings();
+            this.pushWebSettings();
             this.renderAccounts(); // Re-render to apply/remove masking
             this.showToast(this.privacyMode ? "Privacy Mode Enabled" : "Privacy Mode Disabled", "info");
         });
@@ -310,7 +368,7 @@ export class UIManager {
             const target = e.target as HTMLInputElement;
             this.screenGuardian = target.checked;
             localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
-            this.pushSettings();
+            this.pushWebSettings();
             
             // Immediate feedback: if we just disabled it and it's blurred, hide it
             if (!this.screenGuardian) {
@@ -359,8 +417,9 @@ export class UIManager {
             if (icon) icon.classList.add('sync-spin');
             
             try {
-                // First push current settings to cloud
+                // First push current settings and webSettings to cloud
                 await this.pushSettings();
+                await this.pushWebSettings();
                 
                 // Then trigger a full vault sync
                 // Note: window.api.syncVault() or similar if available, 
@@ -675,7 +734,7 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('accent_color'), accentColor);
             
             
-            if (!silent) this.pushSettings();
+            if (!silent) this.pushWebSettings();
         }
     }
 
@@ -1462,7 +1521,7 @@ export class UIManager {
                 if (pinField.value === this.tempPin) {
                     // PIN confirmed - save it
                     localStorage.setItem(this.getStorageKey('vault_pin'), this.tempPin);
-                    this.pushSettings();
+                    this.pushWebSettings();
                     this.updateLockVaultVisibility();
                     this.showToast("PIN security activated successfully", "success");
                     this.hideModal();
@@ -1517,7 +1576,7 @@ export class UIManager {
     private setupPinRemovalEvents() {
         document.getElementById('confirm-remove-pin')?.addEventListener('click', () => {
             localStorage.removeItem(this.getStorageKey('vault_pin'));
-            this.pushSettings();
+            this.pushSettings(); // Use pushSettings for vault security changes
             this.updateLockVaultVisibility();
             this.showToast("PIN security removed", "info");
             this.hideModal();
