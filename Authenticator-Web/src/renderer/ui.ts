@@ -7,10 +7,6 @@ export class UIManager {
     private timerInterval: any = null;
     private privacyMode: boolean = false;
     private screenGuardian: boolean = false;
-    private wallpaperPreset: string = 'nebula';
-    private isMovingAura: boolean = false;
-    private auraX: number = 0;
-    private auraY: number = 0;
     private searchQuery: string = '';
     private syncCount: number = 0;
 
@@ -25,14 +21,12 @@ export class UIManager {
     }
 
     public userId: string;
-    private oledMode: boolean = false;
 
     constructor(userId: string = 'default') {
         this.userId = userId;
         this.initTheme();
         this.initPrivacyMode();
         this.initScreenGuardian();
-        this.initWallpaper();
         this.initSegmentedStates();
         this.setupEventListeners();
         this.updateLockVaultVisibility(); // Check PIN on startup
@@ -51,11 +45,9 @@ export class UIManager {
         return {
             theme: this.currentTheme,
             accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
-            wallpaperPreset: this.wallpaperPreset,
             privacyMode: this.privacyMode,
             screenGuardian: this.screenGuardian,
             autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0',
-            oledMode: localStorage.getItem(this.getStorageKey('oled_mode')) === 'true',
             vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
         };
     }
@@ -71,38 +63,18 @@ export class UIManager {
         // Apply to local variables & DOM
         if (settings.theme) this.setTheme(settings.theme, true);
         if (settings.accentColor) this.setAccentColor(settings.accentColor, true);
-        if (settings.wallpaperPreset) this.applyWallpaper(settings.wallpaperPreset);
         
         this.privacyMode = !!settings.privacyMode;
-        const privacyToggle = document.getElementById('privacy-mode-toggle') as HTMLInputElement;
-        if (privacyToggle) privacyToggle.checked = this.privacyMode;
-
-        this.screenGuardian = !!settings.screenGuardian;
-        const guardianToggle = document.getElementById('screen-guardian-toggle') as HTMLInputElement;
-        if (guardianToggle) guardianToggle.checked = this.screenGuardian;
-
-        if (settings.autolock !== undefined) {
-            this.updateSegmentedUI('autolock-segmented', String(settings.autolock));
-        }
-
-        if (settings.oledMode !== undefined) {
-            this.oledMode = !!settings.oledMode;
-            const oledToggle = document.getElementById('oled-mode-toggle') as HTMLInputElement;
-            if (oledToggle) oledToggle.checked = this.oledMode;
-            document.body.classList.toggle('oled-optimized', this.oledMode);
-        }
 
         // Apply to localStorage if requested (e.g. on initial sync from cloud)
         if (saveLocal || settings.vaultPin !== undefined || settings.privacyMode !== undefined) {
             if (settings.theme) localStorage.setItem(this.getStorageKey('theme'), settings.theme);
             if (settings.accentColor) localStorage.setItem(this.getStorageKey('accent_color'), settings.accentColor);
-            if (settings.wallpaperPreset) localStorage.setItem(this.getStorageKey('wallpaperPreset'), settings.wallpaperPreset);
             
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
             
             if (settings.autolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(settings.autolock));
-            if (settings.oledMode !== undefined) localStorage.setItem(this.getStorageKey('oled_mode'), String(this.oledMode));
             
             // Critical: Ensure the PIN is persisted to local storage
             if (settings.vaultPin) {
@@ -163,68 +135,17 @@ export class UIManager {
         }
     }
 
-    private initWallpaper() {
-        this.wallpaperPreset = localStorage.getItem(this.getStorageKey('wallpaperPreset')) || 'nebula';
-        this.applyWallpaper(this.wallpaperPreset);
-        
-        // Setup mouse-follow
-        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-    }
-
-    private applyWallpaper(preset: string) {
-        this.wallpaperPreset = preset;
-        localStorage.setItem(this.getStorageKey('wallpaperPreset'), preset);
-        
-        document.querySelectorAll('.wallpaper-card').forEach(card => {
-            card.classList.toggle('active', card.getAttribute('data-preset') === preset);
-        });
-
-        const root = document.documentElement;
-        if (preset === 'nebula') {
-            const hue = parseInt(root.style.getPropertyValue('--dynamic-accent-hue') || '258');
-            root.style.setProperty('--aura-1', `hsla(${hue}, 100%, 68%, 0.35)`);
-            root.style.setProperty('--aura-2', `hsla(${hue + 30}, 100%, 75%, 0.25)`);
-            root.style.setProperty('--aura-3', `hsla(${hue - 30}, 100%, 75%, 0.25)`);
-        } else if (preset === 'solar') {
-            root.style.setProperty('--aura-1', 'var(--solar-1)');
-            root.style.setProperty('--aura-2', 'var(--solar-2)');
-            root.style.setProperty('--aura-3', 'var(--solar-3)');
-        } else if (preset === 'emerald') {
-            root.style.setProperty('--aura-1', 'var(--emerald-1)');
-            root.style.setProperty('--aura-2', 'var(--emerald-2)');
-            root.style.setProperty('--aura-3', 'var(--emerald-3)');
-        } else if (preset === 'space') {
-            root.style.setProperty('--aura-1', 'var(--space-1)');
-            root.style.setProperty('--aura-2', 'var(--space-2)');
-            root.style.setProperty('--aura-3', 'var(--space-3)');
-        }
-    }
-
-    private handleMouseMove(e: MouseEvent) {
-        this.auraX = (e.clientX / window.innerWidth - 0.5) * 40;
-        this.auraY = (e.clientY / window.innerHeight - 0.5) * 40;
-        
-        if (!this.isMovingAura) {
-            this.isMovingAura = true;
-            requestAnimationFrame(() => this.updateAuraBlobs());
-        }
-    }
-
-    private updateAuraBlobs() {
-        const blobs = document.querySelectorAll('.aura-blob');
-        blobs.forEach((blob, idx) => {
-            const factor = (idx + 1) * 0.5;
-            (blob as HTMLElement).style.transform = `translate(${this.auraX * factor}px, ${this.auraY * factor}px)`;
-        });
-        this.isMovingAura = false;
-    }
 
     private updateLockVaultVisibility() {
         const lockBtn = document.getElementById('lock-vault-btn');
-        if (!lockBtn) return;
+        const setupBtn = document.getElementById('setup-pin-btn');
+        const removeBtn = document.getElementById('remove-pin-btn');
         
         const hasPin = !!localStorage.getItem(`${this.userId}_vault_pin`);
-        lockBtn.classList.toggle('hidden', !hasPin);
+        
+        if (lockBtn) lockBtn.classList.toggle('hidden', !hasPin);
+        if (setupBtn) setupBtn.style.display = hasPin ? 'none' : 'flex';
+        if (removeBtn) removeBtn.style.display = hasPin ? 'flex' : 'none';
     }
 
     private initTheme() {
@@ -358,6 +279,7 @@ export class UIManager {
 
         // Settings PIN
         document.getElementById('setup-pin-btn')?.addEventListener('click', () => this.showPinSetup());
+        document.getElementById('remove-pin-btn')?.addEventListener('click', () => this.showPinRemoval());
 
         // Privacy Mode Toggle
         document.getElementById('privacy-mode-toggle')?.addEventListener('change', (e) => {
@@ -384,16 +306,6 @@ export class UIManager {
             this.showToast(this.screenGuardian ? "Privacy Shield Active" : "Privacy Shield Disabled", "info");
         });
 
-        // Wallpaper Presets
-        document.querySelectorAll('.wallpaper-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                const target = e.currentTarget as HTMLElement;
-                const preset = target.getAttribute('data-preset')!;
-                this.applyWallpaper(preset);
-                this.pushSettings();
-                this.showToast(`Wallpaper Switched: ${preset.charAt(0).toUpperCase() + preset.slice(1)}`, "info");
-            });
-        });
 
         // -- Vault Maintenance --
         document.getElementById('btn-export-vault')?.addEventListener('click', async () => {
@@ -484,6 +396,21 @@ export class UIManager {
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 this.handleUnlock();
+                // Track export/import actions
+                const exportBtn = document.getElementById('btn-export-vault');
+                const importBtn = document.getElementById('btn-import-vault');
+                
+                if (exportBtn) {
+                    exportBtn.addEventListener('click', () => {
+                        this.updateLastActivity('Exported vault');
+                    });
+                }
+                
+                if (importBtn) {
+                    importBtn.addEventListener('click', () => {
+                        this.updateLastActivity('Imported vault');
+                    });
+                }
             }
             // Prevent non-numeric input
             else if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
@@ -548,41 +475,158 @@ export class UIManager {
             });
         }
 
-        // Track export/import actions
-        const exportBtn = document.getElementById('btn-export-vault');
-        const importBtn = document.getElementById('btn-import-vault');
-        
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
-                this.updateLastActivity('Exported vault');
-            });
-        }
-        
-        if (importBtn) {
-            importBtn.addEventListener('click', () => {
-                this.updateLastActivity('Imported vault');
-            });
-        }
+        // Initialize accent color from localStorage
+        this.loadAccentColor();
+
+        // Setup accent color selector
+        this.setupAccentColorSelector();
     }
 
     private setupAccentColorSelector() {
-        const accentOptions = document.querySelectorAll('.accent-color-option');
+        console.log('Setting up accent color selector...');
         
-        accentOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                const accentColor = option.getAttribute('data-accent');
-                if (accentColor) {
-                    this.setAccentColor(accentColor);
+        const toggle = document.getElementById('accent-color-toggle');
+        const dropdown = document.getElementById('accent-dropdown');
+        const currentAccent = document.getElementById('current-accent');
+        const accentLabel = document.querySelector('.accent-label');
+        
+        console.log('Elements found:', { 
+            toggle: !!toggle, 
+            dropdown: !!dropdown, 
+            currentAccent: !!currentAccent, 
+            accentLabel: !!accentLabel 
+        });
+        
+        if (!toggle || !dropdown) {
+            console.error('Accent color selector elements not found!');
+            return;
+        }
+        
+        // Remove existing listeners to avoid duplicates
+        toggle.removeEventListener('click', this.handleToggleClick);
+        document.removeEventListener('click', this.handleDocumentClick);
+        
+        // Bind methods to maintain context
+        this.handleToggleClick = (e: Event) => {
+            console.log('Toggle clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isOpen = dropdown.classList.contains('show');
+            console.log('Current state:', isOpen);
+            
+            if (isOpen) {
+                dropdown.classList.remove('show');
+                toggle.classList.remove('active');
+                toggle.parentElement?.classList.remove('open');
+                console.log('Closing dropdown');
+            } else {
+                dropdown.classList.add('show');
+                toggle.classList.add('active');
+                toggle.parentElement?.classList.add('open');
+                console.log('Opening dropdown');
+            }
+        };
+        
+        this.handleDocumentClick = (e: Event) => {
+            if (!toggle.contains(e.target as Node) && !dropdown.contains(e.target as Node)) {
+                dropdown.classList.remove('show');
+                toggle.classList.remove('active');
+                toggle.parentElement?.classList.remove('open');
+                console.log('Closed dropdown due to outside click');
+            }
+        };
+        
+        // Add event listeners
+        toggle.addEventListener('click', this.handleToggleClick);
+        document.addEventListener('click', this.handleDocumentClick);
+        
+        // Handle color selection
+        document.querySelectorAll('.accent-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                console.log('Color item clicked:', item.getAttribute('data-accent'));
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const accent = item.getAttribute('data-accent');
+                if (accent) {
+                    this.setAccentColor(accent);
                     
-                    // Update active state
-                    accentOptions.forEach(opt => opt.classList.remove('active'));
-                    option.classList.add('active');
+                    // Update UI
+                    document.querySelectorAll('.accent-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
                     
-                    // Show feedback
-                    this.showToast("Accent color updated", "success");
+                    // Update current accent display
+                    const color = item.style.background;
+                    if (currentAccent) {
+                        currentAccent.style.background = color;
+                    }
+                    if (accentLabel) {
+                        accentLabel.textContent = this.getAccentDisplayName(accent);
+                    }
+                    
+                    // Close dropdown
+                    dropdown.classList.remove('show');
+                    toggle.classList.remove('active');
+                    toggle.parentElement?.classList.remove('open');
+                    console.log('Color selected and dropdown closed');
                 }
             });
         });
+        
+        // Initialize current accent display
+        this.updateCurrentAccentDisplay();
+        
+        // Ensure Lucide icons are created for the chevron
+        this.refreshLucide();
+        
+        console.log('Accent color selector setup complete');
+    }
+    
+    // Store methods as properties to maintain context
+    private handleToggleClick: ((e: Event) => void) | null = null;
+    private handleDocumentClick: ((e: Event) => void) | null = null;
+    
+    private getAccentDisplayName(accent: string): string {
+        const names: Record<string, string> = {
+            'royal-purple': 'Royal Purple',
+            'electric-blue': 'Electric Blue',
+            'emerald-green': 'Emerald Green',
+            'solar-orange': 'Solar Orange',
+            'rose-quartz': 'Rose Quartz',
+            'peach-blossom': 'Peach Blossom',
+            'lavender-dream': 'Lavender Dream',
+            'bubblegum': 'Bubblegum',
+            'sky-blue': 'Sky Blue',
+            'coral-sunset': 'Coral Sunset',
+            'lemon-zest': 'Lemon Zest',
+            'ocean-teal': 'Ocean Teal',
+            'amethyst-glow': 'Amethyst Glow',
+            'sage-serene': 'Sage Serene',
+            'golden-hour': 'Golden Hour',
+            'orchid-mystic': 'Orchid Mystic',
+            'mint-fresh': 'Mint Fresh',
+            'turquoise-dream': 'Turquoise Dream'
+        };
+        return names[accent] || accent;
+    }
+    
+    private updateCurrentAccentDisplay() {
+        const currentAccent = document.getElementById('current-accent');
+        const accentLabel = document.querySelector('.accent-label');
+        const savedAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
+        
+        // Find the active accent item
+        const activeItem = document.querySelector(`.accent-item[data-accent="${savedAccent}"]`);
+        if (activeItem) {
+            const color = activeItem.getAttribute('style')?.match(/background:\s*(hsl\([^)]+\))/)?.[1];
+            if (color && currentAccent) {
+                currentAccent.style.background = color;
+            }
+            if (accentLabel) {
+                accentLabel.textContent = this.getAccentDisplayName(savedAccent);
+            }
+        }
     }
 
     private setAccentColor(accentColor: string, silent: boolean = false) {
@@ -613,18 +657,13 @@ export class UIManager {
         if (hue) {
             // Update CSS custom properties
             root.style.setProperty('--dynamic-accent-hue', hue.toString());
-            root.style.setProperty('--accent-primary', `hsl(${hue}, 100%, 68%)`);
-            root.style.setProperty('--accent-secondary', `hsl(${hue + 20}, 100%, 75%)`);
-            root.style.setProperty('--accent-hover', `hsl(${hue}, 100%, 62%)`);
-            root.style.setProperty('--accent-soft', `hsla(${hue}, 100%, 68%, 0.12)`);
+            root.style.setProperty('--accent-primary', `hsl(${hue}, var(--s), 65%)`);
+            root.style.setProperty('--accent-hover', `hsl(${hue}, var(--s), 75%)`);
+            root.style.setProperty('--accent-soft', `hsla(${hue}, var(--s), 65%, 0.15)`);
             
             // Save to localStorage
             localStorage.setItem(this.getStorageKey('accent_color'), accentColor);
             
-            // Refresh Nebula wallpaper if active to match new accent
-            if (this.wallpaperPreset === 'nebula') {
-                this.applyWallpaper('nebula');
-            }
             
             if (!silent) this.pushSettings();
         }
@@ -661,8 +700,6 @@ export class UIManager {
 
     private setupThemeSwitcher() {
         const segments = document.querySelectorAll('#theme-segmented .segment');
-        const oledToggle = document.getElementById('oled-mode-toggle') as HTMLInputElement;
-        const oledModeRow = document.getElementById('oled-mode-row');
         
         // Setup theme segments
         segments.forEach(segment => {
@@ -677,51 +714,6 @@ export class UIManager {
                 }
             });
         });
-
-        // Setup OLED toggle
-        if (oledToggle && oledModeRow) {
-            // Load saved OLED preference
-            const savedOledMode = localStorage.getItem(this.getStorageKey('oled_mode')) === 'true';
-            oledToggle.checked = savedOledMode;
-
-            // Show/hide OLED option based on theme
-            const updateOledVisibility = () => {
-                const isDarkTheme = document.body.classList.contains('dark-theme');
-                oledModeRow.style.display = isDarkTheme ? 'flex' : 'none';
-            };
-
-            // Initial visibility
-            updateOledVisibility();
-
-            // Handle OLED toggle changes
-            oledToggle.addEventListener('change', () => {
-                const isEnabled = oledToggle.checked;
-                localStorage.setItem(this.getStorageKey('oled_mode'), isEnabled.toString());
-                this.pushSettings();
-                
-                if (isEnabled) {
-                    document.body.classList.add('oled-optimized');
-                    this.showToast('OLED optimization enabled', 'success');
-                } else {
-                    document.body.classList.remove('oled-optimized');
-                    this.showToast('OLED optimization disabled', 'info');
-                }
-                
-                this.updateLastActivity(`${isEnabled ? 'Enabled' : 'Disabled'} OLED optimization`);
-            });
-
-            // Update visibility when theme changes
-            const originalSetTheme = this.setTheme.bind(this);
-            this.setTheme = (theme: 'light' | 'dark') => {
-                originalSetTheme(theme);
-                updateOledVisibility();
-                
-                // Auto-enable OLED in dark mode if previously enabled
-                if (theme === 'dark' && savedOledMode) {
-                    document.body.classList.add('oled-optimized');
-                }
-            };
-        }
     }
 
     private loadAccentColor() {
@@ -731,14 +723,17 @@ export class UIManager {
         this.setAccentColor(savedAccent, true); // Silent init to avoid push-default overwrite
         
         // Update active state in UI
-        const accentOptions = document.querySelectorAll('.accent-color-option');
-        accentOptions.forEach(option => {
-            if (option.getAttribute('data-accent') === savedAccent) {
-                option.classList.add('active');
+        const accentItems = document.querySelectorAll('.accent-item');
+        accentItems.forEach(item => {
+            if (item.getAttribute('data-accent') === savedAccent) {
+                item.classList.add('active');
             } else {
-                option.classList.remove('active');
+                item.classList.remove('active');
             }
         });
+        
+        // Update current accent display
+        this.updateCurrentAccentDisplay();
     }
 
     private debounce(func: Function, wait: number) {
@@ -846,7 +841,7 @@ export class UIManager {
                 </div>
                 <div class="timer-container" style="position: absolute; right: 12px; width: 24px; height: 24px;">
                     <svg viewBox="0 0 60 60">
-                        <circle cx="30" cy="30" r="26" fill="none" class="timer-bg" style="stroke: var(--border-color); stroke-width: 4;"></circle>
+                        <circle cx="30" cy="30" r="26" fill="none" class="timer-bg" style="stroke: var(--bg-secondary); stroke-width: 4;"></circle>
                         <circle class="timer-progress" cx="30" cy="30" r="26" fill="none" stroke-dasharray="163.36" stroke-dashoffset="0" style="stroke: var(--accent-primary); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear;"></circle>
                     </svg>
                 </div>
@@ -1031,8 +1026,8 @@ export class UIManager {
         const content = `
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
-                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary); width: 64px; height: 64px;">
-                        <i data-lucide="plus-circle" style="color: var(--accent-primary); width: 32px; height: 32px;"></i>
+                <div class="account-icon nm-icon-large" style="width: 64px; height: 64px;">
+                        <i data-lucide="plus-circle"></i>
                     </div>
                     <div>
                         <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 28px); color: var(--text-primary); letter-spacing: -1px;">Initialize Identity</h2>
@@ -1081,8 +1076,8 @@ export class UIManager {
         const content = `
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
-                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary); width: 64px; height: 64px;">
-                        <i data-lucide="edit-3" style="color: var(--accent-primary); width: 32px; height: 32px;"></i>
+                    <div class="account-icon nm-icon-large" style="width: 64px; height: 64px;">
+                        <i data-lucide="edit-3"></i>
                     </div>
                     <div>
                         <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 28px); color: var(--text-primary); letter-spacing: -1px;">Refine Metadata</h2>
@@ -1125,13 +1120,12 @@ export class UIManager {
         const toast = document.createElement('div');
         toast.className = 'animate-fade-in';
         toast.style.cssText = `
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px);
+            background: var(--bg-primary);
             color: var(--text-primary);
             padding: 16px 28px;
             border-radius: var(--radius-md);
-            box-shadow: var(--shadow-hard);
-            border: 1.5px solid var(--glass-border);
+            box-shadow: var(--nm-raised);
+            border: none;
             border-bottom: 4px solid ${type === 'error' ? '#ff3b30' : type === 'success' ? '#28a745' : 'var(--accent-primary)'};
             display: flex; align-items: center; gap: var(--space-sm);
             font-size: 16px; font-weight: 800;
@@ -1240,41 +1234,128 @@ export class UIManager {
     }
 
     private showPinSetup() {
+        this.currentPinStep = 1;
+        this.tempPin = '';
+        this.showPinSetupStep1();
+    }
+
+    private currentPinStep: number = 1;
+    private tempPin: string = '';
+
+    private showPinSetupStep1() {
         const content = `
-            <div style="padding: clamp(32px, 8vw, 48px);">
-                <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 32px;">
-                    <div class="pin-lock-icon" style="width: 68px; height: 68px; flex-shrink: 0;">
-                        <i data-lucide="shield-ellipsis" style="width: 28px; height: 28px;"></i>
+            <div class="pin-steps-modal">
+                <!-- Progress Steps -->
+                <div class="pin-progress-container">
+                    <div class="pin-step active" data-step="1">
+                        <div class="pin-step-number">1</div>
+                        <div class="pin-step-label">Create PIN</div>
                     </div>
-                    <div>
-                        <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 32px); color: var(--text-primary); letter-spacing: -1.5px; opacity: 0; animation: splashContentUp 0.6s 0.1s forwards;">Core Security</h2>
-                        <div class="modal-help-text" style="font-weight: 700; color: var(--accent-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; opacity: 0; animation: splashContentUp 0.6s 0.2s forwards;">Establish 4-Digit Master Code</div>
+                    <div class="pin-step-line"></div>
+                    <div class="pin-step" data-step="2">
+                        <div class="pin-step-number">2</div>
+                        <div class="pin-step-label">Confirm PIN</div>
                     </div>
                 </div>
-                
-                <div class="form-group" style="opacity: 0; animation: splashContentUp 0.6s 0.3s forwards;">
-                    <label class="form-label" style="text-align: center; display: block; margin-bottom: 16px;">Set Access PIN</label>
-                    <div class="pin-input-vessel">
-                        <input type="password" id="new-pin" maxlength="4" class="pin-field" style="height: 80px; font-size: 36px;" autocomplete="off">
-                        <div class="pin-indicators">
-                            <div class="pin-dot-setup" data-setup-digit="1"></div>
-                            <div class="pin-dot-setup" data-setup-digit="2"></div>
-                            <div class="pin-dot-setup" data-setup-digit="3"></div>
-                            <div class="pin-dot-setup" data-setup-digit="4"></div>
+
+                <!-- Step 1 Content -->
+                <div class="pin-step-content">
+                    <div class="pin-header">
+                        <div class="pin-brand-icon">
+                            <i data-lucide="shield-ellipsis"></i>
                         </div>
+                        <h2 class="pin-title">Create Security PIN</h2>
+                        <p class="pin-subtitle">Choose a 4-digit master code for vault access</p>
                     </div>
-                    <div class="modal-help-text" style="text-align: center; margin-top: 12px; font-weight: 600;">Used for immediate vault recovery</div>
-                </div>
-                
-                <div style="display: flex; gap: 16px; margin-top: 48px; opacity: 0; animation: splashContentUp 0.6s 0.4s forwards;">
-                    <button class="btn-primary" id="save-pin" style="flex: 2; height: 60px; font-size: 16px; font-weight: 800; border-radius: var(--radius-lg);">Activate Security</button>
-                    <button class="user-button" id="cancel-pin-btn" style="flex: 1; justify-content: center; height: 60px; font-weight: 800;">Discard</button>
+
+                    <div class="pin-input-container">
+                        <div class="pin-input-vessel">
+                            <input type="password" id="pin-step1" maxlength="4" class="pin-field" autocomplete="off" placeholder="••••">
+                            <div class="pin-indicators">
+                                <div class="pin-dot-setup" data-digit="1"></div>
+                                <div class="pin-dot-setup" data-digit="2"></div>
+                                <div class="pin-dot-setup" data-digit="3"></div>
+                                <div class="pin-dot-setup" data-digit="4"></div>
+                            </div>
+                        </div>
+                        <div class="pin-helper">Enter 4-digit security code</div>
+                    </div>
+
+                    <div class="pin-actions">
+                        <button class="btn-primary pin-continue-btn" id="pin-step1-continue" disabled>
+                            <i data-lucide="arrow-right"></i>
+                            Continue
+                        </button>
+                        <button class="user-button pin-cancel-btn" id="pin-step1-cancel">
+                            Cancel
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
         this.showModal(content);
-        
-        const pinField = document.getElementById('new-pin') as HTMLInputElement;
+        this.setupPinStep1Events();
+    }
+
+    private showPinSetupStep2() {
+        const content = `
+            <div class="pin-steps-modal">
+                <!-- Progress Steps -->
+                <div class="pin-progress-container">
+                    <div class="pin-step completed" data-step="1">
+                        <div class="pin-step-number"><i data-lucide="check"></i></div>
+                        <div class="pin-step-label">Create PIN</div>
+                    </div>
+                    <div class="pin-step-line active"></div>
+                    <div class="pin-step active" data-step="2">
+                        <div class="pin-step-number">2</div>
+                        <div class="pin-step-label">Confirm PIN</div>
+                    </div>
+                </div>
+
+                <!-- Step 2 Content -->
+                <div class="pin-step-content">
+                    <div class="pin-header">
+                        <div class="pin-brand-icon">
+                            <i data-lucide="shield-check"></i>
+                        </div>
+                        <h2 class="pin-title">Confirm Security PIN</h2>
+                        <p class="pin-subtitle">Re-enter your 4-digit master code to verify</p>
+                    </div>
+
+                    <div class="pin-input-container">
+                        <div class="pin-input-vessel">
+                            <input type="password" id="pin-step2" maxlength="4" class="pin-field" autocomplete="off" placeholder="••••">
+                            <div class="pin-indicators">
+                                <div class="pin-dot-setup" data-digit="1"></div>
+                                <div class="pin-dot-setup" data-digit="2"></div>
+                                <div class="pin-dot-setup" data-digit="3"></div>
+                                <div class="pin-dot-setup" data-digit="4"></div>
+                            </div>
+                        </div>
+                        <div class="pin-helper">Confirm your 4-digit security code</div>
+                    </div>
+
+                    <div class="pin-actions">
+                        <button class="btn-primary pin-continue-btn" id="pin-step2-continue" disabled>
+                            <i data-lucide="check"></i>
+                            Activate PIN
+                        </button>
+                        <button class="user-button pin-back-btn" id="pin-step2-back">
+                            <i data-lucide="arrow-left"></i>
+                            Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        this.showModal(content);
+        this.setupPinStep2Events();
+    }
+
+    private setupPinStep1Events() {
+        const pinField = document.getElementById('pin-step1') as HTMLInputElement;
+        const continueBtn = document.getElementById('pin-step1-continue');
         const setupDots = document.querySelectorAll('.pin-dot-setup');
         
         pinField?.addEventListener('input', (e) => {
@@ -1285,21 +1366,108 @@ export class UIManager {
             setupDots.forEach((dot, idx) => {
                 dot.classList.toggle('filled', idx < numeric.length);
             });
-        });
-
-        document.getElementById('save-pin')?.addEventListener('click', () => {
-            const pin = pinField.value;
-            if (pin.length === 4) {
-                localStorage.setItem(this.getStorageKey('vault_pin'), pin);
-                this.pushSettings();
-                this.updateLockVaultVisibility();
-                this.showToast("PIN established successfully", "success");
-                this.hideModal();
-            } else {
-                this.showToast("PIN must be 4 digits", "error");
+            
+            if (continueBtn) {
+                (continueBtn as HTMLButtonElement).disabled = numeric.length !== 4;
             }
         });
-        document.getElementById('cancel-pin-btn')?.addEventListener('click', () => this.hideModal());
+
+        continueBtn?.addEventListener('click', () => {
+            if (pinField && pinField.value.length === 4) {
+                this.tempPin = pinField.value;
+                this.showPinSetupStep2();
+            }
+        });
+
+        document.getElementById('pin-step1-cancel')?.addEventListener('click', () => this.hideModal());
+    }
+
+    private setupPinStep2Events() {
+        const pinField = document.getElementById('pin-step2') as HTMLInputElement;
+        const continueBtn = document.getElementById('pin-step2-continue');
+        const setupDots = document.querySelectorAll('.pin-dot-setup');
+        
+        pinField?.addEventListener('input', (e) => {
+            const val = (e.target as HTMLInputElement).value;
+            const numeric = val.replace(/[^0-9]/g, '');
+            if (val !== numeric) (e.target as HTMLInputElement).value = numeric;
+            
+            setupDots.forEach((dot, idx) => {
+                dot.classList.toggle('filled', idx < numeric.length);
+            });
+            
+            if (continueBtn) {
+                (continueBtn as HTMLButtonElement).disabled = numeric.length !== 4;
+            }
+        });
+
+        continueBtn?.addEventListener('click', () => {
+            if (pinField && pinField.value.length === 4) {
+                if (pinField.value === this.tempPin) {
+                    // PIN confirmed - save it
+                    localStorage.setItem(this.getStorageKey('vault_pin'), this.tempPin);
+                    this.pushSettings();
+                    this.updateLockVaultVisibility();
+                    this.showToast("PIN security activated successfully", "success");
+                    this.hideModal();
+                } else {
+                    // PIN mismatch - show error
+                    this.showToast("PIN codes do not match. Please try again.", "error");
+                    pinField.value = '';
+                    setupDots.forEach(dot => dot.classList.remove('filled'));
+                    if (continueBtn) (continueBtn as HTMLButtonElement).disabled = true;
+                }
+            }
+        });
+
+        document.getElementById('pin-step2-back')?.addEventListener('click', () => this.showPinSetupStep1());
+    }
+
+    private showPinRemoval() {
+        const content = `
+            <div class="pin-removal-modal">
+                <div class="pin-header">
+                    <div class="pin-brand-icon danger">
+                        <i data-lucide="shield-off"></i>
+                    </div>
+                    <h2 class="pin-title">Remove Security PIN</h2>
+                    <p class="pin-subtitle">This will disable PIN protection for your vault</p>
+                </div>
+
+                <div class="pin-warning-container">
+                    <div class="pin-warning-icon">
+                        <i data-lucide="alert-triangle"></i>
+                    </div>
+                    <div class="pin-warning-text">
+                        <strong>Warning:</strong> Removing the PIN will make your vault less secure. Anyone with access to this device can open your vault.
+                    </div>
+                </div>
+
+                <div class="pin-actions">
+                    <button class="btn-primary danger" id="confirm-remove-pin">
+                        <i data-lucide="trash-2"></i>
+                        Remove PIN
+                    </button>
+                    <button class="user-button" id="cancel-remove-pin">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        `;
+        this.showModal(content);
+        this.setupPinRemovalEvents();
+    }
+
+    private setupPinRemovalEvents() {
+        document.getElementById('confirm-remove-pin')?.addEventListener('click', () => {
+            localStorage.removeItem(this.getStorageKey('vault_pin'));
+            this.pushSettings();
+            this.updateLockVaultVisibility();
+            this.showToast("PIN security removed", "info");
+            this.hideModal();
+        });
+
+        document.getElementById('cancel-remove-pin')?.addEventListener('click', () => this.hideModal());
     }
 
     private showDeleteConfirm(account: any) {
@@ -1314,7 +1482,7 @@ export class UIManager {
                 </div>
                 
                 <div style="display: flex; gap: 16px;">
-                    <button class="btn-primary" id="confirm-delete" style="flex: 1; height: var(--btn-h-lg); background: #ff3b30; box-shadow: 0 8px 24px rgba(255, 59, 48, 0.2);">Confirm Erase</button>
+                    <button class="btn-primary" id="confirm-delete" style="flex: 1; height: var(--btn-h-lg); background: var(--bg-primary); color: #ff3b30; box-shadow: var(--nm-raised);">Confirm Erase</button>
                     <button class="user-button" id="cancel-delete-btn" style="flex: 1; justify-content: center; height: var(--btn-h-lg);">Discard</button>
                 </div>
             </div>
@@ -1333,8 +1501,8 @@ export class UIManager {
         const content = `
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
-                    <div class="account-icon" style="background: var(--accent-soft); border-color: var(--accent-primary); width: 64px; height: 64px;">
-                        <i data-lucide="unlock" style="color: var(--accent-primary); width: 32px; height: 32px;"></i>
+                    <div class="account-icon nm-icon-large" style="width: 64px; height: 64px;">
+                        <i data-lucide="unlock"></i>
                     </div>
                     <div>
                         <h2 style="font-weight: 900; font-size: 24px; color: var(--text-primary);">Restore Vault</h2>

@@ -27,45 +27,19 @@ body {
     background-color: var(--bg-primary);
     z-index: -1;
     overflow: hidden;
-    /* Gaussian Blur removed for GPU relief */
 }
 
-.aura-blob {
-    position: absolute;
-    border-radius: 50%;
-    /* Gaussian Blur removed; using radial-gradient instead */
-    opacity: 0.5;
-    will-change: transform;
-}
-
-.aura-1 { 
-    width: clamp(400px, 60vw, 800px); 
-    height: clamp(400px, 60vw, 800px); 
-    background: radial-gradient(circle, var(--aura-1) 0%, transparent 70%);
-    top: -15%; left: -10%; 
-}
-.aura-2 { 
-    width: clamp(300px, 50vw, 600px); 
-    height: clamp(300px, 50vw, 600px); 
-    background: radial-gradient(circle, var(--aura-2) 0%, transparent 70%);
-    bottom: -10%; right: -5%; 
-}
-.aura-3 { 
-    width: clamp(250px, 40vw, 500px); 
-    height: clamp(250px, 40vw, 500px); 
-    background: radial-gradient(circle, var(--aura-3) 0%, transparent 70%);
-    top: 35%; right: 15%; 
-}
+/* Blobs removed for clean Neumorphic surface */
+.aura-blob { display: none; }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    NAVBAR & HEADER
    ───────────────────────────────────────────────────────────────────────────── */
 
 .navbar {
-    height: clamp(64px, 10vh, 88px);
-    background: var(--glass-bg);
-    /* backdrop-filter removed for performance */
-    border-bottom: 1px solid var(--glass-border);
+    height: clamp(72px, 12vh, 100px); /* Increased from 64-88px */
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
     z-index: 100;
     position: sticky;
     top: 0; width: 100%;
@@ -97,7 +71,7 @@ body {
 .main-content {
     flex: 1;
     overflow-y: auto;
-    padding: clamp(var(--space-md), 6vw, var(--space-2xl)) clamp(var(--space-sm), 4vw, var(--space-xl));
+    padding: clamp(var(--space-xl), 8vw, var(--space-4xl)) clamp(var(--space-sm), 4vw, var(--space-xl)); /* Increased top padding */
     max-width: 1280px;
     margin: 0 auto;
     width: 100%;
@@ -107,7 +81,7 @@ body {
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    margin-bottom: clamp(var(--space-lg), 8vw, var(--space-2xl));
+    margin-bottom: clamp(var(--space-xl), 10vw, var(--space-4xl)); /* Increased from space-lg/space-2xl */
     gap: var(--space-md);
     flex-wrap: nowrap; /* Force single row for precision alignment */
 }
@@ -121,7 +95,14 @@ body {
     line-height: 1.1; 
     margin: 0;
 }
-.section-subtitle { color: var(--text-secondary); font-size: clamp(14px, 1.6vw, 16px); font-weight: 600; opacity: 0.8; }
+.section-subtitle { 
+    color: var(--text-secondary); 
+    font-size: clamp(14px, 1.6vw, 16px); 
+    font-weight: 600; 
+    opacity: 0.6; 
+    margin-top: 10px; /* Spacing between title and description */
+    display: block;
+}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    MODALS SYSTEM
@@ -172,17 +153,15 @@ body {
     width: 100% !important;
     max-width: 460px !important;
     padding: clamp(32px, 8vw, 64px) !important;
-    background: var(--glass-bg) !important;
-    backdrop-filter: blur(40px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
-    border: 1px solid var(--glass-border) !important;
+    background: var(--bg-primary) !important;
     border-radius: var(--radius-auth) !important;
-    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.4), 
-                inset 0 0 0 1px hsla(0, 0%, 100%, 0.05) !important;
+    box-shadow: var(--nm-raised) !important;
     margin: auto !important; /* True auto centering within the flex parent */
     max-height: none !important;
     animation: authEntry 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
     position: relative !important;
+    border: none !important;
+    backdrop-filter: none !important;
 }
 
 @keyframes authEntry {
@@ -196,19 +175,18 @@ body {
 }
 
 .modal {
-    background: var(--glass-bg);
-    /* backdrop-filter removed */
-    border: 1px solid var(--glass-border);
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
     border-radius: var(--radius-xl);
     width: 100%;
     max-width: 540px;
-    box-shadow: var(--shadow-hard);
     transform: perspective(1200px) rotateX(8deg) translateY(40px);
     transition: all var(--transition-medium);
     position: relative;
     max-height: 92vh;
     overflow-y: auto;
     scrollbar-width: none;
+    border: none;
 }
 .modal::-webkit-scrollbar { display: none; }
 

@@ -1,0 +1,104 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   NEUMORPHIC CORE DESIGN SYSTEM (SOFT UI)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+    /* Neumorphic Shadow Tokens - Light Mode (Clean & Crisp) */
+    --nm-light-top: -6px -6px 12px rgba(255, 255, 255, 1);
+    --nm-light-bottom: 6px 6px 12px rgba(163, 177, 198, 0.5);
+    --nm-light-inner-top: inset -3px -3px 8px rgba(255, 255, 255, 1);
+    --nm-light-inner-bottom: inset 3px 3px 8px rgba(163, 177, 198, 0.5);
+
+    /* Neumorphic Shadow Tokens - Dark Mode (Deep Charcoal Harmony) */
+    --nm-dark-top: -6px -6px 14px rgba(255, 255, 255, 0.03); /* Subtle highlight */
+    --nm-dark-bottom: 6px 6px 14px rgba(0, 0, 0, 0.6);      /* Deep shadow */
+    --nm-dark-inner-top: inset -3px -3px 8px rgba(255, 255, 255, 0.03);
+    --nm-dark-inner-bottom: inset 3px 3px 8px rgba(0, 0, 0, 0.6);
+
+    /* Default (Reactive to Theme) */
+    --nm-raised: var(--nm-light-top), var(--nm-light-bottom);
+    --nm-pressed: var(--nm-light-inner-top), var(--nm-light-inner-bottom);
+    --nm-inner-top: var(--nm-light-inner-top);
+    --nm-inner-bottom: var(--nm-light-inner-bottom);
+}
+
+[data-theme="dark"] {
+    --nm-raised: var(--nm-dark-top), var(--nm-dark-bottom);
+    --nm-pressed: var(--nm-dark-inner-top), var(--nm-dark-inner-bottom);
+    --nm-inner-top: var(--nm-dark-inner-top);
+    --nm-inner-bottom: var(--nm-dark-inner-bottom);
+}
+
+/* Base Utility Classes */
+.nm-flat {
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
+    border-radius: var(--radius-md);
+    border: none;
+    transition: all var(--transition-medium);
+}
+
+.nm-convex {
+    background: linear-gradient(145deg, var(--bg-secondary), var(--bg-primary));
+    box-shadow: var(--nm-raised);
+    border-radius: var(--radius-md);
+    border: none;
+}
+
+.nm-concave {
+    background: linear-gradient(145deg, var(--bg-primary), var(--bg-secondary));
+    box-shadow: var(--nm-pressed);
+    border-radius: var(--radius-md);
+    border: none;
+}
+
+.nm-inset {
+    background: var(--bg-primary);
+    box-shadow: var(--nm-pressed);
+    border-radius: var(--radius-md);
+    border: none;
+}
+
+/* Specialized Components */
+.nm-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--btn-px);
+    height: var(--btn-h-md);
+    border-radius: var(--radius-full);
+    font-weight: 750;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
+    transition: all var(--transition-fast);
+}
+
+.nm-button:active, .nm-button.active {
+    box-shadow: var(--nm-pressed);
+    transform: scale(0.98);
+}
+
+.nm-card {
+    padding: var(--space-md);
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
+    border-radius: var(--radius-lg);
+    border: none;
+}
+
+.nm-input {
+    width: 100%;
+    padding: 16px 20px;
+    background: var(--bg-primary);
+    box-shadow: var(--nm-pressed);
+    border-radius: var(--radius-lg);
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.nm-input:focus {
+    box-shadow: var(--nm-pressed), 0 0 0 2px var(--accent-soft);
+}

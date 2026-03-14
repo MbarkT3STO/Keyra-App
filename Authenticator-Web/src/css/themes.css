@@ -1,75 +1,32 @@
 :root {
-    /* Scientific Design Tokens - HSL System */
-    --h: 258; /* Core Purple Hue */
-    --s: 100%;
+    /* Core Hue & Saturation */
+    --h: 258;
+    --s: 85%;
     
-    --bg-primary: hsl(var(--h), 20%, 100%);
-    --bg-secondary: hsl(var(--h), 25%, 98%);
-    --bg-tertiary: hsl(var(--h), 30%, 96%);
+    /* Neumorphic Light Mode Palette */
+    --bg-primary: #e0e5ec;
+    --bg-secondary: #d1d9e6;
+    --bg-tertiary: #c2cbd8;
     
-    --text-primary: hsl(var(--h), 40%, 8%);
-    --text-secondary: hsl(var(--h), 15%, 38%);
-    --text-tertiary: hsl(var(--h), 12%, 60%);
+    --text-primary: #2d3436;
+    --text-secondary: #636e72;
+    --text-tertiary: #b2bec3;
     
-    --accent-primary: hsl(var(--h), var(--s), 68%);
-    --accent-secondary: hsl(280, 100%, 75%);
-    --accent-hover: hsl(var(--h), var(--s), 62%);
-    --accent-soft: hsla(var(--h), var(--s), 68%, 0.12);
+    --accent-primary: hsl(var(--h), var(--s), 55%);
+    --accent-secondary: hsl(calc(var(--h) + 40), var(--s), 65%);
+    --accent-hover: hsl(var(--h), var(--s), 45%);
+    --accent-soft: hsla(var(--h), var(--s), 55%, 0.1);
     
-    /* Accent Color Themes */
-    --accent-royal-purple: 258; /* Default Royal Purple */
-    --accent-electric-blue: 200; /* Electric Blue */
-    --accent-emerald-green: 145; /* Emerald Green */
-    --accent-solar-orange: 15; /* Solar Orange */
+    /* Dynamic Accent Support */
+    --dynamic-accent-hue: var(--h);
+    --dynamic-accent-primary: hsl(var(--dynamic-accent-hue), var(--s), 55%);
     
-    /* New Modern & Cute Accent Colors */
-    --accent-rose-quartz: 330; /* Soft Rose Pink */
-    --accent-peach-blossom: 20; /* Warm Peach */
-    --accent-lavender-dream: 270; /* Dreamy Lavender */
-    --accent-mint-fresh: 160; /* Fresh Mint Green */
-    --accent-sky-blue: 190; /* Soft Sky Blue */
-    --accent-coral-sunset: 10; /* Coral Sunset */
-    --accent-amethyst-glow: 280; /* Deep Amethyst */
-    --accent-lemon-zest: 45; /* Bright Lemon */
-    --accent-ocean-teal: 175; /* Ocean Teal */
-    --accent-bubblegum: 320; /* Playful Bubblegum */
-    --accent-sage-serene: 150; /* Calming Sage */
-    --accent-golden-hour: 35; /* Golden Hour */
-    --accent-orchid-mystic: 300; /* Mystic Orchid */
-    --accent-turquoise-dream: 180; /* Dreamy Turquoise */
+    /* Border & Glass Legacy Support */
+    --border-color: rgba(0, 0, 0, 0.05);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.2);
     
-    /* Dynamic Accent Colors (will be set by JavaScript) */
-    --dynamic-accent-hue: var(--accent-royal-purple);
-    --dynamic-accent-primary: hsl(var(--dynamic-accent-hue), 100%, 68%);
-    --dynamic-accent-secondary: hsl(calc(var(--dynamic-accent-hue) + 20), 100%, 75%);
-    --dynamic-accent-hover: hsl(var(--dynamic-accent-hue), 100%, 62%);
-    --dynamic-accent-soft: hsla(var(--dynamic-accent-hue), 100%, 68%, 0.12);
-    
-    /* Aura Mesh Colors (Scientific Harmony) */
-    --aura-1: hsla(258, 100%, 68%, 0.35); /* Nebula (Default) */
-    --aura-2: hsla(330, 100%, 75%, 0.25);
-    --aura-3: hsla(200, 100%, 75%, 0.25);
-    
-    /* Solar Storm */
-    --solar-1: hsla(15, 100%, 65%, 0.35);
-    --solar-2: hsla(45, 100%, 65%, 0.25);
-    --solar-3: hsla(350, 100%, 60%, 0.25);
-    
-    /* Emerald Glade */
-    --emerald-1: hsla(145, 100%, 60%, 0.3);
-    --emerald-2: hsla(180, 100%, 60%, 0.2);
-    --emerald-3: hsla(110, 100%, 50%, 0.2);
-    
-    /* Deep Space */
-    --space-1: hsla(220, 100%, 50%, 0.3);
-    --space-2: hsla(280, 100%, 60%, 0.2);
-    --space-3: hsla(200, 100%, 40%, 0.2);
-    
-    --border-color: hsla(var(--h), 40%, 8%, 0.1); /* Increased contrast */
-    --glass-bg: hsla(0, 0%, 100%, 0.95); /* More opaque, no blur needed */
-    --glass-border: hsla(0, 0%, 0%, 0.1);
-    
-    /* Modular Spacing (8pt Grid) */
+    /* Spacing System */
     --space-2xs: 4px;
     --space-xs: 8px;
     --space-sm: 16px;
@@ -77,44 +34,45 @@
     --space-lg: 32px;
     --space-xl: 48px;
     --space-2xl: 64px;
+    --space-3xl: 80px;
+    --space-4xl: 120px;
     
-    --shadow-soft: 0 4px 20px hsla(var(--h), var(--s), 20%, 0.04);
-    --shadow-medium: 0 12px 36px hsla(var(--h), var(--s), 20%, 0.08);
-    --shadow-hard: 0 24px 64px hsla(var(--h), var(--s), 20%, 0.12);
+    /* Radii */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    --radius-auth: 40px;
+    --radius-full: 999px;
     
-    --radius-sm: 8px;   /* Inner Icons / Menus */
-    --radius-md: 16px;  /* Buttons / Standard Inputs */
-    --radius-lg: 24px;  /* Cards / Standard Modals */
-    --radius-xl: 32px;  /* Large Containers */
-    --radius-auth: clamp(28px, 6vw, 44px); /* Premium Responsive Radius */
-    --radius-full: 999px; /* Capsule Shapes */
-    
-    --transition-fast: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-medium: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Scientific Dimensional Scaling */
-    --btn-h-lg: 60px;   /* Hero / Main Actions */
-    --btn-h-md: 48px;   /* Standard Interaction */
-    --btn-h-sm: 36px;   /* Compact / Tertiary */
-    --btn-px: clamp(16px, 4vw, 32px);
+    /* Button Sizes */
+    --btn-h-lg: 56px;
+    --btn-h-md: 46px;
+    --btn-h-sm: 36px;
+    --btn-px: 24px;
 }
 
 [data-theme="dark"] {
-    --bg-primary: hsl(var(--h), 30%, 3%);
-    --bg-secondary: hsl(var(--h), 25%, 6%);
-    --bg-tertiary: hsl(var(--h), 20%, 9%);
+    /* "Deep Charcoal" Neumorphic Redesign */
+    --bg-primary: #121214; 
+    --bg-secondary: #18181b;
+    --bg-tertiary: #202023;
     
-    --text-primary: hsl(var(--h), 10%, 98%);
-    --text-secondary: hsl(var(--h), 15%, 72%);
-    --text-tertiary: hsl(var(--h), 10%, 48%);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #475569;
     
-    --border-color: hsla(0, 0%, 100%, 0.12);
-    --glass-bg: hsla(var(--h), 25%, 6%, 0.92);
-    --glass-border: hsla(0, 0%, 100%, 0.15);
+    --border-color: rgba(255, 255, 255, 0.03);
+    --glass-bg: rgba(18, 18, 20, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.05);
     
-    --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
-    --shadow-medium: 0 16px 48px rgba(0, 0, 0, 0.6);
-    --shadow-hard: 0 32px 80px rgba(0, 0, 0, 0.8);
+    --accent-primary: hsl(var(--h), var(--s), 65%);
+    --accent-hover: hsl(var(--h), var(--s), 75%);
+    --accent-soft: hsla(var(--h), var(--s), 65%, 0.15);
 }
 
 * {
@@ -125,13 +83,14 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     overflow: hidden;
     height: 100vh;
     width: 100vw;
     line-height: 1.5;
+    transition: background-color var(--transition-medium);
 }
 
 button {
@@ -140,7 +99,6 @@ button {
     border: none;
     outline: none;
     background: none;
-    transition: all var(--transition-fast);
 }
 
 input {
@@ -148,18 +106,9 @@ input {
     outline: none;
 }
 
-/* Hidden Utility */
-.hidden {
-    display: none !important;
-}
+.hidden { display: none !important; }
 
-/* Base Scrollbar Fix */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
-
-/* Premium Global Animations */
+/* Global Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -168,178 +117,4 @@ input {
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-
-/* OLED-Optimized Dark Mode - Pure Black for Power Savings */
-body.dark-theme {
-    /* Pure Black OLED Backgrounds */
-    --bg-primary: #000000; /* Pure black for maximum OLED efficiency */
-    --bg-secondary: #0a0a0a; /* Near-black for depth */
-    --bg-tertiary: #141414; /* Dark gray for subtle layers */
-    
-    /* Enhanced Text Contrast for OLED */
-    --text-primary: #ffffff; /* Pure white for maximum contrast */
-    --text-secondary: #e0e0e0; /* Light gray for secondary text */
-    --text-tertiary: #b0b0b0; /* Medium gray for tertiary text */
-    
-    /* Enhanced Accent Colors for OLED */
-    --accent-primary: hsl(var(--dynamic-accent-hue, 258), 100%, 70%); /* Brighter accent */
-    --accent-secondary: hsl(calc(var(--dynamic-accent-hue, 258) + 20), 100%, 78%);
-    --accent-hover: hsl(var(--dynamic-accent-hue, 258), 100%, 65%);
-    --accent-soft: hsla(var(--dynamic-accent-hue, 258), 100%, 70%, 0.15); /* Stronger soft background */
-    
-    /* Enhanced Borders for OLED */
-    --border-color: rgba(255, 255, 255, 0.08); /* Subtle white borders */
-    --border-secondary: rgba(255, 255, 255, 0.12);
-    --border-primary: rgba(255, 255, 255, 0.15);
-    
-    /* Enhanced Glass Effects for OLED */
-    --glass-bg: rgba(10, 10, 10, 0.98); 
-    --glass-border: rgba(255, 255, 255, 0.15);
-    
-    /* Enhanced Shadows for OLED */
-    --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.8);
-    --shadow-medium: 0 16px 48px rgba(0, 0, 0, 0.9);
-    --shadow-hard: 0 32px 80px rgba(0, 0, 0, 1.0);
-}
-
-/* Enhanced Light Mode for Better Balance */
-body.light-theme {
-    /* Crisp Light Backgrounds */
-    --bg-primary: #ffffff; /* Pure white */
-    --bg-secondary: #f8f9fa; /* Very light gray */
-    --bg-tertiary: #f1f3f4; /* Light gray */
-    
-    /* Enhanced Text Contrast */
-    --text-primary: #1a1a1a; /* Near-black for maximum contrast */
-    --text-secondary: #5f6368; /* Material Design gray */
-    --text-tertiary: #9aa0a6; /* Lighter gray */
-    
-    /* Refined Accent Colors */
-    --accent-primary: hsl(var(--dynamic-accent-hue, 258), 85%, 58%); /* Slightly muted for light mode */
-    --accent-secondary: hsl(calc(var(--dynamic-accent-hue, 258) + 20), 85%, 65%);
-    --accent-hover: hsl(var(--dynamic-accent-hue, 258), 85%, 52%);
-    --accent-soft: hsla(var(--dynamic-accent-hue, 258), 85%, 58%, 0.08);
-    
-    /* Subtle Borders */
-    --border-color: rgba(0, 0, 0, 0.06);
-    --border-secondary: rgba(0, 0, 0, 0.08);
-    --border-primary: rgba(0, 0, 0, 0.10);
-    
-    /* Enhanced Glass Effects */
-    --glass-bg: rgba(255, 255, 255, 0.95);
-    --glass-border: rgba(0, 0, 0, 0.12);
-    
-    /* Enhanced Shadows for Light Mode */
-    --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.1);
-    --shadow-medium: 0 16px 48px rgba(0, 0, 0, 0.15);
-    --shadow-hard: 0 32px 80px rgba(0, 0, 0, 0.2);
-}
-
-/* OLED Optimization Classes */
-.oled-optimized {
-    /* Additional optimizations for OLED displays */
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-}
-
-/* High contrast mode for accessibility */
-@media (prefers-contrast: high) {
-    body.dark-theme {
-        --text-primary: #ffffff;
-        --text-secondary: #f0f0f0;
-        --border-color: rgba(255, 255, 255, 0.2);
-    }
-    
-    body.light-theme {
-        --text-primary: #000000;
-        --text-secondary: #333333;
-        --border-color: rgba(0, 0, 0, 0.2);
-    }
-}
-
-/* Enhanced Scrollbar Styling */
-body.dark-theme ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-body.dark-theme ::-webkit-scrollbar-track {
-    background: #0a0a0a;
-}
-
-body.dark-theme ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-}
-
-body.dark-theme ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-body.dark-theme.oled-optimized ::-webkit-scrollbar-track {
-    background: #000000;
-}
-
-/* Enhanced Focus Indicators */
-body.dark-theme *:focus {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
-}
-
-body.dark-theme .form-input:focus {
-    box-shadow: 0 0 0 4px var(--accent-soft), 0 0 20px rgba(var(--dynamic-accent-hue, 258), 100%, 70%, 0.3);
-}
-
-/* Enhanced Button Styling for OLED */
-body.dark-theme.oled-optimized .btn-primary {
-    background: var(--accent-primary);
-    box-shadow: 0 4px 16px rgba(var(--dynamic-accent-hue, 258), 100%, 70%, 0.4);
-}
-
-body.dark-theme.oled-optimized .btn-primary:hover {
-    box-shadow: 0 6px 24px rgba(var(--dynamic-accent-hue, 258), 100%, 70%, 0.6);
-    transform: translateY(-1px);
-}
-
-/* Enhanced Card Styling for OLED */
-body.dark-theme.oled-optimized .account-card {
-    background: rgba(10, 10, 10, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-}
-
-/* Enhanced Modal Styling for OLED */
-body.dark-theme.oled-optimized .modal-overlay {
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-}
-
-body.dark-theme.oled-optimized .modal-content {
-    background: #0a0a0a;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-}
-
-/* Enhanced Navigation for OLED */
-body.dark-theme.oled-optimized .navbar {
-    background: rgba(0, 0, 0, 0.95);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes blobFloat {
-    0% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(30px, -50px) scale(1.1); }
-    66% { transform: translate(-20px, 20px) scale(0.9); }
-    100% { transform: translate(0, 0) scale(1); }
 }
