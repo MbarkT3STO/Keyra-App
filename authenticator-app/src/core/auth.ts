@@ -36,7 +36,9 @@ export function getCurrentUser() {
         username: currentUser.username,
         email: currentUser.email,
         pendingEmail: currentUser.pendingEmail,
-        settings: currentUser["Desktop Settings"]
+        settings: currentUser["Desktop Settings"],
+        autolock: currentUser.autolock,
+        vaultPin: currentUser.vaultPin
     };
 }
 
@@ -81,7 +83,9 @@ export async function signup(username: string, email: string, password: string):
         salt,
         isActivated: false,
         activationCode,
-        encryptedVaultData
+        encryptedVaultData,
+        autolock: '0',
+        vaultPin: ''
     };
 
     users.push(newUser);
@@ -251,6 +255,18 @@ export async function updateUserSettings(settings: any): Promise<void> {
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
     if (userIndex === -1) throw new Error("User missing from storage.");
+
+    // Move autolock and vaultPin to root if they exist in the settings object, and remove them from the nested object
+    if (settings.autolock !== undefined) {
+        users[userIndex].autolock = String(settings.autolock);
+        currentUser.autolock = String(settings.autolock);
+        delete settings.autolock;
+    }
+    if (settings.vaultPin !== undefined) {
+        users[userIndex].vaultPin = settings.vaultPin;
+        currentUser.vaultPin = settings.vaultPin;
+        delete settings.vaultPin;
+    }
 
     users[userIndex]["Desktop Settings"] = settings;
     currentUser["Desktop Settings"] = settings;
@@ -452,6 +468,8 @@ export async function pollForUpdates(): Promise<{ changed: boolean, settings?: a
             currentUser["Desktop Settings"] = result.userData["Desktop Settings"] || result.userData.settings;
             currentUser.settings = result.userData.settings; // Keep legacy for ref
         }
+        if (result.userData.autolock !== undefined) currentUser.autolock = result.userData.autolock;
+        if (result.userData.vaultPin !== undefined) currentUser.vaultPin = result.userData.vaultPin;
 
         // If vault data changed, decrypt it
         let accounts: AuthenticatorAccount[] | undefined = undefined;

@@ -116,8 +116,13 @@ export class UIManager {
 
     private async initFromCloud() {
         const user = await (window as any).api.getCurrentUser();
-        if (user && user.settings) {
-            this.applySettings(user.settings, false);
+        if (user) {
+            const settings = { 
+                ...(user.settings || {}),
+                autolock: user.autolock,
+                vaultPin: user.vaultPin
+            };
+            this.applySettings(settings, false);
         }
     }
 
@@ -206,7 +211,7 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('performance_mode'), String(this.performanceMode));
             localStorage.setItem(this.getStorageKey('menu_exit_integration'), String(this.menuExitIntegration));
             localStorage.setItem(this.getStorageKey('privacy_blur'), String(this.privacyBlur));
-            if (settings.vaultPin) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
+            if (settings.vaultPin !== undefined) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
         }
 
         this.updateLockVaultVisibility();

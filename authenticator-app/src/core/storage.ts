@@ -21,12 +21,10 @@ export interface UserSettings {
     wallpaperPreset: string;
     privacyMode: boolean;
     screenGuardian: boolean;
-    autolock: string;
     oledMode: boolean;
     performanceMode: boolean;
     menuExitIntegration: boolean;
     privacyBlur: boolean;
-    vaultPin?: string;
 }
 
 export interface UserRecord {
@@ -42,6 +40,8 @@ export interface UserRecord {
     encryptedVaultData: string;
     settings?: UserSettings;
     "Desktop Settings"?: UserSettings;
+    autolock: string;
+    vaultPin?: string;
 }
 
 /*
