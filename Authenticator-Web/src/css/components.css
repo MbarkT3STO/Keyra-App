@@ -88,6 +88,7 @@ i[data-lucide] {
 .user-button {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-xs);
     padding: 0 16px;
     height: var(--btn-h-sm);

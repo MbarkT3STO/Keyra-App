@@ -213,16 +213,32 @@
                     <!-- Cards dynamically inserted by JS -->
                 </div>
                 
-                <!-- Empty State -->
+                <!-- Empty State (No accounts at all) -->
                 <div id="empty-state" class="hidden">
                     <div class="empty-state-vessel">
-                        <i data-lucide="fingerprint" style="width: 100px; height: 100px; opacity: 0.8;"></i>
-                        <h2>Vault is Synchronized</h2>
-                        <p>No active tokens detected. Secure your first digital identity to activate real-time vault protection.</p>
+                        <div class="nm-icon-large" style="margin: 0 auto 32px; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg-primary); box-shadow: var(--nm-out);">
+                            <i data-lucide="fingerprint" style="width: 60px; height: 60px; color: var(--accent-primary);"></i>
+                        </div>
+                        <h2 style="font-weight: 900; font-size: 28px; margin-bottom: 12px;">Vault is Synchronized</h2>
+                        <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto 32px; font-weight: 500;">No active tokens detected. Secure your first digital identity to activate real-time vault protection.</p>
                         <button class="btn-primary" id="empty-add-btn" style="padding: 0 48px; min-width: 240px; height: var(--btn-h-lg);">
                             <i data-lucide="plus" style="width: 24px; height: 24px;"></i>
                             <span>Initialize Security</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- Search Empty State (No matches found) -->
+                <div id="search-empty-state" class="hidden" style="padding: 40px 20px; text-align: center;">
+                    <div class="empty-state-vessel" style="animation: fadeUp 0.6s ease-out;">
+                        <div class="nm-icon-large" style="margin: 0 auto 32px; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; background: var(--bg-primary); box-shadow: var(--nm-out); color: var(--text-secondary); opacity: 0.6;">
+                            <i data-lucide="search-x" style="width: 48px; height: 48px;"></i>
+                        </div>
+                        <h2 style="font-weight: 900; font-size: 24px; color: var(--text-primary); margin-bottom: 8px;">No Identities Found</h2>
+                        <p style="color: var(--text-secondary); font-weight: 500; font-size: 16px;">We couldn't find any tokens matching "<span id="empty-search-term" style="color: var(--accent-primary); font-weight: 700;"></span>"</p>
+                        <div style="margin-top: 32px;">
+                            <button class="user-button" onclick="document.getElementById('vault-search').value = ''; document.getElementById('vault-search').dispatchEvent(new Event('input'));" style="padding: 0 32px; height: 48px; font-weight: 700;">Clear Search Filters</button>
+                        </div>
                     </div>
                 </div>
             </section>

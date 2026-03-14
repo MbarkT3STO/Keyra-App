@@ -71,7 +71,7 @@ body {
 .main-content {
     flex: 1;
     overflow-y: auto;
-    padding: clamp(var(--space-xl), 8vw, var(--space-4xl)) clamp(var(--space-sm), 4vw, var(--space-xl)); /* Increased top padding */
+    padding: clamp(var(--space-lg), 4vw, var(--space-2xl)) clamp(var(--space-sm), 4vw, var(--space-xl)); /* Reduced from space-xl/8vw/space-4xl */
     width: 100%;
 }
 
@@ -117,7 +117,7 @@ body:has(.settings-container:not(.hidden)) .main-content {
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    margin-bottom: clamp(var(--space-xl), 10vw, var(--space-4xl)); /* Increased from space-lg/space-2xl */
+    margin-bottom: clamp(var(--space-lg), 4vw, var(--space-2xl)); /* Reduced from space-xl/10vw/space-4xl */
     gap: var(--space-md);
     flex-wrap: nowrap; /* Force single row for precision alignment */
 }
@@ -251,7 +251,7 @@ body:has(.settings-container:not(.hidden)) .main-content {
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: clamp(60px, 15vh, 120px) var(--space-md);
+    padding: clamp(32px, 8vh, 64px) var(--space-md); /* Reduced from 60px/15vh/120px */
     width: 100%;
     max-width: 600px;
     margin: 0 auto;

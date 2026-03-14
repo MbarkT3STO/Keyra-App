@@ -870,7 +870,10 @@ export class UIManager {
     private renderAccounts() {
         const grid = document.getElementById('accounts-grid');
         const emptyState = document.getElementById('empty-state');
-        if (!grid || !emptyState) return;
+        const searchEmptyState = document.getElementById('search-empty-state');
+        const searchTermSpan = document.getElementById('empty-search-term');
+        
+        if (!grid || !emptyState || !searchEmptyState) return;
 
         // Filter accounts based on search query
         const filtered = this.accounts.filter(acc =>
@@ -878,13 +881,26 @@ export class UIManager {
             acc.account.toLowerCase().includes(this.searchQuery)
         );
 
+        // State 1: Absolutely no accounts in the vault
         if (this.accounts.length === 0) {
             grid.classList.add('hidden');
+            searchEmptyState.classList.add('hidden');
             emptyState.classList.remove('hidden');
             this.refreshLucide(emptyState);
-        } else {
+        }
+        // State 2: Accounts exist, but search filter produced zero results
+        else if (filtered.length === 0) {
+            grid.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            searchEmptyState.classList.remove('hidden');
+            if (searchTermSpan) searchTermSpan.textContent = this.searchQuery;
+            this.refreshLucide(searchEmptyState);
+        }
+        // State 3: Accounts to show
+        else {
             grid.classList.remove('hidden');
             emptyState.classList.add('hidden');
+            searchEmptyState.classList.add('hidden');
             grid.innerHTML = '';
             filtered.forEach((acc, index) => {
                 grid.appendChild(this.createAccountCard(acc, index));
@@ -1446,28 +1462,50 @@ export class UIManager {
             const timerSpan = document.getElementById('verify-email-resend-timer');
             if (timerSpan) timerSpan.textContent = resendTimer > 0 ? `(${resendTimer}s)` : '';
             if (btn) (btn as HTMLButtonElement).disabled = resendTimer > 0;
+            if (btn) (btn as HTMLElement).style.opacity = resendTimer > 0 ? '0.5' : '1';
         };
 
         const content = `
-            <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl)); text-align: center;">
-                <div class="nm-icon-large" style="margin: 0 auto 24px;">
-                    <i data-lucide="mail-check"></i>
-                </div>
-                <h2 style="font-weight: 900; font-size: 26px; margin-bottom: 8px;">Verify New Email</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 32px; font-weight: 600;">We've sent a 6-digit code to <strong>${email}</strong></p>
+            <div style="padding: clamp(32px, 8vw, 48px); text-align: center; position: relative; overflow: hidden;">
+                <!-- Subtle background decoration -->
+                <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--accent-soft); filter: blur(60px); opacity: 0.3; border-radius: 50%; pointer-events: none;"></div>
                 
-                <div class="form-group">
-                    <input type="text" id="email-verify-code" class="form-input" placeholder="000000" maxlength="6" style="text-align: center; font-size: 32px; letter-spacing: 8px; font-family: 'JetBrains Mono'; height: 70px;">
+                <div class="nm-icon-large" style="margin: 0 auto 32px; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; background: var(--bg-primary); box-shadow: var(--nm-raised);">
+                    <i data-lucide="mail-check" style="width: 48px; height: 48px; color: var(--accent-primary);"></i>
+                </div>
+                
+                <h2 style="font-weight: 900; font-size: 32px; color: var(--text-primary); margin-bottom: 12px; letter-spacing: -1.2px;">Verify Identity</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 40px; font-weight: 500; font-size: 16px; line-height: 1.5;">
+                    Security protocol initiated. Enter the 6-digit synchronization code sent to <br>
+                    <strong style="color: var(--accent-primary); font-weight: 700;">${email}</strong>
+                </p>
+                
+                <div class="form-group" style="margin-bottom: 40px;">
+                    <div style="position: relative;">
+                        <input type="text" id="email-verify-code" class="form-input" placeholder="000000" maxlength="6" 
+                               style="text-align: center; font-size: 36px; letter-spacing: 12px; font-family: 'JetBrains Mono'; height: 84px; border-radius: var(--radius-lg); box-shadow: var(--nm-pressed); border: none; width: 100%; color: var(--accent-primary); font-weight: 900;">
+                        <div style="position: absolute; bottom: -20px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 40px; pointer-events: none; opacity: 0.2;">
+                            <span></span><span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="display: flex; gap: 16px; margin-top: 32px;">
-                    <button class="btn-primary" id="btn-submit-email-verify" style="flex: 2; height: 56px;">Confirm Change</button>
-                    <button class="user-button" id="btn-cancel-email-verify" style="flex: 1; height: 56px;">Discard</button>
+                <div style="display: flex; gap: 20px; margin-top: 48px;">
+                    <button class="btn-primary" id="btn-submit-email-verify" style="flex: 2; height: 64px; font-size: 18px; font-weight: 850; border-radius: var(--radius-xl); box-shadow: var(--nm-raised);">
+                        Authorize Change
+                    </button>
+                    <button class="user-button" id="btn-cancel-email-verify" style="flex: 1; height: 64px; font-size: 15px; font-weight: 750; border-radius: var(--radius-xl); box-shadow: var(--nm-raised);">
+                        Discard
+                    </button>
                 </div>
 
-                <button id="btn-resend-verify-email" style="margin-top: 24px; background: none; border: none; font-weight: 800; color: var(--accent-primary); cursor: pointer; transition: opacity 0.2s;" disabled>
-                    Resend Code <span id="verify-email-resend-timer">(30s)</span>
-                </button>
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px dashed var(--border-color);">
+                    <button id="btn-resend-verify-email" style="background: none; border: none; font-weight: 800; color: var(--accent-primary); cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;" disabled>
+                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                        <span>Resend Dispatch</span> 
+                        <span id="verify-email-resend-timer" style="opacity: 0.7; font-variant-numeric: tabular-nums;">(30s)</span>
+                    </button>
+                </div>
             </div>
         `;
 
