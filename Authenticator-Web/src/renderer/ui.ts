@@ -1217,32 +1217,21 @@ export class UIManager {
     public showToast(message: string, type: 'info' | 'success' | 'error' = 'info') {
         const container = document.getElementById('toast-container');
         if (!container) return;
+        
         const toast = document.createElement('div');
-        toast.className = 'animate-fade-in';
-        toast.style.cssText = `
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            padding: 16px 28px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--nm-raised);
-            border: none;
-            border-bottom: 4px solid ${type === 'error' ? '#ff3b30' : type === 'success' ? '#28a745' : 'var(--accent-primary)'};
-            display: flex; align-items: center; gap: var(--space-sm);
-            font-size: 16px; font-weight: 800;
-            max-width: 92vw;
-            margin: 0 auto;
-            letter-spacing: -0.2px;
-        `;
+        toast.className = `neumorphic-toast toast-${type} animate-fade-in`;
         
         const iconName = type === 'error' ? 'alert-circle' : type === 'success' ? 'check-circle' : 'info';
-        toast.innerHTML = `<i data-lucide="${iconName}" style="width: 20px; height: 20px; color: ${type === 'error' ? '#ff3b30' : type === 'success' ? '#28a745' : 'var(--accent-primary)'}; flex-shrink:0;"></i> <span>${message}</span>`;
+        toast.innerHTML = `
+            <i data-lucide="${iconName}" class="toast-icon"></i>
+            <span class="toast-message">${message}</span>
+        `;
         
         container.appendChild(toast);
         this.refreshLucide(toast);
 
         setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(24px) scale(0.95)';
+            toast.classList.add('hiding');
             setTimeout(() => toast.remove(), 400);
         }, 3500);
     }
