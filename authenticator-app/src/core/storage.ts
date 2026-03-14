@@ -25,6 +25,7 @@ export interface UserSettings {
     performanceMode: boolean;
     menuExitIntegration: boolean;
     privacyBlur: boolean;
+    vaultPin?: string;
 }
 
 export interface UserRecord {
@@ -40,8 +41,8 @@ export interface UserRecord {
     encryptedVaultData: string;
     settings?: UserSettings;
     "Desktop Settings"?: UserSettings;
+    "Web Settings"?: any;
     autolock: string;
-    vaultPin?: string;
 }
 
 /*

@@ -28,7 +28,8 @@ export function getCurrentUser() {
         username: currentUser.username,
         email: currentUser.email,
         pendingEmail: currentUser.pendingEmail,
-        settings: currentUser.settings
+        settings: currentUser["Web Settings"],
+        autolock: currentUser.autolock
     };
 }
 
@@ -72,7 +73,8 @@ export async function signup(username: string, email: string, password: string):
         salt,
         isActivated: false,
         activationCode,
-        encryptedVaultData
+        encryptedVaultData,
+        autolock: '0'
     };
 
     users.push(newUser);
@@ -228,10 +230,26 @@ export async function updateUserSettings(settings: any): Promise<void> {
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
     if (userIndex === -1) throw new Error("User missing from storage.");
 
-    users[userIndex].settings = settings;
-    currentUser.settings = settings; // Update local session too
+    // Move autolock and vaultPin to root if they exist in the settings object, and remove them from the nested object
+    if (settings["Web Settings"] && settings["Web Settings"].autolock !== undefined) {
+        users[userIndex].autolock = String(settings["Web Settings"].autolock);
+        currentUser.autolock = String(settings["Web Settings"].autolock);
+        delete settings["Web Settings"].autolock;
+    }
+
+    // Always target Web Settings for updates from this platform
+    if (settings["Web Settings"]) {
+        users[userIndex]["Web Settings"] = settings["Web Settings"];
+        currentUser["Web Settings"] = settings["Web Settings"];
+    } else {
+        // If it's a flat object, wrap it and avoid touching other platform blocks
+        delete settings["Desktop Settings"];
+        users[userIndex]["Web Settings"] = settings;
+        currentUser["Web Settings"] = settings;
+    }
 
     await saveUsers(users);
+    currentUser.settings = currentUser["Web Settings"]; // Keep legacy field in session if needed
     await syncUserData(currentUser.username, users[userIndex]);
 }
 

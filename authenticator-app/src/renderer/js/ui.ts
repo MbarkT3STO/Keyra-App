@@ -119,8 +119,7 @@ export class UIManager {
         if (user) {
             const settings = { 
                 ...(user.settings || {}),
-                autolock: user.autolock,
-                vaultPin: user.vaultPin
+                autolock: user.autolock
             };
             this.applySettings(settings, false);
         }

@@ -13,7 +13,6 @@ export interface UserSettings {
     wallpaperPreset: string;
     privacyMode: boolean;
     screenGuardian: boolean;
-    autolock: string;
     oledMode: boolean;
     vaultPin?: string;
 }
@@ -30,6 +29,9 @@ export interface UserRecord {
     emailChangeCode?: string;
     encryptedVaultData: string;
     settings?: UserSettings;
+    "Desktop Settings"?: any;
+    "Web Settings"?: UserSettings;
+    autolock: string;
 }
 
 const USERS_KEY = 'keyra_users';

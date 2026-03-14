@@ -36,29 +36,38 @@ export class UIManager {
 
     private async initFromCloud() {
         const user = await (window as any).api.getCurrentUser();
-        if (user && user.settings) {
-            this.applySettings(user.settings, false); // Don't push back to cloud during init
+        if (user) {
+            const settings = {
+                ...(user.settings || {}),
+                autolock: user.autolock
+            };
+            this.applySettings(settings, false); // Don't push back to cloud during init
         }
     }
 
     private getSettingsObject(): any {
-        return {
+        const vPin = localStorage.getItem(this.getStorageKey('vault_pin'));
+        const obj: any = {
             Settings: {
                 theme: this.currentTheme,
                 accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
                 privacyMode: this.privacyMode,
                 screenGuardian: this.screenGuardian,
-                autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0',
-                vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
+                vaultPin: vPin
             },
             "Web Settings": {
                 theme: this.currentTheme,
                 accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
                 privacyMode: this.privacyMode,
                 screenGuardian: this.screenGuardian,
-                autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0'
+                vaultPin: vPin
             }
         };
+
+        const aLock = localStorage.getItem(this.getStorageKey('autolock'));
+        if (aLock !== null) obj.autolock = aLock;
+
+        return obj;
     }
 
     public async pushSettings() {
@@ -80,9 +89,7 @@ export class UIManager {
         try {
             this.setSyncing(true);
             const webSettings = this.getWebSettingsObject();
-            const settingsPayload = {
-                "Web Settings": webSettings
-            };
+            const settingsPayload = webSettings;
             console.log('Pushing web settings to cloud:', settingsPayload);
             await (window as any).api.updateUserSettings(settingsPayload);
             console.log('Web settings pushed successfully');
@@ -95,13 +102,21 @@ export class UIManager {
     }
 
     private getWebSettingsObject(): any {
-        return {
-            theme: this.currentTheme,
-            accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
-            privacyMode: this.privacyMode,
-            screenGuardian: this.screenGuardian,
-            autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0'
+        const vPin = localStorage.getItem(this.getStorageKey('vault_pin'));
+        const obj: any = {
+            "Web Settings": {
+                theme: this.currentTheme,
+                accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
+                privacyMode: this.privacyMode,
+                screenGuardian: this.screenGuardian,
+                vaultPin: vPin
+            }
         };
+
+        const aLock = localStorage.getItem(this.getStorageKey('autolock'));
+        if (aLock !== null) obj.autolock = aLock;
+
+        return obj;
     }
 
     public applySettings(settings: any, saveLocal: boolean = true) {
@@ -124,18 +139,24 @@ export class UIManager {
         this.screenGuardian = !!settingsToApply.screenGuardian;
 
         // Apply to localStorage if requested (e.g. on initial sync from cloud)
-        if (saveLocal || settingsToApply.vaultPin !== undefined || settingsToApply.privacyMode !== undefined) {
+        if (saveLocal || settings.vaultPin !== undefined || settings.autolock !== undefined || settingsToApply.privacyMode !== undefined) {
             if (settingsToApply.theme) localStorage.setItem(this.getStorageKey('theme'), settingsToApply.theme);
             if (settingsToApply.accentColor) localStorage.setItem(this.getStorageKey('accent_color'), settingsToApply.accentColor);
 
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
 
-            if (settingsToApply.autolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(settingsToApply.autolock));
+            const finalAutolock = settings.autolock !== undefined ? settings.autolock : settingsToApply.autolock;
+            if (finalAutolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(finalAutolock));
 
             // Critical, Ensure the PIN is persisted to local storage
-            if (settingsToApply.vaultPin) {
-                localStorage.setItem(this.getStorageKey('vault_pin'), settingsToApply.vaultPin);
+            const finalPin = settings.vaultPin !== undefined ? settings.vaultPin : settingsToApply.vaultPin;
+            if (finalPin !== undefined) {
+                if (finalPin === null || finalPin === '') {
+                    localStorage.removeItem(this.getStorageKey('vault_pin'));
+                } else {
+                    localStorage.setItem(this.getStorageKey('vault_pin'), finalPin);
+                }
             }
         }
 
@@ -803,8 +824,12 @@ export class UIManager {
             const user = await (window as any).api.getCurrentUser();
 
             // Apply cloud settings first if they exist
-            if (user && user.settings) {
-                this.applySettings(user.settings, true);
+            if (user) {
+                const settings = {
+                    ...(user.settings || {}),
+                    autolock: user.autolock
+                };
+                this.applySettings(settings, true);
             }
 
             const userNameDisplay = document.getElementById('user-name-display');

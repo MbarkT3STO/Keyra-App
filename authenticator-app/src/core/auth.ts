@@ -37,8 +37,7 @@ export function getCurrentUser() {
         email: currentUser.email,
         pendingEmail: currentUser.pendingEmail,
         settings: currentUser["Desktop Settings"],
-        autolock: currentUser.autolock,
-        vaultPin: currentUser.vaultPin
+        autolock: currentUser.autolock
     };
 }
 
@@ -84,8 +83,7 @@ export async function signup(username: string, email: string, password: string):
         isActivated: false,
         activationCode,
         encryptedVaultData,
-        autolock: '0',
-        vaultPin: ''
+        autolock: '0'
     };
 
     users.push(newUser);
@@ -256,18 +254,13 @@ export async function updateUserSettings(settings: any): Promise<void> {
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
     if (userIndex === -1) throw new Error("User missing from storage.");
 
-    // Move autolock and vaultPin to root if they exist in the settings object, and remove them from the nested object
     if (settings.autolock !== undefined) {
         users[userIndex].autolock = String(settings.autolock);
         currentUser.autolock = String(settings.autolock);
         delete settings.autolock;
     }
-    if (settings.vaultPin !== undefined) {
-        users[userIndex].vaultPin = settings.vaultPin;
-        currentUser.vaultPin = settings.vaultPin;
-        delete settings.vaultPin;
-    }
 
+    // Always target Desktop Settings
     users[userIndex]["Desktop Settings"] = settings;
     currentUser["Desktop Settings"] = settings;
 
@@ -463,13 +456,17 @@ export async function pollForUpdates(): Promise<{ changed: boolean, settings?: a
     const result = await pollCloudUpdates(currentUser.username);
     
     if (result.dataChanged && result.userData) {
-        // Update local session state if it exists in the fetched data
-        if (result.userData["Desktop Settings"] || result.userData.settings) {
-            currentUser["Desktop Settings"] = result.userData["Desktop Settings"] || result.userData.settings;
-            currentUser.settings = result.userData.settings; // Keep legacy for ref
+        // Strict isolation: only pull what belongs to this platform
+        if (result.userData["Desktop Settings"]) {
+            currentUser["Desktop Settings"] = result.userData["Desktop Settings"];
         }
+        
+        // Optionally mirror Web Settings in memory but don't touch them
+        if (result.userData["Web Settings"]) {
+            currentUser["Web Settings"] = result.userData["Web Settings"];
+        }
+
         if (result.userData.autolock !== undefined) currentUser.autolock = result.userData.autolock;
-        if (result.userData.vaultPin !== undefined) currentUser.vaultPin = result.userData.vaultPin;
 
         // If vault data changed, decrypt it
         let accounts: AuthenticatorAccount[] | undefined = undefined;
