@@ -2460,32 +2460,20 @@ body.light-theme .cloud-sync-pill {
 }
 
 .btn-close {
-    color: hsl(330, 95%, 65%); /* Cute Rose Quartz Base */
+    background: var(--nm-surface);
+    color: hsl(330, 100%, 75%); /* Premium Rose Quartz */
+    box-shadow: var(--nm-shadow-out);
+    border: none;
     position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(8px);
-}
-
-.btn-close::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: radial-gradient(circle, hsla(330, 95%, 65%, 0.25) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
-    transition: width 0.4s ease, height 0.4s ease;
-    border-radius: 50%;
-    z-index: -1;
+    border-radius: var(--radius-full);
 }
 
 .btn-close:hover {
-    background: hsla(330, 95%, 65%, 0.15);
     color: hsl(330, 100%, 75%);
     transform: scale(1.1) rotate(90deg);
-    border-color: hsla(330, 95%, 65%, 0.3);
-    box-shadow: 0 0 15px hsla(330, 95%, 65%, 0.35);
+    box-shadow: 
+        15px 15px 30px var(--nm-shadow-dark), 
+        -15px -15px 30px var(--nm-shadow-light);
 }
 
 /* Simulation Toast - Neuomorphic Redesign */
@@ -2505,7 +2493,7 @@ body.light-theme .cloud-sync-pill {
 
 .btn-close:active {
     transform: scale(0.92) rotate(90deg);
-    background: hsla(330, 95%, 65%, 0.25);
+    box-shadow: var(--nm-shadow-in);
     transition: all 0.1s ease;
 }
 
@@ -2708,7 +2696,7 @@ body.light-theme .cloud-sync-pill {
     background: var(--nm-surface) !important;
     border: none;
     color: var(--accent-primary) !important;
-    box-shadow: var(--nm-shadow-out-sm);
+    box-shadow: var(--nm-shadow-out);
     transition: all var(--transition-medium);
 }
 
@@ -2718,7 +2706,7 @@ body.light-theme .cloud-sync-pill {
 }
 
 .bento-close-btn:active {
-    box-shadow: var(--nm-shadow-in-sm);
+    box-shadow: var(--nm-shadow-in);
     transform: scale(0.98);
 }
 
@@ -2875,7 +2863,7 @@ body.light-theme .cloud-sync-pill {
     align-items: center;
     justify-content: center;
     background: var(--nm-surface);
-    box-shadow: var(--nm-shadow-out-sm);
+    box-shadow: var(--nm-shadow-out);
     border: none;
     cursor: pointer !important;
     color: var(--text-secondary);
@@ -2892,7 +2880,7 @@ body.light-theme .cloud-sync-pill {
 
 .auth-close-btn:active {
     transform: scale(0.95);
-    box-shadow: var(--nm-shadow-in-sm);
+    box-shadow: var(--nm-shadow-in);
 }
 
 .auth-close-btn i {
