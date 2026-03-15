@@ -22,9 +22,7 @@
     <!-- Navigation -->
     <nav class="navbar nm-flat">
         <div class="nav-brand">
-            <div class="logo-icon nm-convex">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
+            <img src="icon.png" alt="Keyra App Logo" class="brand-logo nm-convex">
             <span class="brand-text">Keyra</span>
         </div>
         
@@ -138,6 +136,199 @@
             </div>
         </section>
 
+        <!-- Demonstration Section -->
+        <section class="demo" id="demo">
+            <div class="section-header">
+                <h2>See It In Action</h2>
+                <p>Experience the authentic Keyra desktop interface.</p>
+            </div>
+            
+            <div class="mock-app-container nm-flat">
+                <!-- Mock Navbar -->
+                <header class="mock-navbar">
+                    <div class="mock-navbar-wrapper">
+                        <div class="mock-navbar-left">
+                            <div class="mock-navbar-brand">
+                                <div class="mock-brand-icon"><img src="icon.png" alt="Keyra Logo" class="brand-logo small nm-convex"></div>
+                                <span class="mock-brand-text">Keyra</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mock-navbar-center">
+                            <nav class="mock-nav-tabs nm-inset">
+                                <button class="mock-nav-tab active nm-convex">
+                                    <i class="fa-solid fa-vault"></i>
+                                    <span>My Vault</span>
+                                </button>
+                                <button class="mock-nav-tab">
+                                    <i class="fa-solid fa-gear"></i>
+                                    <span>Settings</span>
+                                </button>
+                            </nav>
+                        </div>
+                        
+                        <div class="mock-navbar-right">
+                            <div class="mock-connectivity-indicator online nm-convex">
+                                <span class="mock-status-dot"></span>
+                            </div>
+                            <button class="mock-user-button nm-convex">
+                                <div class="mock-user-avatar">M</div>
+                                <span class="mock-user-name">MBVRK</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Mock Main Content -->
+                <main class="mock-main-content" id="mock-main-view">
+                    <!-- Vault View -->
+                    <div id="mock-vault-view">
+                        <div class="mock-section-header">
+                            <div class="mock-header-main">
+                                <h1 class="mock-section-title">My Vault</h1>
+                                <p class="mock-section-subtitle">YOUR SAVED ACCOUNTS</p>
+                            </div>
+                            <div class="mock-search-add">
+                                <div class="mock-search-vessel nm-inset">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <span>Search your accounts...</span>
+                                </div>
+                                <button class="mock-btn-primary nm-convex" id="mock-add-account-btn">
+                                    <i class="fa-solid fa-plus"></i> Add Account
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mock-accounts-grid">
+                            <!-- Card 1 -->
+                            <div class="mock-account-card nm-flat">
+                                <div class="mock-account-header">
+                                    <div class="mock-account-icon nm-inset">
+                                        <i class="fa-brands fa-aws text-gradient"></i>
+                                    </div>
+                                    <div class="mock-account-info">
+                                        <div class="mock-service-name">Amazon Web Services</div>
+                                        <div class="mock-account-identity">admin@keyra.app</div>
+                                    </div>
+                                </div>
+                                <div class="mock-otp-hero nm-concave">
+                                    <div class="mock-otp-code">419 283</div>
+                                    <div class="mock-timer-linear-vessel nm-inset">
+                                        <div class="mock-timer-linear-progress nm-convex" style="width: 65%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Card 2 -->
+                            <div class="mock-account-card nm-flat">
+                                <div class="mock-account-header">
+                                    <div class="mock-account-icon nm-inset">
+                                        <i class="fa-brands fa-discord text-gradient"></i>
+                                    </div>
+                                    <div class="mock-account-info">
+                                        <div class="mock-service-name">Discord</div>
+                                        <div class="mock-account-identity">MBVRK#1234</div>
+                                    </div>
+                                </div>
+                                <div class="mock-otp-hero nm-concave">
+                                    <div class="mock-otp-code">752 891</div>
+                                    <div class="mock-timer-linear-vessel nm-inset">
+                                        <div class="mock-timer-linear-progress nm-convex" style="width: 30%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Card 3 -->
+                            <div class="mock-account-card nm-flat">
+                                <div class="mock-account-header">
+                                    <div class="mock-account-icon nm-inset">
+                                        <i class="fa-brands fa-github text-gradient"></i>
+                                    </div>
+                                    <div class="mock-account-info">
+                                        <div class="mock-service-name">GitHub</div>
+                                        <div class="mock-account-identity">mbvrk-dev</div>
+                                    </div>
+                                </div>
+                                <div class="mock-otp-hero nm-concave">
+                                    <div class="mock-otp-code">942 184</div>
+                                    <div class="mock-timer-linear-vessel nm-inset">
+                                        <div class="mock-timer-linear-progress nm-convex" style="width: 85%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings View (Hidden by default) -->
+                    <div id="mock-settings-view" style="display: none; height: 100%;">
+                        <div class="mock-section-header">
+                            <div class="mock-header-main">
+                                <h1 class="mock-section-title">Settings</h1>
+                                <p class="mock-section-subtitle">CUSTOMIZE YOUR EXPERIENCE</p>
+                            </div>
+                        </div>
+
+                        <div class="mock-settings-grid">
+                            <div class="mock-settings-card nm-flat">
+                                <h3>Appearance</h3>
+                                <div class="mock-setting-row">
+                                    <span>Dark Mode</span>
+                                    <div class="mock-switch active nm-inset">
+                                        <div class="mock-switch-thumb nm-convex"></div>
+                                    </div>
+                                </div>
+                                <div class="mock-setting-row">
+                                    <span>Cloud Sync</span>
+                                    <div class="mock-switch active nm-inset">
+                                        <div class="mock-switch-thumb nm-convex"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+
+                <!-- Mock Modal Overlay -->
+                <div class="mock-modal-overlay" id="mock-modal">
+                    <div class="mock-modal nm-flat">
+                        <div class="mock-modal-header">
+                            <h2>Add Account</h2>
+                            <p>Scan QR or Enter details</p>
+                        </div>
+                        <div class="mock-modal-body">
+                            <div class="mock-form-group nm-inset">
+                                <i class="fa-solid fa-building"></i>
+                                <span>Service Name</span>
+                            </div>
+                            <div class="mock-form-group nm-inset">
+                                <i class="fa-solid fa-key"></i>
+                                <span>Secret Key</span>
+                            </div>
+                        </div>
+                        <div class="mock-modal-footer">
+                            <button class="mock-btn-secondary nm-convex" id="mock-modal-cancel">Cancel</button>
+                            <button class="mock-btn-primary nm-convex">Save Account</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mock Dropdown -->
+                <div class="mock-dropdown nm-flat" id="mock-user-dropdown">
+                    <div class="mock-dropdown-header">
+                        <div class="mock-dropdown-name">MBVRK</div>
+                        <div class="mock-dropdown-email">admin@keyra.app</div>
+                    </div>
+                    <div class="mock-dropdown-item nm-pressed">
+                        <i class="fa-solid fa-shield"></i> Security
+                    </div>
+                    <div class="mock-dropdown-item danger nm-pressed">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sign out
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Download Section -->
         <section class="download" id="download">
             <div class="download-container nm-flat">
@@ -183,9 +374,7 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <div class="logo-icon nm-convex small">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
+                <img src="icon.png" alt="Keyra App Logo" class="brand-logo small nm-convex">
                 <span>Keyra App</span>
             </div>
             <p class="copyright">&copy; 2026 Keyra App. All rights reserved.</p>

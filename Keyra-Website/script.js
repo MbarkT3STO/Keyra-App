@@ -75,4 +75,76 @@ document.addEventListener('DOMContentLoaded', () => {
         el.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
         observer.observe(el);
     });
+
+    // --- Mock UI Interactivity ---
+    
+    // Elements
+    const mockVaultTab = document.querySelectorAll('.mock-nav-tab')[0];
+    const mockSettingsTab = document.querySelectorAll('.mock-nav-tab')[1];
+    const mockVaultView = document.getElementById('mock-vault-view');
+    const mockSettingsView = document.getElementById('mock-settings-view');
+    const mockAddAccountBtn = document.getElementById('mock-add-account-btn');
+    const mockModal = document.getElementById('mock-modal');
+    const mockModalCancel = document.getElementById('mock-modal-cancel');
+    const mockUserBtn = document.querySelector('.mock-user-button');
+    const mockUserDropdown = document.getElementById('mock-user-dropdown');
+    const mockSwitches = document.querySelectorAll('.mock-switch');
+
+    // 1. Tab Switching
+    if (mockVaultTab && mockSettingsTab && mockVaultView && mockSettingsView) {
+        mockVaultTab.addEventListener('click', () => {
+            mockVaultTab.classList.add('active', 'nm-convex');
+            mockSettingsTab.classList.remove('active', 'nm-convex');
+            mockVaultView.style.display = 'block';
+            mockSettingsView.style.display = 'none';
+        });
+
+        mockSettingsTab.addEventListener('click', () => {
+            mockSettingsTab.classList.add('active', 'nm-convex');
+            mockVaultTab.classList.remove('active', 'nm-convex');
+            mockVaultView.style.display = 'none';
+            mockSettingsView.style.display = 'block';
+        });
+    }
+
+    // 2. Modal Toggling
+    if (mockAddAccountBtn && mockModal && mockModalCancel) {
+        mockAddAccountBtn.addEventListener('click', () => {
+            mockModal.classList.add('show');
+        });
+
+        mockModalCancel.addEventListener('click', () => {
+            mockModal.classList.remove('show');
+        });
+
+        // Close modal on click outside
+        mockModal.addEventListener('click', (e) => {
+            if (e.target === mockModal) {
+                mockModal.classList.remove('show');
+            }
+        });
+    }
+
+    // 3. Dropdown Toggling
+    if (mockUserBtn && mockUserDropdown) {
+        mockUserBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            mockUserDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (mockUserDropdown.classList.contains('show') && !mockUserBtn.contains(e.target) && !mockUserDropdown.contains(e.target)) {
+                mockUserDropdown.classList.remove('show');
+            }
+        });
+    }
+
+    // 4. Switch Toggling
+    mockSwitches.forEach(sw => {
+        sw.addEventListener('click', () => {
+            sw.classList.toggle('active');
+        });
+    });
+
 });
