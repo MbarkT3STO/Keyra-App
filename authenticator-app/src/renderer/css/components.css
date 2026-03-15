@@ -149,28 +149,31 @@ i[data-lucide] {
 }
 
 /* Custom Logo System */
+.app-logo-small, .app-logo-medium, .app-logo-large {
+    object-fit: contain;
+    --logo-hue-shift: hue-rotate(calc(var(--dynamic-accent-hue, 258) * 1deg - 258deg));
+}
+
 .app-logo-small {
     width: 32px;
     height: 32px;
-    object-fit: contain;
+    filter: var(--logo-hue-shift);
 }
 
 .app-logo-medium {
     width: clamp(64px, 10vw, 84px);
     height: auto;
-    object-fit: contain;
-    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+    filter: var(--logo-hue-shift) drop-shadow(0 8px 16px rgba(0,0,0,0.3));
 }
 
 .app-logo-large {
     width: clamp(100px, 15vw, 140px);
     height: auto;
-    object-fit: contain;
-    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.45));
+    filter: var(--logo-hue-shift) drop-shadow(0 12px 24px rgba(0,0,0,0.45));
 }
 
 .nm-logo {
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
 }
 
 .nm-logo:hover {
