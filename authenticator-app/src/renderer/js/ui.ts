@@ -179,7 +179,10 @@ export class UIManager {
             this.oledMode = !!settings.oledMode;
             const oledToggle = document.getElementById('oled-mode-toggle') as HTMLInputElement;
             if (oledToggle) oledToggle.checked = this.oledMode;
-            document.body.classList.toggle('oled-optimized', this.oledMode);
+            document.body.classList.toggle('oled-optimized', this.oledMode && this.currentTheme === 'dark');
+            // Re-apply accent to ensure OLED vibrancy if needed
+            const currentAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
+            this.setAccentColor(currentAccent, true);
         }
 
         if (settings.performanceMode !== undefined) {
@@ -304,7 +307,14 @@ export class UIManager {
             // Update --h so dark/light body class backgrounds tint with the accent color
             root.style.setProperty('--h', hue.toString());
             root.style.setProperty('--dynamic-accent-hue', hue.toString());
-            root.style.setProperty('--accent-primary', `hsl(${hue}, 100%, 68%)`);
+            
+            // OLED awareness for accent primary
+            if (this.currentTheme === 'dark' && this.oledMode) {
+                root.style.setProperty('--accent-primary', `hsl(${hue}, 100%, 75%)`);
+            } else {
+                root.style.setProperty('--accent-primary', `hsl(${hue}, 100%, 68%)`);
+            }
+            
             root.style.setProperty('--accent-secondary', `hsl(${hue + 20}, 100%, 75%)`);
             root.style.setProperty('--accent-hover', `hsl(${hue}, 100%, 62%)`);
             root.style.setProperty('--accent-soft', `hsla(${hue}, 100%, 68%, 0.12)`);
@@ -358,7 +368,7 @@ export class UIManager {
         this.oledMode = localStorage.getItem(this.getStorageKey('oled_mode')) === 'true';
         const toggle = document.getElementById('oled-mode-toggle') as HTMLInputElement;
         if (toggle) toggle.checked = this.oledMode;
-        document.body.classList.toggle('oled-optimized', this.oledMode);
+        document.body.classList.toggle('oled-optimized', this.oledMode && this.currentTheme === 'dark');
     }
 
     private initMenuExitIntegration() {
@@ -555,9 +565,21 @@ export class UIManager {
             const target = e.target as HTMLInputElement;
             this.oledMode = target.checked;
             localStorage.setItem(this.getStorageKey('oled_mode'), String(this.oledMode));
-            document.body.classList.toggle('oled-optimized', this.oledMode);
+            
+            const isDark = this.currentTheme === 'dark';
+            document.body.classList.toggle('oled-optimized', this.oledMode && isDark);
+            
+            // Re-apply accent for vibrancy
+            const currentAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
+            this.setAccentColor(currentAccent, true);
+
             this.pushSettings();
-            this.showToast(this.oledMode ? "Darkest Black turned on" : "Darkest Black turned off", "info");
+            
+            if (this.oledMode && !isDark) {
+                this.showToast("Pure Black only works in Dark Mode", "info");
+            } else {
+                this.showToast(this.oledMode ? "Pure Black (OLED) Activated" : "Standard Dark Mode Restored", "success");
+            }
             this.updateLastActivity(`OLED Mode ${this.oledMode ? 'on' : 'off'}`);
         });
 

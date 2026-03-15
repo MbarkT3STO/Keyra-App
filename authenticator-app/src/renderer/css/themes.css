@@ -394,7 +394,7 @@ body.light-theme {
 body.dark-theme.oled-optimized {
     --bg-primary: #000000 !important;
     --bg-secondary: #000000 !important;
-    --bg-tertiary: #010101 !important; /* Extremely subtle diff for bento layering if needed */
+    --bg-tertiary: #000000 !important; 
     
     --nm-surface: #000000 !important;
     --nm-shadow-out: none !important;
@@ -402,13 +402,19 @@ body.dark-theme.oled-optimized {
     --nm-shadow-out-sm: none !important;
     --nm-shadow-in-sm: none !important;
     
-    --border-color: rgba(255, 255, 255, 0.12) !important;
+    --border-color: rgba(255, 255, 255, 0.08) !important;
+    --text-primary: #ffffff !important;
+    --text-secondary: rgba(255, 255, 255, 0.7) !important;
+    
+    /* More vibrant accent for OLED contrast */
+    --accent-primary: hsl(var(--dynamic-accent-hue, 258), 100%, 75%) !important;
     
     background: #000000 !important;
 }
 
 body.dark-theme.oled-optimized .aura-background,
-body.dark-theme.oled-optimized .aura-blob {
+body.dark-theme.oled-optimized .aura-blob,
+body.dark-theme.oled-optimized .aura-container {
     display: none !important;
 }
 
@@ -417,18 +423,30 @@ body.dark-theme.oled-optimized .account-card,
 body.dark-theme.oled-optimized .modal-content,
 body.dark-theme.oled-optimized .navbar {
     background: #000000 !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
 }
 
 body.dark-theme.oled-optimized .setting-row {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+body.dark-theme.oled-optimized .nav-tab {
+    opacity: 0.6;
 }
 
 body.dark-theme.oled-optimized .nav-tab.active {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid var(--accent-primary) !important;
+    opacity: 1;
+}
+
+body.dark-theme.oled-optimized .user-button,
+body.dark-theme.oled-optimized .btn-primary,
+body.dark-theme.oled-optimized .btn-sync-now {
+    box-shadow: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Enhanced Scrollbar Styling for OLED */
@@ -437,7 +455,8 @@ body.dark-theme.oled-optimized ::-webkit-scrollbar-track {
 }
 
 body.dark-theme.oled-optimized ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.25) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 10px;
 }
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(16px); }
