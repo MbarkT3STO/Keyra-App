@@ -10,7 +10,7 @@ let mainWindow: BrowserWindow | null = null;
 function createWindow() {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
-    
+
     const initialWidth = Math.floor(screenWidth * 0.8);
     const initialHeight = Math.floor(screenHeight * 0.8);
 
@@ -217,7 +217,7 @@ ipcMain.on('open-capture-window', () => {
     });
 
     captureWindow.loadFile(path.join(__dirname, '../renderer/renderer/capture.html'));
-    
+
     captureWindow.on('closed', () => {
         captureWindow = null;
     });

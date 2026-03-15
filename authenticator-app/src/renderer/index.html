@@ -7,7 +7,7 @@
     <!-- Local Fonts & Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         @font-face {
             font-family: 'Inter';
@@ -52,12 +52,6 @@
         </div>
     </div>
 
-    <!-- Reduced blobs for performance (Non-interactive) -->
-    <div class="aura-background">
-        <div class="aura-blob aura-1"></div>
-        <div class="aura-blob aura-2"></div>
-        <div class="aura-blob aura-3"></div>
-    </div>
 
     <!-- Premium Authentication Overlay -->
     <div id="auth-vessel" class="modal-overlay show">
@@ -303,7 +297,7 @@
                             <i data-lucide="search" class="search-icon"></i>
                             <input type="text" id="vault-search" class="search-input" placeholder="Search your accounts...">
                         </div>
-                        <button class="btn-primary" id="add-account-btn" style="height: 42px; border-radius: var(--radius-full); padding: 0 20px; font-size: 14px;">
+                        <button class="btn-primary" id="add-account-btn">
                             <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
                             <span>Add Account</span>
                         </button>
@@ -320,7 +314,7 @@
                         <i data-lucide="fingerprint" style="width: 100px; height: 100px; opacity: 0.8;"></i>
                         <h2>Your Vault is Empty</h2>
                         <p>Add your first account to get started.</p>
-                        <button class="btn-primary" id="empty-add-btn" style="padding: 0 48px; min-width: 240px; height: var(--btn-h-lg);">
+                        <button class="btn-primary" id="empty-add-btn">
                             <i data-lucide="plus" style="width: 24px; height: 24px;"></i>
                             <span>Add Account</span>
                         </button>

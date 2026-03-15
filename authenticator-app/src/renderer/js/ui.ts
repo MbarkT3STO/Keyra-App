@@ -57,7 +57,7 @@ export class UIManager {
         if (statusEl) {
             statusEl.addEventListener('click', () => {
                 statusEl.classList.toggle('expanded');
-                
+
                 // Auto-collapse after 5 seconds if expanded
                 if (statusEl.classList.contains('expanded')) {
                     setTimeout(() => {
@@ -78,7 +78,7 @@ export class UIManager {
             statusEl.classList.toggle('offline', !isOnline);
             textEl.textContent = isOnline ? 'Online' : 'Offline';
         }
-        
+
         if (!isOnline) {
             this.showToast("You're offline", "info");
         }
@@ -120,7 +120,7 @@ export class UIManager {
     private async initFromCloud() {
         const user = await (window as any).api.getCurrentUser();
         if (user) {
-            const settings = { 
+            const settings = {
                 ...(user.settings || {}),
                 autolock: user.autolock
             };
@@ -205,7 +205,7 @@ export class UIManager {
             const blurToggle = document.getElementById('privacy-blur-toggle') as HTMLInputElement;
             if (blurToggle) blurToggle.checked = this.privacyBlur;
         }
-        
+
         if (settings.windowResizable !== undefined) {
             this.windowResizable = !!settings.windowResizable;
             const resizableToggle = document.getElementById('window-resizable-toggle') as HTMLInputElement;
@@ -308,14 +308,14 @@ export class UIManager {
             // Update --h so dark/light body class backgrounds tint with the accent color
             root.style.setProperty('--h', hue.toString());
             root.style.setProperty('--dynamic-accent-hue', hue.toString());
-            
+
             // OLED awareness for accent primary
             if (this.currentTheme === 'dark' && this.oledMode) {
                 root.style.setProperty('--accent-primary', `hsl(${hue}, 100%, 75%)`);
             } else {
                 root.style.setProperty('--accent-primary', `hsl(${hue}, 100%, 68%)`);
             }
-            
+
             root.style.setProperty('--accent-secondary', `hsl(${hue + 20}, 100%, 75%)`);
             root.style.setProperty('--accent-hover', `hsl(${hue}, 100%, 62%)`);
             root.style.setProperty('--accent-soft', `hsla(${hue}, 100%, 68%, 0.12)`);
@@ -357,7 +357,7 @@ export class UIManager {
         const toggle = document.getElementById('performance-mode-toggle') as HTMLInputElement;
         if (toggle) toggle.checked = this.performanceMode;
         document.body.classList.toggle('performance-mode', this.performanceMode);
-        
+
         // If performance mode is active, we significantly reduce animation complexity at the root
         if (this.performanceMode) {
             document.documentElement.style.setProperty('--transition-fast', '0s');
@@ -428,7 +428,7 @@ export class UIManager {
         // Don't show if we are on the auth screen
         const authVessel = document.getElementById('auth-vessel');
         const isAuthActive = authVessel && (authVessel.classList.contains('show'));
-        
+
         if (!isAuthActive) {
             const overlay = document.getElementById('privacy-blur-overlay');
             if (overlay) {
@@ -566,16 +566,16 @@ export class UIManager {
             const target = e.target as HTMLInputElement;
             this.oledMode = target.checked;
             localStorage.setItem(this.getStorageKey('oled_mode'), String(this.oledMode));
-            
+
             const isDark = this.currentTheme === 'dark';
             document.body.classList.toggle('oled-optimized', this.oledMode && isDark);
-            
+
             // Re-apply accent for vibrancy
             const currentAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
             this.setAccentColor(currentAccent, true);
 
             this.pushSettings();
-            
+
             if (this.oledMode && !isDark) {
                 this.showToast("Pure Black only works in Dark Mode", "info");
             } else {
@@ -590,7 +590,7 @@ export class UIManager {
             this.performanceMode = target.checked;
             localStorage.setItem(this.getStorageKey('performance_mode'), String(this.performanceMode));
             document.body.classList.toggle('performance-mode', this.performanceMode);
-            
+
             // Immediate CSS variable update for root-level speed
             const root = document.documentElement;
             if (this.performanceMode) {
@@ -778,7 +778,7 @@ export class UIManager {
                 const res = await (window as any).api.requestEmailChange(newEmail);
                 if (res.success) {
                     this.showToast("Confirmation code sent!", "success");
-                    
+
                     const modal = document.getElementById('modal-email-verify');
                     if (modal) {
                         modal.classList.remove('hidden');
@@ -843,7 +843,7 @@ export class UIManager {
 
         document.getElementById('btn-resend-email-code')?.addEventListener('click', async () => {
             if (this.emailResendTimer > 0) return;
-            
+
             try {
                 const res = await (window as any).api.resendEmailChangeCode();
                 if (res.success) {
@@ -974,7 +974,7 @@ export class UIManager {
         // Initials Logic
         if (initialsEl) {
             const names = user.username.split(' ');
-            initialsEl.textContent = names.length > 1 
+            initialsEl.textContent = names.length > 1
                 ? (names[0][0] + names[1][0]).toUpperCase()
                 : user.username.slice(0, 2).toUpperCase();
         }
@@ -1080,7 +1080,7 @@ export class UIManager {
     private updateLastActivityDisplay() {
         const lastActivityElement = document.getElementById('last-activity-display');
         const lastActionElement = document.getElementById('last-action-display');
-        
+
         const lastActivity = localStorage.getItem(this.getStorageKey('last_activity'));
         const lastAction = localStorage.getItem(this.getStorageKey('last_action')) || 'No activity';
 
@@ -1121,15 +1121,15 @@ export class UIManager {
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();
         const isToday = date.toDateString() === now.toDateString();
-        
+
         const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-        
+
         if (isToday) return `Today, ${timeStr}`;
-        
+
         const yesterday = new Date(now);
         yesterday.setDate(now.getDate() - 1);
         if (date.toDateString() === yesterday.toDateString()) return `Yesterday, ${timeStr}`;
-        
+
         return date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + `, ${timeStr}`;
     }
 
@@ -1181,7 +1181,7 @@ export class UIManager {
             grid.classList.add('hidden');
             emptyState.classList.remove('hidden');
             searchEmptyState.classList.add('hidden');
-        } 
+        }
         // State 2: No Results Found for Search
         else if (filtered.length === 0) {
             grid.classList.add('hidden');
@@ -1194,7 +1194,7 @@ export class UIManager {
             emptyState.classList.add('hidden');
             searchEmptyState.classList.add('hidden');
             grid.innerHTML = '';
-            this.cardCache = []; 
+            this.cardCache = [];
             filtered.forEach((acc, index) => {
                 const card = this.createAccountCard(acc, index);
                 grid.appendChild(card);
@@ -1227,10 +1227,10 @@ export class UIManager {
                     <div class="account-identity">${account.account}</div>
                 </div>
                 <div class="card-actions">
-                    <button class="btn-icon edit-btn" title="Refine Metadata">
-                        <i data-lucide="settings-2"></i>
+                    <button class="btn-card-action edit-btn" title="Refine Metadata">
+                        <i data-lucide="edit-3"></i>
                     </button>
-                    <button class="btn-icon danger delete-btn" title="Remove Account">
+                    <button class="btn-card-action danger delete-btn" title="Remove Account">
                         <i data-lucide="trash-2"></i>
                     </button>
                 </div>
@@ -1315,7 +1315,7 @@ export class UIManager {
         if (!codeElement) return;
 
         const formattedOtp = otp.substring(0, 3) + ' ' + otp.substring(3);
-        
+
         if (!this.privacyMode) {
             if (codeElement.textContent !== formattedOtp) {
                 codeElement.textContent = formattedOtp;
@@ -1334,7 +1334,7 @@ export class UIManager {
         if (this.timerInterval) clearInterval(this.timerInterval);
         this.timerInterval = setInterval(async () => {
             if (this.accounts.length === 0 || this.cardCache.length === 0) return;
-            
+
             // Batch process all secrets in one IPC called
             const secrets = this.accounts.map(acc => acc.secret);
             const { otps, remaining } = await (window as any).api.getBatchOTPs(secrets);
@@ -1347,7 +1347,7 @@ export class UIManager {
 
     private getIcon(issuer: string): string {
         const name = issuer.toLowerCase();
-        
+
         // 1. Precise Brand Mapping (Top Tier)
         const icons: { [key: string]: string } = {
             'google': 'search', 'github': 'github', 'microsoft': 'cloud', 'apple': 'apple',
@@ -1375,28 +1375,28 @@ export class UIManager {
             [/azure|microsoft/i, 'cloud'],
             [/server|host|vps|deploy/i, 'server'],
             [/db|database|mongo|sql|redis/i, 'database'],
-            
+
             // Communication & Social
             [/mail|email|outlook|gmail/i, 'mail'],
             [/chat|message|messenger|slack|discord/i, 'message-square'],
             [/social|network|brand/i, 'share-2'],
-            
+
             // Finance
             [/bank|finance|money|wallet|pay/i, 'wallet'],
             [/crypto|coin|token|eth|btc/i, 'coins'],
             [/card|credit|debit/i, 'credit-card'],
-            
+
             // Security & Dev
             [/auth|security|protect|shield|vault/i, 'shield-check'],
             [/key|password|pass|login|access/i, 'key'],
             [/code|dev|git|build|repo/i, 'code-2'],
             [/api|endpoint|webhook/i, 'webhook'],
-            
+
             // Media & Entertainment
             [/video|movie|tv|stream|netflix|yt|youtube/i, 'video'],
             [/music|audio|song|sound/i, 'music'],
             [/game|play|epic|xbox|psn/i, 'gamepad-2'],
-            
+
             // Business & Identity
             [/shop|store|cart|ebay|buy/i, 'shopping-cart'],
             [/user|account|profile|id/i, 'user'],
@@ -1658,7 +1658,7 @@ export class UIManager {
             const nextBtn = document.getElementById('btn-next-step') as HTMLButtonElement;
 
             input?.focus();
-            
+
             input?.addEventListener('input', (e) => {
                 const val = (e.target as HTMLInputElement).value.replace(/[^0-9]/g, '');
                 input.value = val;
@@ -1735,7 +1735,7 @@ export class UIManager {
             </div>
         `;
         this.showModal(content);
-        
+
         document.getElementById('btn-scan-screen-trigger')?.addEventListener('click', () => {
             this.hideModal();
             (window as any).api.openCaptureWindow();

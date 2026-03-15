@@ -3,22 +3,22 @@
     --h: 258; /* Core Identity Hue */
     --s: 100%;
     
-    --bg-primary: hsl(var(--h), 20%, 98%);
-    --bg-secondary: hsl(var(--h), 25%, 96%);
-    --bg-tertiary: hsl(var(--h), 30%, 94%);
+    --bg-primary: #e0e5ec;
+    --bg-secondary: #d1d9e6;
+    --bg-tertiary: #c2cbd8;
     
-    --text-primary: hsl(var(--h), 45%, 10%);
-    --text-secondary: hsl(var(--h), 20%, 35%);
-    --text-tertiary: hsl(var(--h), 15%, 55%);
+    --text-primary: #2d3436;
+    --text-secondary: #636e72;
+    --text-tertiary: #b2bec3;
     
     --accent-primary: hsl(var(--h), var(--s), 64%);
     --accent-secondary: hsl(280, 100%, 72%);
     --accent-hover: hsl(var(--h), var(--s), 58%);
     --accent-soft: hsla(var(--h), var(--s), 64%, 0.12);
     
-    /* Composite Glass Borders */
-    --glass-border: 1px solid hsla(var(--h), 100%, 100%, 0.45);
-    --glass-outline: 1px solid hsla(var(--h), 100%, 0%, 0.04);
+    /* Composite Glass Borders - Removed for Clean Neumorphism */
+    --glass-border: none;
+    --glass-outline: none;
 
     /* Accent Color Themes */
     --accent-royal-purple: 258; /* Default Royal Purple */
@@ -91,9 +91,9 @@
         0 4px 20px hsla(var(--h), 20%, 10%, 0.06);
 
     /* Crystalline Neumorphism - Surface Depth */
-    --nm-surface: hsl(var(--h), 20%, 94%);
-    --nm-shadow-light: hsl(0, 0%, 100%);
-    --nm-shadow-dark: hsl(var(--h), 25%, 86%);
+    --nm-surface: #e0e5ec;
+    --nm-shadow-light: #ffffff;
+    --nm-shadow-dark: rgba(163, 177, 198, 0.5);
     
     --nm-shadow-out: 
         12px 12px 24px var(--nm-shadow-dark), 
@@ -109,10 +109,10 @@
         inset -6px -6px 12px var(--nm-shadow-light);
     
     /* Radius System */
-    --radius-sm: 14px;
-    --radius-md: 22px;
-    --radius-lg: 36px;
-    --radius-xl: 52px;
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
     --radius-full: 1000px;
     
     --transition-fast: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -126,7 +126,8 @@
     --btn-px: clamp(16px, 4vw, 32px);
 
     /* Typography System - Fluid Elite Scale */
-    --font-main: 'Nunito', 'Inter', -apple-system, sans-serif;
+    --font-main: 'Inter', system-ui, sans-serif;
+    --font-heading: 'Outfit', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
     --font-size-2xs: clamp(0.65rem, 0.6rem + 0.2vw, 0.72rem);
@@ -150,40 +151,40 @@
 }
 
 [data-theme="dark"] {
-    --bg-primary: hsl(var(--h), 30%, 3%);
-    --bg-secondary: hsl(var(--h), 25%, 6%);
-    --bg-tertiary: hsl(var(--h), 20%, 9%);
+    --bg-primary: #121214;
+    --bg-secondary: #18181b;
+    --bg-tertiary: #202023;
     
-    --text-primary: hsl(var(--h), 10%, 98%);
-    --text-secondary: hsl(var(--h), 15%, 72%);
-    --text-tertiary: hsl(var(--h), 10%, 48%);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #475569;
     
     --aura-1: hsla(var(--h), var(--s), 68%, 0.2);
     --aura-2: hsla(330, 100%, 75%, 0.1);
     --aura-3: hsla(200, 100%, 75%, 0.1);
     
-    --border-color: hsla(0, 0%, 100%, 0.06);
+    --border-color: rgba(0, 0, 0, 0.04);
     
     --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
     --shadow-medium: 0 16px 48px rgba(0, 0, 0, 0.6);
     --shadow-hard: 0 32px 80px rgba(0, 0, 0, 0.8);
 
     /* Neuomorphic Design System - Dark (Deep Graphite) */
-    --nm-surface: hsl(var(--h), 14%, 10%);
-    --nm-shadow-light: hsla(var(--h), 20%, 18%, 0.4);
-    --nm-shadow-dark: hsla(0, 0%, 0%, 0.7);
+    --nm-surface: #121214;
+    --nm-shadow-light: rgba(255, 255, 255, 0.03);
+    --nm-shadow-dark: rgba(0, 0, 0, 0.6);
     --nm-shadow-out: 
-        12px 12px 24px var(--nm-shadow-dark), 
-        -12px -12px 24px var(--nm-shadow-light);
+        6px 6px 14px var(--nm-shadow-dark), 
+        -6px -6px 14px var(--nm-shadow-light);
     --nm-shadow-in: 
-        inset 10px 10px 20px var(--nm-shadow-dark), 
-        inset -10px -10px 20px var(--nm-shadow-light);
+        inset 5px 5px 12px var(--nm-shadow-dark), 
+        inset -5px -5px 12px var(--nm-shadow-light);
     --nm-shadow-out-sm: 
-        5px 5px 12px var(--nm-shadow-dark), 
-        -5px -5px 12px var(--nm-shadow-light);
+        4px 4px 10px var(--nm-shadow-dark), 
+        -4px -4px 10px var(--nm-shadow-light);
     --nm-shadow-in-sm: 
-        inset 5px 5px 10px var(--nm-shadow-dark), 
-        inset -5px -5px 10px var(--nm-shadow-light);
+        inset 4px 4px 8px var(--nm-shadow-dark), 
+        inset -4px -4px 8px var(--nm-shadow-light);
 }
 
 * {
@@ -220,7 +221,7 @@ input {
 
 /* Base Headings - Premium Hierarchy */
 h1, h2, h3, h4 {
-    font-family: var(--font-main);
+    font-family: var(--font-heading);
     font-weight: var(--weight-bold);
     letter-spacing: var(--ls-tight);
     line-height: 1.25;
@@ -233,6 +234,7 @@ h3 { font-size: var(--font-size-lg); }
 h4 { font-size: var(--font-size-md); }
 
 .bento-title {
+    font-family: var(--font-heading);
     font-size: var(--font-size-lg);
     font-weight: var(--weight-black);
     letter-spacing: var(--ls-tight);
@@ -294,15 +296,15 @@ body.dark-theme {
     --bg-hue-a: 258;
     --bg-hue-b: 288;
 
-    /* Chroma-aware Deep Navy Surfaces */
-    --bg-primary: hsl(var(--h), 45%, 2.5%); /* Deeper floor for better contrast */
-    --bg-secondary: hsl(var(--h), 35%, 5%);
-    --bg-tertiary: hsl(var(--h), 25%, 8%);
+    /* chroma-aware Deep Navy Surfaces — Sync with Keyra-Website Deep Charcoal */
+    --bg-primary: #121214; 
+    --bg-secondary: #18181b;
+    --bg-tertiary: #202023;
 
-    /* High contrast text with subtle chroma bias */
-    --text-primary: hsl(var(--h), 10%, 98%);
-    --text-secondary: hsl(var(--h), 15%, 75%);
-    --text-tertiary: hsl(var(--h), 10%, 52%);
+    /* High contrast text with subtle chroma bias — Sync with Keyra-Website */
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #475569;
 
     /* Hyper-Vibrant Accents for Dark UI */
     --accent-primary: hsl(var(--dynamic-accent-hue, 258), 100%, 75%);
@@ -323,55 +325,20 @@ body.dark-theme {
     --shadow-medium: 0 16px 64px rgba(0, 0, 0, 0.7);
     --shadow-hard: 0 32px 128px rgba(0, 0, 0, 0.9);
 
-    /* 
-     * ADVANCED 4-LAYER RADIAL MESH SYSTEM
-     * 1. Core floor (Base)
-     * 2. Top-Edge Bloom (Light Leak)
-     * 3. Accent-A Nebula (Primary Glow)
-     * 4. Accent-B Core (Secondary Depth)
-     * 5. Corner Vignette (Focus Control)
-     */
-    background: 
-        /* Top-Edge Boundary Bloom */
-        radial-gradient(
-            ellipse 120% 50% at 50% -10%,
-            hsla(var(--dynamic-accent-hue, 258), 80%, 30%, 0.22) 0%,
-            transparent 70%
-        ),
-        /* Primary Mesh (Top Left) */
-        radial-gradient(
-            circle 60vw at -10% -10%,
-            hsla(var(--bg-hue-a, 258), 65%, 12%, 0.8) 0%,
-            transparent 100%
-        ),
-        /* Secondary Mesh (Bottom Right) */
-        radial-gradient(
-            circle 50vw at 110% 110%,
-            hsla(var(--bg-hue-b, 288), 60%, 10%, 0.6) 0%,
-            transparent 100%
-        ),
-        /* Edge Vignette for Focus */
-        radial-gradient(
-            circle at center,
-            transparent 40%,
-            rgba(0, 0, 0, 0.45) 100%
-        ),
-        var(--bg-primary);
-
-    background-attachment: fixed;
-    transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--bg-primary);
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Enhanced Light Mode */
 body.light-theme {
-    /* Crisp Light Backgrounds */
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --bg-tertiary: #f1f3f4;
+    /* Soft Gray-Blue Light Backgrounds — Sync with Keyra-Website */
+    --bg-primary: #e0e5ec;
+    --bg-secondary: #d1d9e6;
+    --bg-tertiary: #c2cbd8;
 
-    --text-primary: #1a1a1a;
-    --text-secondary: #5f6368;
-    --text-tertiary: #9aa0a6;
+    --text-primary: #2d3436;
+    --text-secondary: #636e72;
+    --text-tertiary: #b2bec3;
 
     /* Muted accent for light surfaces */
     --accent-primary: hsl(var(--dynamic-accent-hue, 258), 85%, 58%);

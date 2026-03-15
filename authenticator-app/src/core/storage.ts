@@ -60,7 +60,7 @@ async function githubRequest(filePath: string, method: string = 'GET', body: any
     }
 
     const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${filePath}`;
-    
+
     const headers: Record<string, string> = {
         'Authorization': `token ${GITHUB_TOKEN}`,
         'Accept': 'application/vnd.github.v3+json',
@@ -78,7 +78,7 @@ async function githubRequest(filePath: string, method: string = 'GET', body: any
     }
 
     const response = await fetch(url, options);
-    
+
     if (response.status === 404 && method === 'GET') {
         return null;
     }
@@ -104,7 +104,7 @@ async function callSync(action: 'get' | 'put', filePath: string, data?: any) {
             const existingFile: any = await githubRequest(filePath, 'GET');
             const sha = existingFile ? existingFile.sha : undefined;
             const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
-            
+
             const result = await githubRequest(filePath, 'PUT', {
                 message: `Sync ${filePath} from Desktop`,
                 content,
