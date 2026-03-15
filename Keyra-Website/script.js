@@ -147,4 +147,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Dynamic GitHub Stats ---
+    const fetchGitHubStats = async () => {
+        const starsEl = document.getElementById('github-stars');
+        const forksEl = document.getElementById('github-forks');
+        const watchersEl = document.getElementById('github-watchers');
+
+        const formatNumber = (num) => {
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'k';
+            }
+            return num.toString();
+        };
+
+        try {
+            const response = await fetch('https://api.github.com/repos/MbarkT3STO/Keyra-App');
+            if (!response.ok) throw new Error('Failed to fetch stats');
+            
+            const data = await response.json();
+            
+            if (starsEl) starsEl.textContent = formatNumber(data.stargazers_count);
+            if (forksEl) forksEl.textContent = formatNumber(data.forks_count);
+            if (watchersEl) watchersEl.textContent = formatNumber(data.subscribers_count);
+        } catch (error) {
+            console.error('GitHub Stats Error:', error);
+            // Fallback to placeholders if API fails
+            if (starsEl) starsEl.textContent = '1.2k';
+            if (forksEl) forksEl.textContent = '156';
+            if (watchersEl) watchersEl.textContent = '89';
+        }
+    };
+
+    fetchGitHubStats();
 });
