@@ -1131,13 +1131,70 @@ export class UIManager {
     }
 
     private getIcon(issuer: string): string {
-        const icons: any = {
+        const name = issuer.toLowerCase();
+        
+        // 1. Precise Brand Mapping (Top Tier)
+        const icons: { [key: string]: string } = {
             'google': 'search', 'github': 'github', 'microsoft': 'cloud', 'apple': 'apple',
             'amazon': 'shopping-cart', 'facebook': 'facebook', 'twitter': 'twitter', 'discord': 'message-square',
             'binance': 'coins', 'coinbase': 'wallet', 'stripe': 'credit-card', 'paypal': 'dollar-sign',
-            'base': 'shield'
+            'slack': 'slack', 'instagram': 'instagram', 'linkedin': 'linkedin', 'twitch': 'twitch',
+            'spotify': 'music', 'netflix': 'tv', 'steam': 'gamepad-2', 'epic': 'gamepad',
+            'dropbox': 'box', 'figma': 'figma', 'canva': 'layout-template', 'adobe': 'pen-tool',
+            'shopify': 'shopping-bag', 'reddit': 'message-circle', 'bitbucket': 'bitbucket',
+            'gitlab': 'gitlab', 'heroku': 'server', 'digitalocean': 'clouds', 'cloudflare': 'shield-check',
+            'vercel': 'triangle', 'netlify': 'globe', 'firebase': 'flame', 'wordpress': 'globe-2',
+            'medium': 'book-open', 'patreon': 'heart', 'discordapp': 'message-square',
+            'protonmail': 'mail', 'nordvpn': 'shield', 'expressvpn': 'shield-alert',
+            'bitwarden': 'lock', '1password': 'key', 'lastpass': 'key-round',
+            'uber': 'car', 'lyft': 'car-front', 'airbnb': 'home', 'notion': 'file-text',
+            'zoom': 'video', 'trello': 'columns', 'asana': 'check-square', 'clickup': 'layers'
         };
-        return icons[issuer.toLowerCase()] || 'shield';
+
+        if (icons[name]) return icons[name];
+
+        // 2. Keyword-based Fuzzy Matching (Intelligent Heuristics)
+        const keywords: [string | RegExp, string][] = [
+            // Cloud & Infrastructure
+            [/aws|amazon|cloud/i, 'cloud'],
+            [/azure|microsoft/i, 'cloud'],
+            [/server|host|vps|deploy/i, 'server'],
+            [/db|database|mongo|sql|redis/i, 'database'],
+            
+            // Communication & Social
+            [/mail|email|outlook|gmail/i, 'mail'],
+            [/chat|message|messenger|slack|discord/i, 'message-square'],
+            [/social|network|brand/i, 'share-2'],
+            
+            // Finance
+            [/bank|finance|money|wallet|pay/i, 'wallet'],
+            [/crypto|coin|token|eth|btc/i, 'coins'],
+            [/card|credit|debit/i, 'credit-card'],
+            
+            // Security & Dev
+            [/auth|security|protect|shield|vault/i, 'shield-check'],
+            [/key|password|pass|login|access/i, 'key'],
+            [/code|dev|git|build|repo/i, 'code-2'],
+            [/api|endpoint|webhook/i, 'webhook'],
+            
+            // Media & Entertainment
+            [/video|movie|tv|stream|netflix|yt|youtube/i, 'video'],
+            [/music|audio|song|sound/i, 'music'],
+            [/game|play|epic|xbox|psn/i, 'gamepad-2'],
+            
+            // Business & Identity
+            [/shop|store|cart|ebay|buy/i, 'shopping-cart'],
+            [/user|account|profile|id/i, 'user'],
+            [/work|corp|company|office/i, 'briefcase']
+        ];
+
+        for (const [pattern, icon] of keywords) {
+            if (typeof pattern === 'string' && name.includes(pattern)) return icon;
+            if (pattern instanceof RegExp && pattern.test(name)) return icon;
+        }
+
+        // 3. Last Resort Fallback
+        return 'shield';
     }
 
     private showModal(content: string) {
