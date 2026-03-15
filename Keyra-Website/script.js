@@ -147,6 +147,93 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Mobile Menu Logic ---
+    const menuToggle = document.getElementById('menuToggle');
+    const closeMenu = document.getElementById('closeMenu');
+    const mobileNav = document.getElementById('mobileNav');
+    
+    // Create overlay if it doesn't exist
+    let mobileOverlay = document.querySelector('.mobile-overlay');
+    if (!mobileOverlay) {
+        mobileOverlay = document.createElement('div');
+        mobileOverlay.className = 'mobile-overlay';
+        document.body.appendChild(mobileOverlay);
+    }
+
+    const toggleMobileMenu = (show) => {
+        if (show) {
+            mobileNav.classList.add('show');
+            mobileOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        } else {
+            mobileNav.classList.remove('show');
+            mobileOverlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    };
+
+    if (menuToggle && closeMenu && mobileNav) {
+        menuToggle.addEventListener('click', () => toggleMobileMenu(true));
+        closeMenu.addEventListener('click', () => toggleMobileMenu(false));
+        mobileOverlay.addEventListener('click', () => toggleMobileMenu(false));
+        
+        // Close menu on link click
+        mobileNav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => toggleMobileMenu(false));
+        });
+    }
+
+    // --- Live Demo Simulation ---
+    const mockCards = document.querySelectorAll('.mock-account-card');
+    
+    const generateOTP = () => {
+        return Math.floor(100000 + Math.random() * 900000).toString().replace(/(\d{3})(\d{3})/, '$1 $2');
+    };
+
+    const updateMockTimers = () => {
+        mockCards.forEach(card => {
+            const progress = card.querySelector('.mock-timer-linear-progress');
+            const codeDisplay = card.querySelector('.mock-otp-code');
+            
+            if (progress && codeDisplay) {
+                // Get current width as percentage
+                let currentWidth = parseFloat(progress.style.width) || 100;
+                
+                // Decrease width
+                currentWidth -= 0.5; // Decrement speed
+                
+                if (currentWidth <= 0) {
+                    currentWidth = 100;
+                    // Refresh code with animation
+                    codeDisplay.style.opacity = '0';
+                    setTimeout(() => {
+                        codeDisplay.textContent = generateOTP();
+                        codeDisplay.style.opacity = '1';
+                    }, 300);
+                }
+                
+                progress.style.width = `${currentWidth}%`;
+                
+                // Color change warning
+                if (currentWidth < 20) {
+                    progress.style.background = '#ff4757';
+                } else {
+                    progress.style.background = 'var(--accent-primary)';
+                }
+            }
+        });
+    };
+
+    // Initialize timers with random offsets
+    mockCards.forEach(card => {
+        const progress = card.querySelector('.mock-timer-linear-progress');
+        if (progress) {
+            progress.style.width = `${Math.random() * 100}%`;
+        }
+    });
+
+    setInterval(updateMockTimers, 150);
+
     // --- Dynamic GitHub Stats ---
     const fetchGitHubStats = async () => {
         const starsEl = document.getElementById('github-stars');

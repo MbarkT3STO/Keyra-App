@@ -300,6 +300,90 @@ button {
     .nav-links {
         display: none;
     }
+
+    .menu-toggle {
+        display: flex !important;
+    }
+}
+
+.menu-toggle {
+    display: none !important;
+}
+
+/* Mobile Navigation */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 80%;
+    max-width: 400px;
+    height: 100vh;
+    background: var(--bg-primary);
+    z-index: 1000;
+    padding: var(--space-xl) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-nav.show {
+    right: 0;
+}
+
+.mobile-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mobile-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.mobile-nav-link {
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    color: var(--text-primary);
+}
+
+.mobile-nav-link:hover {
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
+    color: var(--accent-primary);
+    transform: translateX(10px);
+}
+
+.mobile-nav-footer {
+    margin-top: auto;
+}
+
+/* Overlay Backdrop */
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+}
+
+.mobile-overlay.show {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Hero Section */
@@ -1123,6 +1207,7 @@ button {
         flex-direction: column;
         text-align: center;
         padding-top: 120px;
+        padding-bottom: var(--space-2xl);
     }
     
     .hero-content {
@@ -1133,32 +1218,105 @@ button {
     }
     
     .hero-title {
-        font-size: 3rem;
+        font-size: clamp(2.5rem, 8vw, 3.5rem);
+        line-height: 1.1;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto var(--space-xl);
     }
     
     .download-container {
         flex-direction: column;
         text-align: center;
+        padding: var(--space-xl);
     }
     
     .download-info p {
         margin: 0 auto;
+    }
+
+    .section-header h2 {
+        font-size: 2rem;
+    }
+
+    .section-header {
+        margin-bottom: var(--space-xl);
+    }
+
+    section {
+        padding: var(--space-2xl) var(--space-md) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .mock-app-container {
+        height: 500px;
+    }
+
+    .mock-navbar-center {
+        display: none; /* Hide tabs on small mobile to save space */
+    }
+
+    .mock-user-name {
+        display: none;
+    }
+
+    .mock-main-content {
+        padding: var(--space-lg) var(--space-md);
+    }
+
+    .mock-section-title {
+        font-size: 1.5rem;
+    }
+
+    .mock-search-add {
+        flex-direction: column;
+        gap: var(--space-sm);
+        width: 100%;
+    }
+
+    .mock-search-vessel {
+        width: 100%;
+    }
+
+    .mock-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .mock-accounts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .repo-stats {
+        flex-direction: column;
+        gap: var(--space-sm);
+        align-items: flex-start;
     }
 }
 
 @media (max-width: 600px) {
     .navbar {
         width: calc(100% - var(--space-md));
+        padding: 0 var(--space-sm);
     }
     
     .hero-actions {
         flex-direction: column;
         width: 100%;
         max-width: 300px;
+        gap: var(--space-md);
     }
     
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+    }
+
+    .mobile-nav {
+        width: 90%;
     }
 }
 
@@ -1343,5 +1501,38 @@ button {
 @media (max-width: 900px) {
     .community-grid {
         grid-template-columns: 1fr;
+    }
+
+    .community-card {
+        padding: var(--space-xl);
+    }
+
+    .repo-stats {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        gap: var(--space-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .repo-stats {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .stat-item {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .dev-avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .repo-meta h3 {
+        font-size: 1.25rem;
     }
 }

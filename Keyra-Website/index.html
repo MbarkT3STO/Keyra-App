@@ -1,27 +1,31 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Keyra App - Secure, Modern, and Fast Authenticator">
-    <title>Keyra App | The Modern Authenticator</title>
-    
+    <title>Keyra | The Modern Authenticator</title>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="icon.png">
-    
+
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    
+
     <!-- Navigation -->
     <nav class="navbar nm-flat">
         <div class="nav-brand">
@@ -35,7 +39,7 @@
             <a href="#community" class="nav-link">Community</a>
             <a href="#download" class="nav-link">Download</a>
         </div>
-        
+
         <div class="nav-actions">
             <button id="themeToggle" class="nm-button icon-btn" aria-label="Toggle Theme">
                 <i class="fa-solid fa-moon dark-icon"></i>
@@ -45,12 +49,39 @@
                 <span>Use Online</span>
                 <i class="fa-solid fa-arrow-right"></i>
             </a>
+            <button id="menuToggle" class="nm-button icon-btn menu-toggle" aria-label="Toggle Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
         </div>
     </nav>
 
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <div class="nav-brand">
+                <img src="icon.png" alt="Keyra App Logo" class="brand-logo nm-convex">
+                <span class="brand-text">Keyra</span>
+            </div>
+            <button id="closeMenu" class="nm-button icon-btn">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="#features" class="mobile-nav-link">Features</a>
+            <a href="#demo" class="mobile-nav-link">Demo</a>
+            <a href="#community" class="mobile-nav-link">Community</a>
+            <a href="#download" class="mobile-nav-link">Download</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="https://keyraapp.netlify.app/" target="_blank" class="nm-button primary-btn full-btn">
+                <span>Open Web Vault</span>
+            </a>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main>
-        
+
         <!-- Hero Section -->
         <section class="hero">
             <div class="hero-content">
@@ -58,16 +89,17 @@
                     <span class="pulse-dot"></span>
                     <span>Version 2.0 is out!</span>
                 </div>
-                
+
                 <h1 class="hero-title">
                     Your Security, <br>
                     <span class="text-gradient">Beautifully Simple.</span>
                 </h1>
-                
+
                 <p class="hero-subtitle">
-                    Experience the next generation authenticator with premium Neumorphic design, cross-platform syncing, and bank-grade security.
+                    Experience the next generation authenticator with premium Neumorphic design, cross-platform syncing,
+                    and bank-grade security.
                 </p>
-                
+
                 <div class="hero-actions">
                     <a href="#download" class="nm-button primary-btn large-btn">
                         <span>Download App</span>
@@ -79,7 +111,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <div class="hero-visual">
                 <!-- Abstract UI Representation -->
                 <div class="mockup-container nm-convex">
@@ -118,16 +150,17 @@
                 <h2>Designed for the Modern Web</h2>
                 <p>Everything you need to secure your digital life, wrapped in a stunning interface.</p>
             </div>
-            
+
             <div class="features-grid">
                 <div class="feature-card nm-flat">
                     <div class="feature-icon nm-convex">
                         <i class="fa-solid fa-palette text-gradient"></i>
                     </div>
                     <h3>Neumorphic UI</h3>
-                    <p>A tactile, soft, and satisfying user interface that supports pure dark and light modes with dynamic accents.</p>
+                    <p>A tactile, soft, and satisfying user interface that supports pure dark and light modes with
+                        dynamic accents.</p>
                 </div>
-                
+
                 <div class="feature-card nm-flat">
                     <div class="feature-icon nm-convex">
                         <i class="fa-solid fa-bolt text-gradient"></i>
@@ -135,13 +168,14 @@
                     <h3>Lightning Fast</h3>
                     <p>Optimized for 60fps performance, ensuring smooth animations and immediate responsiveness.</p>
                 </div>
-                
+
                 <div class="feature-card nm-flat">
                     <div class="feature-icon nm-convex">
                         <i class="fa-solid fa-lock text-gradient"></i>
                     </div>
                     <h3>Bank-Grade Security</h3>
-                    <p>Local encryption and secure key storage keep your 2FA codes safe from any unauthorized access.</p>
+                    <p>Local encryption and secure key storage keep your 2FA codes safe from any unauthorized access.
+                    </p>
                 </div>
             </div>
         </section>
@@ -152,18 +186,19 @@
                 <h2>See It In Action</h2>
                 <p>Experience the authentic Keyra desktop interface.</p>
             </div>
-            
+
             <div class="mock-app-container nm-flat">
                 <!-- Mock Navbar -->
                 <header class="mock-navbar">
                     <div class="mock-navbar-wrapper">
                         <div class="mock-navbar-left">
                             <div class="mock-navbar-brand">
-                                <div class="mock-brand-icon"><img src="icon.png" alt="Keyra Logo" class="brand-logo small nm-convex"></div>
+                                <div class="mock-brand-icon"><img src="icon.png" alt="Keyra Logo"
+                                        class="brand-logo small nm-convex"></div>
                                 <span class="mock-brand-text">Keyra</span>
                             </div>
                         </div>
-                        
+
                         <div class="mock-navbar-center">
                             <nav class="mock-nav-tabs nm-inset">
                                 <button class="mock-nav-tab active nm-convex">
@@ -176,7 +211,7 @@
                                 </button>
                             </nav>
                         </div>
-                        
+
                         <div class="mock-navbar-right">
                             <div class="mock-connectivity-indicator online nm-convex">
                                 <span class="mock-status-dot"></span>
@@ -209,7 +244,7 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <div class="mock-accounts-grid">
                             <!-- Card 1 -->
                             <div class="mock-account-card nm-flat">
@@ -229,7 +264,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Card 2 -->
                             <div class="mock-account-card nm-flat">
                                 <div class="mock-account-header">
@@ -248,7 +283,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Card 3 -->
                             <div class="mock-account-card nm-flat">
                                 <div class="mock-account-header">
@@ -346,7 +381,7 @@
                     <h2>Available on your <br> favorite platform</h2>
                     <p>Download Keyra Desktop App for a seamless, native experience on your operating system.</p>
                 </div>
-                
+
                 <div class="download-options">
                     <a href="#" class="download-card nm-convex">
                         <i class="fa-brands fa-windows"></i>
@@ -356,7 +391,7 @@
                         </div>
                         <div class="download-icon nm-inset"><i class="fa-solid fa-download"></i></div>
                     </a>
-                    
+
                     <a href="#" class="download-card nm-convex">
                         <i class="fa-brands fa-apple"></i>
                         <div class="os-info">
@@ -365,7 +400,7 @@
                         </div>
                         <div class="download-icon nm-inset"><i class="fa-solid fa-download"></i></div>
                     </a>
-                    
+
                     <a href="#" class="download-card nm-convex">
                         <i class="fa-brands fa-linux"></i>
                         <div class="os-info">
@@ -390,7 +425,8 @@
                     <div class="community-card nm-flat dev-card">
                         <div class="dev-avatar-vessel">
                             <div class="dev-avatar nm-convex">
-                                <img src="https://media.licdn.com/dms/image/v2/D4E03AQHCceVnjjOe3g/profile-displayphoto-scale_400_400/B4EZmBz4gaHoAk-/0/1758819488261?e=1775088000&v=beta&t=FfK-IlAb7nbYXxj-kfjQpywJay1xyed-qJcEc9fkig4" alt="MBVRK - Lead Developer" class="dev-img">
+                                <img src="https://media.licdn.com/dms/image/v2/D4E03AQHCceVnjjOe3g/profile-displayphoto-scale_400_400/B4EZmBz4gaHoAk-/0/1758819488261?e=1775088000&v=beta&t=FfK-IlAb7nbYXxj-kfjQpywJay1xyed-qJcEc9fkig4"
+                                    alt="MBVRK - Lead Developer" class="dev-img">
                             </div>
                             <div class="dev-badge nm-inset">
                                 <i class="fa-solid fa-code"></i>
@@ -399,16 +435,20 @@
                         <div class="dev-info">
                             <h3>MBVRK</h3>
                             <p class="dev-role">Lead Developer & Designer</p>
-                            <p class="dev-bio">Crafting premium, secure digital experiences with a focus on aesthetics and performance.</p>
+                            <p class="dev-bio">Crafting premium, secure digital experiences with a focus on aesthetics
+                                and performance.</p>
                         </div>
                         <div class="social-links">
-                            <a href="https://x.com/mbarkt3sto" target="_blank" class="nm-button icon-btn sm" title="Follow @mbarkt3sto on X">
+                            <a href="https://x.com/mbarkt3sto" target="_blank" class="nm-button icon-btn sm"
+                                title="Follow @mbarkt3sto on X">
                                 <i class="fa-brands fa-x-twitter"></i>
                             </a>
-                            <a href="https://www.linkedin.com/in/MbarkT3sto" target="_blank" class="nm-button icon-btn sm" title="Connect with MbarkT3sto on LinkedIn">
+                            <a href="https://www.linkedin.com/in/MbarkT3sto" target="_blank"
+                                class="nm-button icon-btn sm" title="Connect with MbarkT3sto on LinkedIn">
                                 <i class="fa-brands fa-linkedin-in"></i>
                             </a>
-                            <a href="https://discord.com/users/MBARK#8932" target="_blank" class="nm-button icon-btn sm" title="Discord: MBARK#8932">
+                            <a href="https://discord.com/users/MBARK#8932" target="_blank" class="nm-button icon-btn sm"
+                                title="Discord: MBARK#8932">
                                 <i class="fa-brands fa-discord"></i>
                             </a>
                         </div>
@@ -426,7 +466,8 @@
                             </div>
                         </div>
                         <div class="repo-description">
-                            <p>Contribute to the future of security. Keyra is fully open-source and welcoming contributors.</p>
+                            <p>Contribute to the future of security. Keyra is fully open-source and welcoming
+                                contributors.</p>
                         </div>
                         <div class="repo-stats">
                             <div class="stat-item">
@@ -442,7 +483,8 @@
                                 <span id="github-watchers">...</span>
                             </div>
                         </div>
-                        <a href="https://github.com/MbarkT3STO/Keyra-App" target="_blank" class="nm-button primary-btn full-btn">
+                        <a href="https://github.com/MbarkT3STO/Keyra-App" target="_blank"
+                            class="nm-button primary-btn full-btn">
                             <i class="fa-brands fa-github"></i>
                             <span>View on GitHub</span>
                         </a>
@@ -450,7 +492,7 @@
                 </div>
             </div>
         </section>
-        
+
     </main>
 
     <!-- Footer -->
@@ -458,12 +500,13 @@
         <div class="footer-content">
             <div class="footer-brand">
                 <img src="icon.png" alt="Keyra App Logo" class="brand-logo small nm-convex">
-                <span>Keyra App</span>
+                <span>Keyra Authenticator</span>
             </div>
-            <p class="copyright">&copy; 2026 Keyra App. All rights reserved.</p>
+            <p class="copyright">&copy; 2026 Keyra Authenticator. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
 </body>
+
 </html>
