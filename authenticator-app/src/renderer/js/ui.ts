@@ -11,6 +11,7 @@ export class UIManager {
     private performanceMode: boolean = false;
     private menuExitIntegration: boolean = false;
     private privacyBlur: boolean = false;
+    private windowResizable: boolean = false;
     private wallpaperPreset: string = 'nebula';
     private searchQuery: string = '';
     private syncCount: number = 0;
@@ -26,6 +27,7 @@ export class UIManager {
         this.initPerformanceMode();
         this.initMenuExitIntegration();
         this.initInteractivePrivacy();
+        this.initWindowResizable();
         this.initSegmentedStates();
         this.setupEventListeners();
         this.updateLockVaultVisibility();
@@ -137,6 +139,7 @@ export class UIManager {
             performanceMode: this.performanceMode,
             menuExitIntegration: this.menuExitIntegration,
             privacyBlur: this.privacyBlur,
+            windowResizable: this.windowResizable,
             vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
         };
     }
@@ -198,6 +201,13 @@ export class UIManager {
             const blurToggle = document.getElementById('privacy-blur-toggle') as HTMLInputElement;
             if (blurToggle) blurToggle.checked = this.privacyBlur;
         }
+        
+        if (settings.windowResizable !== undefined) {
+            this.windowResizable = !!settings.windowResizable;
+            const resizableToggle = document.getElementById('window-resizable-toggle') as HTMLInputElement;
+            if (resizableToggle) resizableToggle.checked = this.windowResizable;
+            (window as any).api.setResizable(this.windowResizable);
+        }
 
         if (saveLocal) {
             if (settings.theme) localStorage.setItem(this.getStorageKey('theme'), settings.theme);
@@ -210,6 +220,7 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('performance_mode'), String(this.performanceMode));
             localStorage.setItem(this.getStorageKey('menu_exit_integration'), String(this.menuExitIntegration));
             localStorage.setItem(this.getStorageKey('privacy_blur'), String(this.privacyBlur));
+            localStorage.setItem(this.getStorageKey('window_resizable'), String(this.windowResizable));
             if (settings.vaultPin !== undefined) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
         }
 
@@ -357,6 +368,7 @@ export class UIManager {
         this.updateCloseButtonVisibility();
     }
 
+
     private updateCloseButtonVisibility() {
         const navBtn = document.getElementById('btn-close-app');
         const menuBtn = document.getElementById('menu-close-app-btn');
@@ -365,6 +377,13 @@ export class UIManager {
             menuBtn.classList.toggle('hidden', !this.menuExitIntegration);
             this.refreshLucide(); // Re-render icon if it was hidden
         }
+    }
+
+    private initWindowResizable() {
+        this.windowResizable = localStorage.getItem(this.getStorageKey('window_resizable')) === 'true';
+        const toggle = document.getElementById('window-resizable-toggle') as HTMLInputElement;
+        if (toggle) toggle.checked = this.windowResizable;
+        (window as any).api.setResizable(this.windowResizable);
     }
 
     private initInteractivePrivacy() {
@@ -614,6 +633,17 @@ export class UIManager {
             this.pushSettings();
             this.showToast(this.privacyBlur ? "Auto-blur is on" : "Auto-blur is off", "info");
             this.updateLastActivity(`Auto-blur ${this.privacyBlur ? 'on' : 'off'}`);
+        });
+
+        // Window Resizable Toggle
+        document.getElementById('window-resizable-toggle')?.addEventListener('change', (e) => {
+            const target = e.target as HTMLInputElement;
+            this.windowResizable = target.checked;
+            localStorage.setItem(this.getStorageKey('window_resizable'), String(this.windowResizable));
+            (window as any).api.setResizable(this.windowResizable);
+            this.pushSettings();
+            this.showToast(this.windowResizable ? "App is now resizable" : "App is now fixed size", "info");
+            this.updateLastActivity(`Window resizing ${this.windowResizable ? 'on' : 'off'}`);
         });
 
         // Accent Color

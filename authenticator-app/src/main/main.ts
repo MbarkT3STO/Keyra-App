@@ -19,6 +19,7 @@ function createWindow() {
         height: initialHeight,
         minWidth: 380,
         minHeight: 500,
+        resizable: false,
         titleBarStyle: 'hidden', // Apple style clean top
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -248,3 +249,6 @@ ipcMain.on('window-maximize', () => {
     else mainWindow?.maximize();
 });
 ipcMain.on('window-close', () => { mainWindow?.close(); });
+ipcMain.on('set-resizable', (event, enabled) => {
+    mainWindow?.setResizable(enabled);
+});
