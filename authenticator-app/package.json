@@ -3,6 +3,8 @@
   "productName": "Keyra Authenticator",
   "version": "1.0.0",
   "description": "A secure Desktop Authenticator Application",
+  "homepage": "https://keyraauth.netlify.app/",
+  "author": "MBVRK <me@MBVRK.onmicrosoft.com>",
   "main": "dist/main/main.js",
   "scripts": {
     "build:main": "tsc -p tsconfig.json",
@@ -11,11 +13,16 @@
     "start": "npm run build && electron .",
     "dist": "npm run build && electron-builder --windows --publish never",
     "release": "npm run build && electron-builder --windows --publish always",
-    "dist:win64": "electron-builder --win --x64"
+    "dist:win64": "electron-builder --win --x64",
+    "dist:mac-intel": "electron-builder --mac --x64",
+    "dist:mac-arm": "electron-builder --mac --arm64",
+    "dist:linux-x64": "electron-builder --linux --x64",
+    "dist:linux-arm64": "electron-builder --linux --arm64"
   },
   "build": {
     "appId": "com.keyra.authenticator",
     "productName": "Keyra Authenticator",
+    "icon": "assets/icon.png",
     "directories": {
       "output": "dist/build"
     },
@@ -25,6 +32,9 @@
         "nsis",
         "portable"
       ]
+    },
+    "linux": {
+      "target": "deb"
     },
     "nsis": {
       "oneClick": false,
@@ -44,7 +54,6 @@
     ]
   },
   "keywords": [],
-  "author": "Keyra",
   "license": "ISC",
   "devDependencies": {
     "@types/nodemailer": "^7.0.11",
