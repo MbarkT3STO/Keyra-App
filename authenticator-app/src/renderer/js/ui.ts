@@ -19,6 +19,9 @@ export class UIManager {
     private emailResendTimer: number = 0;
     private emailResendInterval: any = null;
     private cardCache: HTMLElement[] = [];
+    private launchOnStartup: boolean = false;
+    private minimizeToTray: boolean = false;
+    private globalHotkey: boolean = false;
 
     constructor(public userId: string = 'default') {
         this.initTheme();
@@ -39,12 +42,88 @@ export class UIManager {
         this.initCaptureResults();
         this.initConnectivityStatus();
         this.updatePinStatus();
+        this.initUpdateSystem();
+        this.initSystemIntegration();
     }
 
     private initCaptureResults() {
         (window as any).api.onCaptureResult(async (data: string) => {
             await this.handleScannedData(data);
         });
+    }
+
+    private initUpdateSystem() {
+        const checkBtn = document.getElementById('btn-check-updates');
+        const downloadBtn = document.getElementById('btn-download-update');
+        const installBtn = document.getElementById('btn-install-update');
+        const message = document.getElementById('update-message');
+        const badge = document.getElementById('update-status-badge');
+        const progressContainer = document.getElementById('download-progress-container');
+        const progressBar = document.getElementById('download-progress-bar');
+        const percentText = document.getElementById('download-percent-text');
+        const versionText = document.getElementById('current-version-text');
+
+        if (versionText) {
+            versionText.textContent = `Version 1.0.0`;
+        }
+
+        checkBtn?.addEventListener('click', () => {
+            if (message) message.textContent = 'Checking for updates...';
+            (window as any).api.checkForUpdates();
+        });
+
+        downloadBtn?.addEventListener('click', () => {
+            (window as any).api.startDownload();
+            downloadBtn.classList.add('hidden');
+            progressContainer?.classList.remove('hidden');
+        });
+
+        installBtn?.addEventListener('click', () => {
+            (window as any).api.installUpdate();
+        });
+
+        // Listen for events
+        (window as any).api.onUpdateChecking(() => {
+            if (message) message.textContent = 'Contacting update server...';
+        });
+
+        (window as any).api.onUpdateAvailable((info: any) => {
+            if (message) message.textContent = `Update available: v${info.version}`;
+            badge?.classList.remove('hidden');
+            checkBtn?.classList.add('hidden');
+            if (downloadBtn) {
+                downloadBtn.classList.remove('hidden');
+                const span = downloadBtn.querySelector('span');
+                if (span) span.textContent = `Download v${info.version}`;
+            }
+        });
+
+        (window as any).api.onUpdateNotAvailable(() => {
+            if (message) message.textContent = 'Your app is up to date.';
+            checkBtn?.classList.remove('hidden');
+        });
+
+        (window as any).api.onUpdateError((err: string) => {
+            if (message) message.textContent = `Update check failed.`;
+            console.error("Update Error:", err);
+            checkBtn?.classList.remove('hidden');
+        });
+
+        (window as any).api.onDownloadProgress((percent: number) => {
+            if (progressBar) progressBar.style.width = `${percent}%`;
+            if (percentText) percentText.textContent = `${Math.round(percent)}%`;
+            if (message) message.textContent = 'Downloading update...';
+        });
+
+        (window as any).api.onUpdateDownloaded(() => {
+            if (message) message.textContent = 'Update ready to install.';
+            progressContainer?.classList.add('hidden');
+            installBtn?.classList.remove('hidden');
+            this.showToast("Update ready to install!", "success");
+        });
+        
+        // Initial silent check
+        setTimeout(() => (window as any).api.checkForUpdates(), 3000);
     }
 
     private initConnectivityStatus() {
@@ -82,6 +161,47 @@ export class UIManager {
         if (!isOnline) {
             this.showToast("You're offline", "info");
         }
+    }
+
+    private initSystemIntegration() {
+        const startupToggle = document.getElementById('launch-on-startup-toggle') as HTMLInputElement;
+        const trayToggle = document.getElementById('minimize-to-tray-toggle') as HTMLInputElement;
+        const hotkeyToggle = document.getElementById('global-hotkey-toggle') as HTMLInputElement;
+
+        startupToggle?.addEventListener('change', () => {
+            this.launchOnStartup = startupToggle.checked;
+            (window as any).api.setLaunchOnStartup(this.launchOnStartup);
+            localStorage.setItem(this.getStorageKey('launch_on_startup'), String(this.launchOnStartup));
+            this.pushSettings();
+        });
+
+        trayToggle?.addEventListener('change', () => {
+            this.minimizeToTray = trayToggle.checked;
+            (window as any).api.setMinimizeToTray(this.minimizeToTray);
+            localStorage.setItem(this.getStorageKey('minimize_to_tray'), String(this.minimizeToTray));
+            this.pushSettings();
+        });
+
+        hotkeyToggle?.addEventListener('change', () => {
+            this.globalHotkey = hotkeyToggle.checked;
+            (window as any).api.setGlobalHotkey(this.globalHotkey);
+            localStorage.setItem(this.getStorageKey('global_hotkey'), String(this.globalHotkey));
+            this.pushSettings();
+        });
+        
+        // Load initial states
+        this.launchOnStartup = localStorage.getItem(this.getStorageKey('launch_on_startup')) === 'true';
+        this.minimizeToTray = localStorage.getItem(this.getStorageKey('minimize_to_tray')) === 'true';
+        this.globalHotkey = localStorage.getItem(this.getStorageKey('global_hotkey')) === 'true';
+
+        if (startupToggle) startupToggle.checked = this.launchOnStartup;
+        if (trayToggle) trayToggle.checked = this.minimizeToTray;
+        if (hotkeyToggle) hotkeyToggle.checked = this.globalHotkey;
+        
+        // Apply to main process on start
+        (window as any).api.setLaunchOnStartup(this.launchOnStartup);
+        (window as any).api.setMinimizeToTray(this.minimizeToTray);
+        (window as any).api.setGlobalHotkey(this.globalHotkey);
     }
 
     private getStorageKey(key: string): string {
@@ -141,6 +261,9 @@ export class UIManager {
             menuExitIntegration: this.menuExitIntegration,
             privacyBlur: this.privacyBlur,
             windowResizable: this.windowResizable,
+            launchOnStartup: this.launchOnStartup,
+            minimizeToTray: this.minimizeToTray,
+            globalHotkey: this.globalHotkey,
             vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
         };
     }
@@ -174,6 +297,27 @@ export class UIManager {
 
         if (settings.autolock !== undefined) {
             this.updateSegmentedUI('autolock-segmented', String(settings.autolock));
+        }
+
+        if (settings.launchOnStartup !== undefined) {
+            this.launchOnStartup = !!settings.launchOnStartup;
+            const t = document.getElementById('launch-on-startup-toggle') as HTMLInputElement;
+            if (t) t.checked = this.launchOnStartup;
+            (window as any).api.setLaunchOnStartup(this.launchOnStartup);
+        }
+
+        if (settings.minimizeToTray !== undefined) {
+            this.minimizeToTray = !!settings.minimizeToTray;
+            const t = document.getElementById('minimize-to-tray-toggle') as HTMLInputElement;
+            if (t) t.checked = this.minimizeToTray;
+            (window as any).api.setMinimizeToTray(this.minimizeToTray);
+        }
+
+        if (settings.globalHotkey !== undefined) {
+            this.globalHotkey = !!settings.globalHotkey;
+            const t = document.getElementById('global-hotkey-toggle') as HTMLInputElement;
+            if (t) t.checked = this.globalHotkey;
+            (window as any).api.setGlobalHotkey(this.globalHotkey);
         }
 
         if (settings.oledMode !== undefined) {

@@ -535,8 +535,99 @@
                         </div>
                     </div>
                 </div>
+ 
+                <!-- 3. System Integration Card -->
+                <div class="account-card bento-card">
+                    <div class="bento-header">
+                        <div class="bento-icon">
+                            <i data-lucide="monitor" style="color: var(--accent-primary);"></i>
+                        </div>
+                        <div class="bento-title-vessel">
+                            <h3 class="bento-title">System Integration</h3>
+                            <div class="bento-subtitle">DESKTOP POWER FEATURES</div>
+                        </div>
+                    </div>
+                    <div class="bento-content">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Launch on Startup</div>
+                                <div class="setting-desc">Open Keyra when Windows starts</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="launch-on-startup-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Minimize to Tray</div>
+                                <div class="setting-desc">Keep app running in background</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="minimize-to-tray-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Global Shortcut</div>
+                                <div class="setting-desc">Alt + Shift + K to toggle app</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="global-hotkey-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- 3. Cloud Synchronization Card -->
+                <!-- 4. Software Update Card -->
+                <div class="account-card bento-card">
+                    <div class="bento-header">
+                        <div class="bento-icon">
+                            <i data-lucide="refresh-cw" style="color: var(--accent-primary);"></i>
+                        </div>
+                        <div class="bento-title-vessel">
+                            <h3 class="bento-title">Software Update</h3>
+                            <div class="bento-subtitle">KEEP KEYRA CURRENT</div>
+                        </div>
+                    </div>
+                    <div class="bento-content">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">App Version</div>
+                                <div id="current-version-text" class="setting-desc">Version 1.0.0</div>
+                            </div>
+                            <div id="update-status-badge" class="badge hidden" style="background: var(--accent-primary); color: white; display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; margin-top: 8px;">NEW</div>
+                        </div>
+                        
+                        <div id="update-info-container" style="margin-top: 16px;">
+                            <p id="update-message" style="font-size: 13px; opacity: 0.8; font-weight: 600; margin-bottom: 20px;">Checking for updates...</p>
+                            
+                            <div id="download-progress-container" class="hidden" style="margin-bottom: 20px;">
+                                <div class="progress-track" style="height: 10px; background: var(--nm-shadow-dark); border-radius: 6px; overflow: hidden; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.3);">
+                                    <div id="download-progress-bar" style="width: 0%; height: 100%; background: var(--accent-primary); box-shadow: 0 0 12px var(--accent-primary); transition: width 0.3s ease;"></div>
+                                </div>
+                                <div id="download-percent-text" style="font-size: 11px; font-weight: 850; text-align: right; margin-top: 6px; color: var(--accent-primary);">0%</div>
+                            </div>
+
+                            <button class="btn-primary" id="btn-check-updates" style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i data-lucide="search" style="width: 16px; height: 16px;"></i>
+                                <span style="font-weight: 800;">Check for Updates</span>
+                            </button>
+                            <button class="btn-primary hidden" id="btn-download-update" style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+                                <span style="font-weight: 800;">Download v1.1.0</span>
+                            </button>
+                            <button class="btn-primary hidden" id="btn-install-update" style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                                <span style="font-weight: 800;">Restart & Install</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Cloud Synchronization Card -->
                 <div class="account-card bento-card">
                     <div class="bento-header">
                         <div class="bento-icon">

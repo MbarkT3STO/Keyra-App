@@ -43,5 +43,39 @@ contextBridge.exposeInMainWorld('api', {
     minimize: () => ipcRenderer.send('window-minimize'),
     maximize: () => ipcRenderer.send('window-maximize'),
     close: () => ipcRenderer.send('window-close'),
-    setResizable: (enabled: boolean) => ipcRenderer.send('set-resizable', enabled)
+    setResizable: (enabled: boolean) => ipcRenderer.send('set-resizable', enabled),
+
+    // Update System
+    checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+    startDownload: () => ipcRenderer.invoke('start-download'),
+    installUpdate: () => ipcRenderer.invoke('install-update'),
+    onUpdateChecking: (callback: () => void) => {
+        ipcRenderer.removeAllListeners('update-checking');
+        ipcRenderer.on('update-checking', () => callback());
+    },
+    onUpdateAvailable: (callback: (info: any) => void) => {
+        ipcRenderer.removeAllListeners('update-available');
+        ipcRenderer.on('update-available', (_event, info) => callback(info));
+    },
+    onUpdateNotAvailable: (callback: (info: any) => void) => {
+        ipcRenderer.removeAllListeners('update-not-available');
+        ipcRenderer.on('update-not-available', (_event, info) => callback(info));
+    },
+    onUpdateError: (callback: (err: string) => void) => {
+        ipcRenderer.removeAllListeners('update-error');
+        ipcRenderer.on('update-error', (_event, err) => callback(err));
+    },
+    onDownloadProgress: (callback: (percent: number) => void) => {
+        ipcRenderer.removeAllListeners('update-download-progress');
+        ipcRenderer.on('update-download-progress', (_event, percent) => callback(percent));
+    },
+    onUpdateDownloaded: (callback: (info: any) => void) => {
+        ipcRenderer.removeAllListeners('update-downloaded');
+        ipcRenderer.on('update-downloaded', (_event, info) => callback(info));
+    },
+
+    // System Integration
+    setLaunchOnStartup: (enabled: boolean) => ipcRenderer.invoke('set-launch-on-startup', enabled),
+    setMinimizeToTray: (enabled: boolean) => ipcRenderer.invoke('set-minimize-to-tray', enabled),
+    setGlobalHotkey: (enabled: boolean) => ipcRenderer.invoke('set-global-hotkey', enabled)
 });

@@ -3110,3 +3110,55 @@ body.light-theme .cloud-sync-pill {
         font-size: 20px;
     }
 }
+/* ─────────────────────────────────────────────────────────────────────────────
+   SOFTWARE UPDATE SYSTEM
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.progress-track {
+    background: var(--nm-surface) !important;
+    box-shadow: var(--nm-shadow-in-sm) !important;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+#download-progress-bar {
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover)) !important;
+    box-shadow: 0 0 15px var(--accent-primary);
+    border-radius: 6px;
+    height: 100%;
+}
+
+#update-status-badge {
+    box-shadow: 0 0 10px var(--accent-primary);
+    letter-spacing: 1px;
+    font-weight: 950;
+    text-transform: uppercase;
+    animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+#btn-install-update {
+    background: var(--accent-primary) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.4) !important;
+}
+
+#btn-install-update:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.6) !important;
+}
+
+.update-loading-check {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

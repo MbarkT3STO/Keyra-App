@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer, Menu, Tray, nativeImage } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
 import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates, changeUsername, changePassword, requestEmailChange, confirmEmailChange, resendEmailChangeCode, cancelEmailChange } from '../core/auth';
 import { generateTOTP, getRemainingSeconds, getBatchOTPs } from '../core/totp';
@@ -6,6 +7,8 @@ import * as fs from 'fs';
 import { dialog } from 'electron';
 
 let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let isQuitting = false;
 
 function createWindow() {
     const primaryDisplay = screen.getPrimaryDisplay();
@@ -35,8 +38,47 @@ function createWindow() {
     // Remove the default application menu for a clean production look
     Menu.setApplicationMenu(null);
 
+    mainWindow.on('close', (event) => {
+        if (!isQuitting && tray) {
+            event.preventDefault();
+            mainWindow?.hide();
+            return false;
+        }
+    });
+
     mainWindow.on('closed', () => {
         mainWindow = null;
+    });
+
+    createTray();
+    setupGlobalShortcut();
+
+    // Configure AutoUpdater
+    autoUpdater.autoDownload = false; // We want to control the download via UI
+    autoUpdater.forceDevUpdateConfig = true; // Allow testing updates in development
+    
+    autoUpdater.on('checking-for-update', () => {
+        mainWindow?.webContents.send('update-checking');
+    });
+
+    autoUpdater.on('update-available', (info) => {
+        mainWindow?.webContents.send('update-available', info);
+    });
+
+    autoUpdater.on('update-not-available', (info) => {
+        mainWindow?.webContents.send('update-not-available', info);
+    });
+
+    autoUpdater.on('error', (err) => {
+        mainWindow?.webContents.send('update-error', err.message);
+    });
+
+    autoUpdater.on('download-progress', (progressObj) => {
+        mainWindow?.webContents.send('update-download-progress', progressObj.percent);
+    });
+
+    autoUpdater.on('update-downloaded', (info) => {
+        mainWindow?.webContents.send('update-downloaded', info);
     });
 }
 
@@ -47,6 +89,10 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
+});
+
+app.on('before-quit', () => {
+    isQuitting = true;
 });
 
 app.on('activate', () => {
@@ -244,3 +290,78 @@ ipcMain.on('window-close', () => { mainWindow?.close(); });
 ipcMain.on('set-resizable', (event, enabled) => {
     mainWindow?.setResizable(enabled);
 });
+
+// -- Update System IPC --
+ipcMain.handle('check-for-updates', () => {
+    return autoUpdater.checkForUpdates();
+});
+
+ipcMain.handle('start-download', () => {
+    return autoUpdater.downloadUpdate();
+});
+
+ipcMain.handle('install-update', () => {
+    autoUpdater.quitAndInstall();
+});
+
+// -- System Integration IPC --
+ipcMain.handle('set-launch-on-startup', (event, enabled) => {
+    app.setLoginItemSettings({
+        openAtLogin: enabled,
+        path: app.getPath('exe')
+    });
+    return true;
+});
+
+ipcMain.handle('set-minimize-to-tray', (event, enabled) => {
+    if (enabled && !tray) createTray();
+    else if (!enabled && tray) {
+        tray.destroy();
+        tray = null;
+    }
+    return true;
+});
+
+ipcMain.handle('set-global-hotkey', (event, enabled) => {
+    if (enabled) setupGlobalShortcut();
+    else globalShortcut.unregister('Alt+Shift+K');
+    return true;
+});
+
+function createTray() {
+    if (tray) return;
+
+    const iconPath = path.join(__dirname, '../../assets/icon.png');
+    if (!fs.existsSync(iconPath)) return;
+
+    const icon = nativeImage.createFromPath(iconPath);
+    tray = new Tray(icon.resize({ width: 16, height: 16 }));
+    
+    const contextMenu = Menu.buildFromTemplate([
+        { label: 'Show Keyra', click: () => mainWindow?.show() },
+        { type: 'separator' },
+        { label: 'Quit', click: () => {
+            isQuitting = true;
+            app.quit();
+        }}
+    ]);
+
+    tray.setToolTip('Keyra Authenticator');
+    tray.setContextMenu(contextMenu);
+    
+    tray.on('click', () => {
+        if (mainWindow?.isVisible()) mainWindow.hide();
+        else mainWindow?.show();
+    });
+}
+
+function setupGlobalShortcut() {
+    globalShortcut.register('Alt+Shift+K', () => {
+        if (mainWindow?.isVisible()) {
+            mainWindow.hide();
+        } else {
+            mainWindow?.show();
+            mainWindow?.focus();
+        }
+    });
+}
