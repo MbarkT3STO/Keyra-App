@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer } from 'electron';
+import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer, Menu } from 'electron';
 import * as path from 'path';
 import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates, changeUsername, changePassword, requestEmailChange, confirmEmailChange, resendEmailChangeCode, cancelEmailChange } from '../core/auth';
 import { generateTOTP, getRemainingSeconds, getBatchOTPs } from '../core/totp';
@@ -24,31 +24,18 @@ function createWindow() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
-            contextIsolation: true
+            contextIsolation: true,
+            devTools: false
         }
     });
 
     mainWindow.loadFile(path.join(__dirname, '../renderer/renderer/index.html'));
 
-    // Always open devtools in this debug mode for the user
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
+    // Remove the default application menu for a clean production look
+    Menu.setApplicationMenu(null);
 
     mainWindow.on('closed', () => {
         mainWindow = null;
-    });
-
-    // Register F12 to toggle DevTools
-    globalShortcut.register('F12', () => {
-        if (BrowserWindow.getFocusedWindow()) {
-            BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools();
-        }
-    });
-
-    // Also register CommandOrControl+Shift+I for standard devtools
-    globalShortcut.register('CommandOrControl+Shift+I', () => {
-        if (BrowserWindow.getFocusedWindow()) {
-            BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools();
-        }
     });
 }
 
