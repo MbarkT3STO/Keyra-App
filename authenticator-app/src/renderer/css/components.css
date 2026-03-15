@@ -189,6 +189,8 @@ i[data-lucide] {
     border-radius: var(--radius-full);
     box-shadow: var(--nm-shadow-in-sm);
     border: none;
+    width: 100%;
+    max-width: 800px; /* Prevents them from being TOO wide on ultra-wide screens */
 }
 
 .nav-tab {
@@ -205,6 +207,7 @@ i[data-lucide] {
     transition: all var(--transition-fast);
     white-space: nowrap;
     background: transparent;
+    flex: 1;
 }
 
 .nav-tab.active {

@@ -136,9 +136,10 @@ body {
 
 .navbar-center {
     flex: 1;
-    display: flex; /* Added display: flex for alignment */
+    display: flex;
     justify-content: center;
     min-width: 0;
+    padding: 0 40px; /* Leave some space for brand and user menu */
 }
 
 .navbar-right {
