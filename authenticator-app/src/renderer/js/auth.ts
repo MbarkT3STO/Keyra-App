@@ -51,6 +51,19 @@ export async function setupAuthUI() {
         }
     }
 
+    function setAuthLoading(show: boolean, text: string = "Unlocking Vault...") {
+        const overlay = document.getElementById('auth-loading-overlay');
+        const label = document.getElementById('auth-loading-text');
+        if (overlay) {
+            if (show) {
+                if (label) label.textContent = text;
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+    }
+
     function switchState(toHide: HTMLElement, toShow: HTMLElement) {
         toHide.classList.add('hidden');
         toShow.classList.remove('hidden');
@@ -110,6 +123,7 @@ export async function setupAuthUI() {
             return;
         }
 
+        setAuthLoading(true, "Unlocking Vault...");
         try {
             const result = await (window as any).api.login(user, pass);
             if (result.success) {
@@ -124,6 +138,8 @@ export async function setupAuthUI() {
             err.textContent = "Vault access denied.";
             err.style.opacity = '1';
             err.classList.add('animate-shake');
+        } finally {
+            setAuthLoading(false);
         }
     });
 
@@ -154,6 +170,7 @@ export async function setupAuthUI() {
             return;
         }
 
+        setAuthLoading(true, "Creating Vault...");
         try {
             const result = await (window as any).api.signup(user, email, pass);
             if (result.success) {
@@ -171,6 +188,8 @@ export async function setupAuthUI() {
             err.textContent = "Registration failed.";
             err.style.opacity = '1';
             err.classList.add('animate-shake');
+        } finally {
+            setAuthLoading(false);
         }
     });
 
