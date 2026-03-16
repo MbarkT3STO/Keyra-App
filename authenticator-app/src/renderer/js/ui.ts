@@ -1873,52 +1873,159 @@ export class UIManager {
         if (removeBtn) {
             removeBtn.classList.toggle('hidden', !hasPin);
         }
+
+        // Auto-Lock dependency on PIN
+        const autolockCtrl = document.getElementById('autolock-segmented');
+        const autolockRow = autolockCtrl?.closest('.setting-row');
+        if (autolockCtrl && autolockRow) {
+            autolockCtrl.classList.toggle('disabled', !hasPin);
+            autolockRow.classList.toggle('disabled', !hasPin);
+            
+            if (!hasPin) {
+                // Reset autolock to 0 (Off) if PIN is removed
+                this.updateSegmentedUI('autolock-segmented', '0');
+                localStorage.setItem(this.getStorageKey('autolock'), '0');
+                this.pushSettings();
+            }
+        }
     }
 
-    private showRemovePinConfirm() {
+    private async verifyCurrentPin(onSuccess: () => void) {
+        const storedPin = localStorage.getItem(this.getStorageKey('vault_pin'));
+        if (!storedPin) {
+            onSuccess();
+            return;
+        }
+
         const content = `
             <div class="modal-content">
                 <div class="modal-header">
-                    <div class="modal-icon-vessel danger">
+                    <div class="modal-icon-vessel">
                         <i class="fa-solid fa-shield-halved"></i>
                     </div>
                     <div class="modal-title-vessel">
-                        <h2 class="danger">Deactivate Security?</h2>
-                        <p>VAULT WILL BE UNPROTECTED</p>
+                        <h2>Verify Identity</h2>
+                        <p>ENTER CURRENT PIN TO PROCEED</p>
                     </div>
                 </div>
                 <div class="modal-divider"></div>
                 <div class="modal-body">
-                    <div class="modal-entity-badge">
-                        <div class="entity-icon">
-                            <i class="fa-solid fa-lock"></i>
-                        </div>
-                        <div class="entity-info">
-                            <span class="entity-name">Master PIN Policy</span>
-                            <span class="entity-label">Active Protection</span>
+                    <div class="pin-input-vessel" style="margin: 20px 0;">
+                        <input type="password" id="verify-pin-field" maxlength="4" class="pin-field" 
+                               style="opacity: 0; position: absolute;" autocomplete="off" autofocus>
+                        <div class="pin-indicators" style="justify-content: center;">
+                            <div class="pin-dot" data-digit="1"></div>
+                            <div class="pin-dot" data-digit="2"></div>
+                            <div class="pin-dot" data-digit="3"></div>
+                            <div class="pin-dot" data-digit="4"></div>
                         </div>
                     </div>
-                    <p class="modal-help-text">Removing the PIN means anyone with access to this device can view your identities. This action is immediate.</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn-danger" id="confirm-remove-pin">
-                        <i class="fa-solid fa-trash-can"></i>
-                        Remove Security
+                    <button class="btn-primary" id="btn-verify-proceed" disabled>
+                        <i class="fa-solid fa-arrow-right"></i>
+                        Verify & Proceed
                     </button>
-                    <button class="user-button" id="cancel-remove-pin" style="justify-content: center;">Keep PIN Active</button>
+                    <button class="user-button" id="cancel-verify-btn" style="justify-content: center;">Cancel</button>
                 </div>
             </div>
         `;
         this.showModal(content);
-        document.getElementById('confirm-remove-pin')?.addEventListener('click', () => {
-            localStorage.removeItem(this.getStorageKey('vault_pin'));
-            this.pushSettings();
-            this.updateLockVaultVisibility();
-            this.updatePinStatus();
-            this.showToast("Security code removed", "info");
-            this.hideModal();
+
+        const input = document.getElementById('verify-pin-field') as HTMLInputElement;
+        const dots = document.querySelectorAll('.pin-dot');
+        const nextBtn = document.getElementById('btn-verify-proceed') as HTMLButtonElement;
+
+        input?.focus();
+        
+        input?.addEventListener('input', (e) => {
+            const val = (e.target as HTMLInputElement).value.replace(/[^0-9]/g, '');
+            input.value = val;
+            dots.forEach((dot, i) => dot.classList.toggle('filled', i < val.length));
+            if (nextBtn) nextBtn.disabled = val.length !== 4;
         });
-        document.getElementById('cancel-remove-pin')?.addEventListener('click', () => this.hideModal());
+
+        const performVerify = async () => {
+            if (input.value.length !== 4) return;
+            const enteredPin = input.value;
+            try {
+                let isCorrect = false;
+                try {
+                    const decrypted = await (window as any).api.decryptPIN(storedPin);
+                    isCorrect = enteredPin === decrypted;
+                } catch (e) {
+                    isCorrect = enteredPin === storedPin;
+                }
+
+                if (isCorrect) {
+                     onSuccess();
+                } else {
+                    this.showToast("Incorrect PIN", "error");
+                    input.value = '';
+                    dots.forEach(dot => dot.classList.remove('filled'));
+                    nextBtn.disabled = true;
+                    input.focus();
+                }
+            } catch (e) {
+                console.error("Verification failed", e);
+                this.showToast("Verification error", "error");
+            }
+        };
+
+        nextBtn?.addEventListener('click', performVerify);
+        input?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performVerify();
+        });
+
+        document.getElementById('cancel-verify-btn')?.addEventListener('click', () => this.hideModal());
+    }
+
+    private showRemovePinConfirm() {
+        this.verifyCurrentPin(() => {
+            const content = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-icon-vessel danger">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div class="modal-title-vessel">
+                            <h2 class="danger">Deactivate Security?</h2>
+                            <p>VAULT WILL BE UNPROTECTED</p>
+                        </div>
+                    </div>
+                    <div class="modal-divider"></div>
+                    <div class="modal-body">
+                        <div class="modal-entity-badge">
+                            <div class="entity-icon">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <div class="entity-info">
+                                <span class="entity-name">Master PIN Policy</span>
+                                <span class="entity-label">Active Protection</span>
+                            </div>
+                        </div>
+                        <p class="modal-help-text">Removing the PIN means anyone with access to this device can view your identities. This action is immediate.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-danger" id="confirm-remove-pin">
+                            <i class="fa-solid fa-trash-can"></i>
+                            Remove Security
+                        </button>
+                        <button class="user-button" id="cancel-remove-pin" style="justify-content: center;">Keep PIN Active</button>
+                    </div>
+                </div>
+            `;
+            this.showModal(content);
+            document.getElementById('confirm-remove-pin')?.addEventListener('click', () => {
+                localStorage.removeItem(this.getStorageKey('vault_pin'));
+                this.pushSettings();
+                this.updateLockVaultVisibility();
+                this.updatePinStatus();
+                this.showToast("Security code removed", "info");
+                this.hideModal();
+            });
+            document.getElementById('cancel-remove-pin')?.addEventListener('click', () => this.hideModal());
+        });
     }
 
 
@@ -1931,10 +2038,11 @@ export class UIManager {
     }
 
     private showPinSetup() {
-        let firstEntry = '';
-        let phase: 'entry' | 'confirm' = 'entry';
+        this.verifyCurrentPin(() => {
+            let firstEntry = '';
+            let phase: 'entry' | 'confirm' = 'entry';
 
-        const renderModal = () => {
+            const renderModal = () => {
             const isEntry = phase === 'entry';
             const content = `
                 <div class="modal-content">
@@ -2022,6 +2130,7 @@ export class UIManager {
         };
 
         renderModal();
+        });
     }
 
     private showAddModal() {

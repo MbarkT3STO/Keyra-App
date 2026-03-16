@@ -1298,7 +1298,19 @@ input:checked+.slider:before {
 }
 
 .segment.active {
-    color: var(--accent-primary);
+    background: var(--accent-primary);
+}
+
+.segmented-control.disabled {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+    filter: grayscale(1);
+    cursor: not-allowed !important;
+}
+
+.setting-row.disabled {
+    opacity: 0.6;
+    pointer-events: none;
 }
 
 .setting-name {
