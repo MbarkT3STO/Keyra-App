@@ -211,6 +211,7 @@ export async function setupAuthUI() {
         const err = document.getElementById('verify-error')!;
         
         err.classList.remove('animate-shake');
+        setAuthLoading(true, "Verifying Identity...");
         try {
             const result = await (window as any).api.verifyEmail(email, code);
             if (result.success) {
@@ -227,6 +228,8 @@ export async function setupAuthUI() {
             err.textContent = "Sync error.";
             err.style.opacity = '1';
             err.classList.add('animate-shake');
+        } finally {
+            setAuthLoading(false);
         }
     }
 
@@ -263,6 +266,7 @@ export async function setupAuthUI() {
 
     document.getElementById('btn-resend-code')?.addEventListener('click', async () => {
         const email = (document.getElementById('verify-email-field') as HTMLInputElement).value;
+        setAuthLoading(true, "Resending Code...");
         try {
             const result = await (window as any).api.resendCode(email);
             if (result.success) {
@@ -275,6 +279,8 @@ export async function setupAuthUI() {
             }
         } catch (e) {
             console.error("Resend failed", e);
+        } finally {
+            setAuthLoading(false);
         }
     });
 
