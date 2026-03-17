@@ -11,6 +11,7 @@
     "build:renderer": "tsc -p tsconfig.renderer.json && copy src\\renderer\\index.html dist\\renderer\\renderer\\index.html && copy src\\renderer\\capture.html dist\\renderer\\renderer\\capture.html && xcopy /E /Y /I src\\renderer\\css dist\\renderer\\renderer\\css && xcopy /E /Y /I src\\renderer\\fonts dist\\renderer\\renderer\\fonts && xcopy /E /Y /I src\\renderer\\webfonts dist\\renderer\\renderer\\webfonts && xcopy /E /Y /I src\\renderer\\js\\vendor dist\\renderer\\renderer\\js\\vendor && xcopy /E /Y /I src\\renderer\\assets dist\\renderer\\renderer\\assets",
     "build": "npm run build:main && npm run build:renderer",
     "start": "npm run build && electron .",
+    "cbs": "cls && npm run build && electron .",
     "dist": "npm run build && electron-builder --windows --publish never",
     "release": "npm run build && electron-builder --windows --publish always",
     "dist:win64": "electron-builder --win --x64",

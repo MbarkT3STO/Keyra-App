@@ -615,8 +615,139 @@ body.dark-theme .dropdown-menu {
     will-change: transform;
 }
 
+/* Global Timer Bar */
+.global-timer-vessel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: var(--space-xl);
+    padding: var(--space-md);
+    background: var(--nm-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--nm-shadow-out-sm);
+}
 
-/* SCIENTIFIC BUTTONS & FORMS */
+.global-timer-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 850;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.global-timer-label i {
+    color: var(--accent-primary);
+    font-size: 14px;
+}
+
+.timer-linear-vessel.global-bar {
+    height: 6px;
+    box-shadow: var(--nm-shadow-in-sm);
+}
+
+/* Vault View Toggle Styles */
+.vault-view-toggle {
+    min-width: 140px;
+    height: 44px;
+    margin-right: var(--space-xs);
+}
+
+.vault-view-toggle .segment {
+    padding: 0;
+    width: 38px;
+}
+
+.vault-view-toggle .segment i {
+    font-size: 14px;
+}
+
+/* Secure Modal Circular Timer */
+.circular-timer-vessel {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circular-timer-svg {
+    transform: rotate(-90deg);
+}
+
+.timer-circle-bg {
+    fill: none;
+    stroke: var(--nm-surface);
+    stroke-width: 8;
+    box-shadow: var(--nm-shadow-in-sm);
+}
+
+.timer-circle-progress {
+    fill: none;
+    stroke: var(--accent-primary);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+}
+
+.timer-countdown-text {
+    position: absolute;
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--accent-primary);
+    font-family: var(--font-mono);
+}
+
+/* Secure OTP Modal Content */
+.otp-modal-container {
+    padding: var(--space-lg);
+    text-align: center;
+}
+
+.otp-modal-header {
+    margin-bottom: var(--space-md);
+}
+
+.otp-modal-name {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--text-primary);
+}
+
+.otp-modal-account {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+.otp-modal-code-vessel {
+    background: var(--nm-surface);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--nm-shadow-in);
+    margin: var(--space-lg) 0;
+    font-size: 38px;
+    font-weight: 950;
+    letter-spacing: 4px;
+    color: var(--accent-primary);
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.otp-modal-code-vessel:active {
+    transform: scale(0.98);
+}
+
+.otp-modal-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: var(--space-lg);
+}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SCIENTIFIC BUTTONS & FORMS
@@ -1260,10 +1391,10 @@ input:checked+.slider:before {
     display: flex;
     background: var(--nm-surface);
     border: none;
-    padding: 4px;
+    padding: 6px;
     border-radius: var(--radius-full);
     min-width: 160px;
-    height: 42px;
+    height: 44px;
     box-shadow: var(--nm-shadow-in-sm);
 }
 
@@ -1282,14 +1413,15 @@ input:checked+.slider:before {
 }
 
 .segment.active {
-    color: white;
+    color: var(--accent-primary);
+    text-shadow: 0 0 1px var(--accent-soft);
 }
 
 .segment-indicator {
     position: absolute;
-    top: 4px;
-    left: 4px;
-    height: calc(100% - 8px);
+    top: 6px;
+    left: 6px;
+    height: calc(100% - 12px);
     background: var(--nm-surface);
     border-radius: var(--radius-full);
     transition: all var(--transition-medium) cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1297,9 +1429,7 @@ input:checked+.slider:before {
     box-shadow: var(--nm-shadow-out-sm);
 }
 
-.segment.active {
-    background: var(--accent-primary);
-}
+/* Active styling handled by indicator and segment.active text color */
 
 .segmented-control.disabled {
     opacity: 0.5 !important;

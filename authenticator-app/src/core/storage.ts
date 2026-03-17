@@ -32,6 +32,7 @@ export interface UserSettings {
     menuExitIntegration: boolean;
     privacyBlur: boolean;
     autoCheckUpdates?: boolean;
+    vaultViewStyle?: 'unified' | 'compact' | 'secure';
     vaultPin?: string;
 }
 

@@ -23,6 +23,8 @@ export class UIManager {
     private minimizeToTray: boolean = false;
     private globalHotkey: boolean = false;
     private autoCheckUpdates: boolean = true;
+    private vaultViewStyle: 'unified' | 'compact' | 'secure' = 'unified';
+    private activeOtpAccount: any = null;
 
     constructor(public userId: string = 'default') {
         this.initTheme();
@@ -32,6 +34,7 @@ export class UIManager {
         this.initMenuExitIntegration();
         this.initInteractivePrivacy();
         this.initWindowResizable();
+        this.initVaultViewStyle();
         this.initSegmentedStates();
         this.setupEventListeners();
         this.updateLockVaultVisibility();
@@ -278,6 +281,7 @@ export class UIManager {
             minimizeToTray: this.minimizeToTray,
             globalHotkey: this.globalHotkey,
             autoCheckUpdates: this.autoCheckUpdates,
+            vaultViewStyle: this.vaultViewStyle,
             vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
         };
     }
@@ -332,6 +336,17 @@ export class UIManager {
             const t = document.getElementById('global-hotkey-toggle') as HTMLInputElement;
             if (t) t.checked = this.globalHotkey;
             (window as any).api.setGlobalHotkey(this.globalHotkey);
+        }
+
+        if (settings.vaultViewStyle !== undefined) {
+            this.vaultViewStyle = settings.vaultViewStyle;
+            this.updateSegmentedUI('countdown-style-segmented', this.vaultViewStyle);
+            
+            // Immediately toggle global bar visibility
+            const globalVessel = document.getElementById('global-timer-vessel');
+            if (globalVessel) globalVessel.classList.toggle('hidden', this.vaultViewStyle !== 'unified');
+            
+            this.renderAccounts();
         }
 
         if (settings.oledMode !== undefined) {
@@ -390,6 +405,7 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('privacy_blur'), String(this.privacyBlur));
             localStorage.setItem(this.getStorageKey('window_resizable'), String(this.windowResizable));
             localStorage.setItem(this.getStorageKey('auto_check_updates'), String(this.autoCheckUpdates));
+            localStorage.setItem(this.getStorageKey('vault_view_style'), this.vaultViewStyle);
             if (settings.vaultPin !== undefined) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
         }
 
@@ -598,6 +614,25 @@ export class UIManager {
         }
     }
 
+    private initVaultViewStyle() {
+        const saved = localStorage.getItem(this.getStorageKey('vault_view_style')) as any;
+        if (saved && ['unified', 'compact', 'secure'].includes(saved)) {
+            this.vaultViewStyle = saved;
+        } else {
+            // Check legacy key if any or default
+            const legacy = localStorage.getItem(this.getStorageKey('vaultViewStyle')) as any;
+            if (legacy && ['unified', 'compact', 'secure'].includes(legacy)) {
+                this.vaultViewStyle = legacy;
+                localStorage.setItem(this.getStorageKey('vault_view_style'), legacy);
+                localStorage.removeItem(this.getStorageKey('vaultViewStyle'));
+            }
+        }
+        
+        // Apply initial visibility
+        const globalVessel = document.getElementById('global-timer-vessel');
+        if (globalVessel) globalVessel.classList.toggle('hidden', this.vaultViewStyle !== 'unified');
+    }
+
     private showPrivacyOverlay() {
         // Don't show if we are on the auth screen
         const authVessel = document.getElementById('auth-vessel');
@@ -625,6 +660,8 @@ export class UIManager {
 
         const autolock = localStorage.getItem(this.getStorageKey('autolock')) || '0';
         this.updateSegmentedUI('autolock-segmented', autolock);
+
+        this.updateSegmentedUI('countdown-style-segmented', this.vaultViewStyle);
     }
 
     private updateSegmentedUI(containerId: string, value: string) {
@@ -804,6 +841,25 @@ export class UIManager {
             this.pushSettings();
             this.showToast(this.menuExitIntegration ? "Close button moved to menu" : "Close button moved to navbar", "info");
             this.updateLastActivity(`Menu Exit ${this.menuExitIntegration ? 'on' : 'off'}`);
+        });
+
+        // Vault View Type Toggle (Vault View Header)
+        const countdownSegmented = document.getElementById('countdown-style-segmented');
+        countdownSegmented?.querySelectorAll('.segment').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = btn.getAttribute('data-val') as any;
+                this.vaultViewStyle = val || 'unified';
+                localStorage.setItem(this.getStorageKey('vault_view_style'), this.vaultViewStyle);
+                this.updateSegmentedUI('countdown-style-segmented', this.vaultViewStyle);
+                
+                const globalVessel = document.getElementById('global-timer-vessel');
+                if (globalVessel) globalVessel.classList.toggle('hidden', this.vaultViewStyle !== 'unified');
+                
+                this.renderAccounts();
+                this.pushSettings();
+                this.showToast(`View style: ${this.vaultViewStyle.charAt(0).toUpperCase() + this.vaultViewStyle.slice(1)}`, "info");
+                this.updateLastActivity(`Changed view to ${this.vaultViewStyle}`);
+            });
         });
 
         // Settings PIN
@@ -1552,38 +1608,53 @@ export class UIManager {
             </div>
             
             <div class="otp-hero">
-                <div class="otp-code ${this.privacyMode ? 'privacy-hidden' : ''}">
-                    ${this.privacyMode ? '••••••' : '------'}
-                </div>
+                ${this.vaultViewStyle !== 'secure' ? `
+                    <div class="otp-code ${this.privacyMode ? 'privacy-hidden' : ''}">
+                        ${this.privacyMode ? '••••••' : '------'}
+                    </div>
+                ` : `
+                    <button class="btn-primary secure-view-btn" style="width: 100%; height: 50px; background: var(--nm-surface); box-shadow: var(--nm-shadow-out-sm);">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Secure View</span>
+                    </button>
+                `}
+
+                ${this.vaultViewStyle === 'compact' ? `
                 <div class="timer-linear-vessel">
                     <div class="timer-linear-progress"></div>
-                </div>
+                </div>` : ''}
             </div>
 
+            ${this.vaultViewStyle !== 'secure' ? `
             <div class="card-footer" style="padding: 0;">
                 <button class="btn-primary copy-btn" style="width: 100%;">
                     <i class="fa-solid fa-copy icon-left"></i>
                     <span>Copy Code</span>
                 </button>
             </div>
+            ` : ''}
         `;
 
         const copyBtn = card.querySelector('.copy-btn') as HTMLElement;
-        copyBtn.onclick = async () => {
-            const otpCode = await (window as any).api.generateTOTP(account.secret);
-            await navigator.clipboard.writeText(otpCode);
-            this.showToast("Code copied!", "success");
-            this.updateLastActivity('OTP copied');
-        };
+        if (copyBtn) {
+            copyBtn.onclick = async () => {
+                const otpCode = await (window as any).api.generateTOTP(account.secret);
+                await navigator.clipboard.writeText(otpCode);
+                this.showToast("Code copied!", "success");
+                this.updateLastActivity('OTP copied');
+            };
+        }
 
         const codeEl = card.querySelector('.otp-code') as HTMLElement;
-        codeEl.onclick = async () => {
-            const otpCode = await (window as any).api.generateTOTP(account.secret);
-            await navigator.clipboard.writeText(otpCode);
-            this.showToast("OTP Copied", "success");
-            this.showCopyFeedback(codeEl);
-            this.updateLastActivity('OTP copied');
-        };
+        if (codeEl) {
+            codeEl.onclick = async () => {
+                const otpCode = await (window as any).api.generateTOTP(account.secret);
+                await navigator.clipboard.writeText(otpCode);
+                this.showToast("OTP Copied", "success");
+                this.showCopyFeedback(codeEl);
+                this.updateLastActivity('OTP copied');
+            };
+        }
 
         const moreBtn = card.querySelector('.btn-card-more') as HTMLElement;
         const dropdown = card.querySelector('.card-dropdown') as HTMLElement;
@@ -1615,8 +1686,12 @@ export class UIManager {
             this.showDeleteConfirm(account);
         });
 
+        card.querySelector('.secure-view-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showOtpModal(account);
+        });
+
         // Initial update will be handled by the batch call in renderAccounts or the timer
-        // No need to call this.updateCardOTP here with incomplete data
         return card;
     }
 
@@ -1662,12 +1737,105 @@ export class UIManager {
             }
         }
 
-        const progressBar = card.querySelector('.timer-linear-progress') as HTMLElement;
-        if (progressBar) {
-            const scale = remaining / 30;
-            progressBar.style.transform = `scaleX(${scale})`;
-            progressBar.style.backgroundColor = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+        // Mode 1: Unified (Global Bar)
+        if (this.vaultViewStyle === 'unified') {
+            const globalProgressBar = document.getElementById('global-otp-timer') as HTMLElement;
+            if (globalProgressBar) {
+                const scale = remaining / 30;
+                globalProgressBar.style.transform = `scaleX(${scale})`;
+                globalProgressBar.style.backgroundColor = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+            }
+        } 
+        // Mode 2: Compact (Individual Bars)
+        else if (this.vaultViewStyle === 'compact') {
+            const progressBar = card.querySelector('.timer-linear-progress') as HTMLElement;
+            if (progressBar) {
+                const scale = remaining / 30;
+                progressBar.style.transform = `scaleX(${scale})`;
+                progressBar.style.backgroundColor = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+            }
         }
+        // Mode 3: Secure (Modal) - Updates are handled separately via this.updateOtpModal if modal is open
+    }
+
+    private updateOtpModal(otp: string, remaining: number) {
+        const modal = document.querySelector('.otp-modal-container');
+        if (!modal || !this.activeOtpAccount) return;
+
+        const codeDisp = modal.querySelector('.otp-modal-code-vessel') as HTMLElement;
+        const formattedOtp = otp.substring(0, 3) + ' ' + otp.substring(3);
+        
+        if (codeDisp && codeDisp.textContent !== formattedOtp) {
+            codeDisp.textContent = formattedOtp;
+        }
+
+        const circle = modal.querySelector('.timer-circle-progress') as SVGCircleElement;
+        const text = modal.querySelector('.timer-countdown-text') as HTMLElement;
+        if (circle && text) {
+            const radius = 54;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (remaining / 30) * circumference;
+            
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = offset.toString();
+            circle.style.stroke = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+            
+            text.textContent = remaining.toString();
+            text.style.color = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+        }
+    }
+
+    private async showOtpModal(account: any) {
+        this.activeOtpAccount = account;
+        const initialOtp = await (window as any).api.generateTOTP(account.secret);
+        const { remaining } = await (window as any).api.getBatchOTPs([account.secret]);
+
+        const content = `
+            <div class="otp-modal-container">
+                <div class="otp-modal-header">
+                    <div class="otp-modal-name">${account.issuer}</div>
+                    <div class="otp-modal-account">${account.account}</div>
+                </div>
+
+                <div class="circular-timer-vessel">
+                    <svg class="circular-timer-svg" width="120" height="120">
+                        <circle class="timer-circle-bg" cx="60" cy="60" r="54"></circle>
+                        <circle class="timer-circle-progress" cx="60" cy="60" r="54"></circle>
+                    </svg>
+                    <div class="timer-countdown-text">${remaining}</div>
+                </div>
+
+                <div class="otp-modal-code-vessel" id="otp-modal-copy">
+                    ${initialOtp.substring(0, 3)} ${initialOtp.substring(3)}
+                </div>
+
+                <div class="otp-modal-footer">
+                    <button class="btn-primary" id="btn-otp-modal-copy" style="flex: 1;">
+                        <i class="fa-solid fa-copy"></i>
+                        Copy
+                    </button>
+                    <button class="user-button" id="btn-otp-modal-close" style="width: auto; padding: 0 20px;">Close</button>
+                </div>
+            </div>
+        `;
+
+        this.showModal(content);
+        this.updateOtpModal(initialOtp, remaining);
+
+        document.getElementById('btn-otp-modal-copy')?.addEventListener('click', () => {
+            navigator.clipboard.writeText(initialOtp);
+            this.showToast("Code copied!", "success");
+            this.showCopyFeedback(document.getElementById('otp-modal-copy')!);
+        });
+        document.getElementById('otp-modal-copy')?.addEventListener('click', () => {
+             navigator.clipboard.writeText(initialOtp);
+            this.showToast("OTP Copied", "success");
+            this.showCopyFeedback(document.getElementById('otp-modal-copy')!);
+        });
+        document.getElementById('btn-otp-modal-close')?.addEventListener('click', () => {
+            this.activeOtpAccount = null;
+            this.hideModal();
+        });
     }
 
     private startTimer() {
@@ -1682,6 +1850,14 @@ export class UIManager {
             this.cardCache.forEach((card, i) => {
                 if (otps[i]) this.updateCardOTP(card, otps[i], remaining);
             });
+
+            // Update active modal if open
+            if (this.activeOtpAccount) {
+                const activeIndex = this.accounts.findIndex(a => a.id === this.activeOtpAccount.id);
+                if (activeIndex !== -1 && otps[activeIndex]) {
+                    this.updateOtpModal(otps[activeIndex], remaining);
+                }
+            }
         }, 1000);
     }
 
