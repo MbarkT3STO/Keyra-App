@@ -109,5 +109,6 @@ contextBridge.exposeInMainWorld('api', {
     // System Integration
     setLaunchOnStartup: (enabled: boolean) => ipcRenderer.invoke('set-launch-on-startup', enabled),
     setMinimizeToTray: (enabled: boolean) => ipcRenderer.invoke('set-minimize-to-tray', enabled),
-    setGlobalHotkey: (enabled: boolean) => ipcRenderer.invoke('set-global-hotkey', enabled)
+    setGlobalHotkey: (enabled: boolean) => ipcRenderer.invoke('set-global-hotkey', enabled),
+    openExternal: (url: string) => ipcRenderer.invoke('open-external', url)
 });

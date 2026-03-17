@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer, Menu, Tray, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer, Menu, Tray, nativeImage, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
 import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates, changeUsername, changePassword, requestEmailChange, confirmEmailChange, resendEmailChangeCode, cancelEmailChange, requestPhoneVerification, removePhone, verifyPhoneByWhatsAppMatch, verifyMasterPassword } from '../core/auth';
@@ -351,6 +351,16 @@ ipcMain.handle('set-global-hotkey', (event, enabled) => {
     if (enabled) setupGlobalShortcut();
     else globalShortcut.unregister('Alt+Shift+K');
     return true;
+});
+
+ipcMain.handle('open-external', async (event, url) => {
+    try {
+        await shell.openExternal(url);
+        return true;
+    } catch (e) {
+        console.error('Failed to open external URL:', e);
+        return false;
+    }
 });
 
 function createTray() {
