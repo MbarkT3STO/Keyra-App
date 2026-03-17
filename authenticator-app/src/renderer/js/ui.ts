@@ -2768,6 +2768,13 @@ export class UIManager {
         }
     }
 
+    private maskPhoneNumber(phone: string): string {
+        if (!phone) return 'XX XXX XX';
+        const digits = phone.replace(/\D/g, '');
+        if (digits.length < 2) return phone;
+        return `XXXX XXX XX${digits.slice(-2)}`;
+    }
+
     private showForgotPinConfirm() {
         console.log("[UI] Showing Forgot PIN modal...");
         const modal = document.getElementById('modal-forgot-pin');
@@ -2875,6 +2882,8 @@ export class UIManager {
                     pInput?.select();
                     return;
                 }
+                // Clear password on success for security
+                if (pInput) pInput.value = '';
                 await completePinReset();
             } catch (err) {
                 this.setLoading(false);
@@ -2884,6 +2893,20 @@ export class UIManager {
 
         // --- Cancel/Close Handler ---
         const cancelHandler = () => {
+            // Smart Back: If not in main view, return to options instead of closing
+            const currentView = Array.from(modal.querySelectorAll('.modal-content')).find(v => !v.classList.contains('hidden'))?.id;
+            
+            if (currentView && currentView !== 'forgot-pin-main-view') {
+                showView('main');
+                // Reset password form state when going back
+                passForm?.classList.add('hidden');
+                if (passwordInput) passwordInput.value = '';
+                if (confirmBtn) {
+                    confirmBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Reset PIN & Sign Out';
+                }
+                return;
+            }
+
             (window as any).api.clearPinResetCode();
             modal.classList.remove('show');
             setTimeout(() => modal.classList.add('hidden'), 300);
@@ -2988,8 +3011,7 @@ export class UIManager {
                         // Show success view
                         const phoneDisplay = document.getElementById('forgot-pin-code-phone');
                         if (phoneDisplay) {
-                            const digits = user.phone.replace(/\D/g, '');
-                            phoneDisplay.textContent = `XXXX XXX XX${digits.slice(-2)}`;
+                            phoneDisplay.textContent = this.maskPhoneNumber(user.phone);
                         }
                         showView('code');
                         this.showToast('PIN sent to your WhatsApp!', 'success');
@@ -3068,8 +3090,7 @@ export class UIManager {
                 if (divider) (divider as HTMLElement).style.display = 'flex';
                 const phoneHint = document.getElementById('forgot-pin-wa-phone-hint');
                 if (phoneHint) {
-                    const digits = user.phone.replace(/\D/g, '');
-                    phoneHint.textContent = `Use the WhatsApp account linked to XX${digits.slice(-2)}`;
+                    phoneHint.textContent = `Use the WhatsApp account linked to ${this.maskPhoneNumber(user.phone)}`;
                 }
             } else {
                 divider?.classList.add('hidden');

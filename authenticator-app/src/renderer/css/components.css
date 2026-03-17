@@ -3565,3 +3565,32 @@ body.light-theme .cloud-sync-pill {
     color: white !important;
     border: none !important;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UNIVERSAL SPINNER SYSTEM
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.nm-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--nm-shadow-in-sm);
+    border-top: 3px solid var(--accent-primary);
+    border-radius: 50%;
+    animation: nm-spin 1s linear infinite;
+    box-shadow: var(--nm-shadow-out-sm);
+}
+
+@keyframes nm-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Ensure other spinners use this too if needed */
+.qr-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: nm-spin 1s linear infinite;
+}
