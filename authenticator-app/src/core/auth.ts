@@ -188,16 +188,39 @@ export async function login(username: string, password: string): Promise<{ succe
     let user: UserRecord | null = null;
     let cloudFetchSuccess = false;
 
-    // 1. Cloud First Approach
+    // 1. Resolve Identity (Username or Phone)
+    const normalizedInput = username.trim();
+    const isPhoneInput = normalizedInput.startsWith('+') || /^\d{8,}$/.test(normalizedInput.replace(/\s/g, ''));
+    
+    let resolvedUsername = normalizedInput;
+    const localUsers = await getUsers();
+
+    if (isPhoneInput) {
+        const digitsOnlyInput = normalizedInput.replace(/\D/g, '');
+        if (digitsOnlyInput.length >= 8) { // Only attempt phone lookup if enough digits are provided
+            const matchingUser = localUsers.find(u => {
+                const checkMatch = (phone?: string) => {
+                    if (!phone) return false;
+                    const digitsOnlyStored = phone.replace(/\D/g, '');
+                    return digitsOnlyStored === digitsOnlyInput || digitsOnlyStored.endsWith(digitsOnlyInput);
+                };
+                return checkMatch(u.phone) || checkMatch(u.pendingPhone);
+            });
+            if (matchingUser) {
+                resolvedUsername = matchingUser.username;
+            }
+        }
+    }
+
+    // 2. Cloud First Approach
     try {
-        const cloudData = await getUserData(username);
+        const cloudData = await getUserData(resolvedUsername);
         if (cloudData) {
             user = cloudData;
             cloudFetchSuccess = true;
             
             // Proactively update local cache with fresh cloud data
-            const localUsers = await getUsers();
-            const localIdx = localUsers.findIndex(u => u.username === username);
+            const localIdx = localUsers.findIndex(u => u.username === resolvedUsername);
             if (localIdx !== -1) {
                 localUsers[localIdx] = cloudData;
             } else {
@@ -209,10 +232,9 @@ export async function login(username: string, password: string): Promise<{ succe
         console.warn("Cloud login fetch failed, will attempt local fallback:", err.message);
     }
 
-    // 2. Local Fallback (if cloud failed or user not found in cloud)
+    // 3. Local Fallback (if cloud failed or user not found in cloud)
     if (!user) {
-        const localUsers = await getUsers();
-        user = localUsers.find(u => u.username === username) || null;
+        user = localUsers.find(u => u.username === resolvedUsername) || null;
     }
 
     if (!user) {

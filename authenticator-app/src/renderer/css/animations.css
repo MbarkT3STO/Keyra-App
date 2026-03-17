@@ -61,10 +61,28 @@
     }
 }
 
-/* Shimmer for CTA buttons */
-@keyframes shimmer {
-    0%   { background-position: -200% center; }
-    100% { background-position: 200% center; }
+/* Shimmer effect for premium buttons */
+@keyframes shimmer-sweep {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.btn-shimmer {
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.05) 50%, 
+        rgba(255,255,255,0) 100%) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer-sweep 4s infinite linear !important;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.nm-logo-float {
+    animation: float 4s ease-in-out infinite;
 }
 
 
