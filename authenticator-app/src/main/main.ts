@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer, Menu, Tray, nativeImage, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
-import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates, changeUsername, changePassword, requestEmailChange, confirmEmailChange, resendEmailChangeCode, cancelEmailChange, requestPhoneVerification, removePhone, verifyPhoneByWhatsAppMatch, verifyMasterPassword, generatePinResetCode, verifyPinResetCode, clearPinResetCode } from '../core/auth';
+import { signup, signupLocal, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates, changeUsername, changePassword, requestEmailChange, confirmEmailChange, resendEmailChangeCode, cancelEmailChange, requestPhoneVerification, removePhone, verifyPhoneByWhatsAppMatch, verifyMasterPassword, generatePinResetCode, verifyPinResetCode, clearPinResetCode } from '../core/auth';
 import { service } from '../core/notifier';
 import { generateTOTP, getRemainingSeconds, getBatchOTPs } from '../core/totp';
 import * as fs from 'fs';
@@ -105,6 +105,7 @@ app.on('activate', () => {
 // IPC Communication
 // -- Auth & Multi-User IPC --
 ipcMain.handle('signup', (event, user, email, pass) => signup(user, email, pass));
+ipcMain.handle('signup-local', (event, user, pass) => signupLocal(user, pass));
 ipcMain.handle('resend-code', (event, email) => resendCode(email));
 ipcMain.handle('verify-email', (event, email, code) => verifyEmail(email, code));
 ipcMain.handle('login', (event, user, pass) => login(user, pass));

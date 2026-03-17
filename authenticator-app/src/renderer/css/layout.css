@@ -39,6 +39,16 @@ body {
     background-color: var(--nm-surface);
 }
 
+/* Local Account Mode Logic */
+body.local-only .online-only:not(#sync-settings-card) {
+    display: none !important;
+}
+
+body.local-only #connectivity-status,
+body.local-only #about-sync-row {
+    display: none !important;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    NAVBAR & HEADER - Neuomorphic Elevation
    ───────────────────────────────────────────────────────────────────────────── */

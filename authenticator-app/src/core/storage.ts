@@ -42,6 +42,7 @@ export interface UserRecord {
     email: string;
     hash: string;
     salt: string;
+    isLocal?: boolean;
     isActivated: boolean;
     activationCode?: string;
     pendingEmail?: string;
@@ -150,7 +151,10 @@ export async function saveUsers(users: UserRecord[]): Promise<void> {
     // 1. Local Save (Immediate feedback)
     fs.writeFileSync(STORE_PATH, JSON.stringify(users, null, 2), 'utf-8');
 
-    // 2. Cloud Save
+    // 2. Cloud Save (Only if any non-local user exists, or filter as needed)
+    // For simplicity, we only push users.json if there are non-local accounts
+    // but typically we should push the whole list if we want to sync the registry.
+    // However, we MUST NOT push data.json for local users.
     const res: any = await callSync('put', 'users.json', users);
     if (res.success) {
         lastUsersSHA = res.sha;
@@ -160,6 +164,8 @@ export async function saveUsers(users: UserRecord[]): Promise<void> {
 }
 
 export async function syncUserData(username: string, data: Partial<UserRecord>): Promise<void> {
+    if (data.isLocal) return; // BYPASS CLOUD SYNC FOR LOCAL USERS
+    
     const filePath = `users/${username}/data.json`;
     const res: any = await callSync('put', filePath, data);
     if (res.success) {

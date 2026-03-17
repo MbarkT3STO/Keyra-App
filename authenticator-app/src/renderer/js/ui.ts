@@ -1319,7 +1319,9 @@ export class UIManager {
         const avatarImgEl = document.getElementById('acc-avatar-img') as HTMLImageElement;
 
         if (dispName) dispName.textContent = user.username;
-        if (dispEmail) dispEmail.textContent = user.email;
+        if (dispEmail) dispEmail.textContent = user.isLocal ? "Local-Only Account" : user.email;
+
+        this.handleLocalAccountUI(user);
 
         // Avatar Logic
         if (avatarImgEl && initialsEl) {
@@ -1374,6 +1376,25 @@ export class UIManager {
         } else {
             badge?.classList.add('hidden');
             actionBox?.classList.add('hidden');
+        }
+    }
+
+    private handleLocalAccountUI(user: any) {
+        const syncCard = document.getElementById('sync-settings-card');
+        const syncOverlay = document.getElementById('sync-disabled-overlay');
+
+        if (user.isLocal) {
+            document.body.classList.add('local-only');
+            const syncStatusDesc = document.getElementById('sync-status-desc');
+            if (syncStatusDesc) syncStatusDesc.textContent = "Offline Mode Active";
+            
+            // Show Disabled Overlay instead of hiding the card (which is handled by CSS partially)
+            if (syncCard) syncCard.classList.add('disabled-card');
+            if (syncOverlay) syncOverlay.classList.remove('hidden');
+        } else {
+            document.body.classList.remove('local-only');
+            if (syncCard) syncCard.classList.remove('disabled-card');
+            if (syncOverlay) syncOverlay.classList.add('hidden');
         }
     }
 
@@ -2723,7 +2744,9 @@ export class UIManager {
                 const dropdownName = document.getElementById('dropdown-user-name');
                 const dropdownEmail = document.getElementById('dropdown-user-email');
                 if (dropdownName) dropdownName.textContent = user.username;
-                if (dropdownEmail) dropdownEmail.textContent = user.email || 'Keyra Secure Vault';
+                if (dropdownEmail) dropdownEmail.textContent = user.isLocal ? "Local-Only Account" : (user.email || 'Keyra Secure Vault');
+
+                this.handleLocalAccountUI(user);
             }
             await this.refreshAccounts();
             this.updateAccountView();

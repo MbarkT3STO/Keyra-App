@@ -108,6 +108,7 @@
                     </form>
                     <div class="auth-footer">
                         <p>First time? <button id="btn-show-signup" class="auth-link">Create your Vault</button></p>
+                        <p style="margin-top: 8px; font-size: 11px; opacity: 0.6;">Or <button id="btn-show-signup-local" class="auth-link" style="font-weight: 800; color: var(--accent-primary);">Stay Offline (Local Account)</button></p>
                     </div>
                 </div>
 
@@ -118,17 +119,21 @@
                             <label class="form-label">Full Name</label>
                             <input type="text" id="signup-username" class="form-input" placeholder="John Doe" required>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" id="signup-email-group">
                             <label class="form-label">Email Address</label>
                             <input type="email" id="signup-email" class="form-input" placeholder="name@domain.com" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Master Password</label>
+                            <label class="form-label" id="label-signup-password">Master Password</label>
                             <input type="password" id="signup-password" class="form-input" placeholder="Min 8 characters" required>
                         </div>
-                        <button type="submit" class="btn-primary auth-submit-btn btn-shimmer">Create Vault</button>
+                        <input type="hidden" id="signup-is-local" value="false">
+                        <button type="submit" id="btn-signup-submit" class="btn-primary auth-submit-btn btn-shimmer">Create Vault</button>
                         <div id="signup-error" class="auth-error"></div>
                     </form>
+                    <div class="auth-footer" style="margin-top: 10px;">
+                        <p id="local-toggle-text">Need Cloud Sync? <button id="btn-toggle-local" class="auth-link">Enable Online Features</button></p>
+                    </div>
                     <div class="auth-footer">
                         <p>Already have a vault? <button id="btn-show-login" class="auth-link">Sign In</button></p>
                     </div>
@@ -245,7 +250,7 @@
                     </div>
 
                     <!-- Sync Row -->
-                    <div class="about-info-row">
+                    <div id="about-sync-row" class="about-info-row online-only">
                         <div class="info-row-label">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                             <span class="label-text">CLOUD SYNC</span>
@@ -748,7 +753,7 @@
                 </div>
 
                 <!-- 4. Cloud Synchronization Card -->
-                <div class="account-card bento-card">
+                <div class="account-card bento-card" id="sync-settings-card">
                     <div class="bento-header">
                         <div class="bento-icon">
                             <i class="fa-solid fa-cloud" style="color: var(--accent-primary);"></i>
@@ -783,6 +788,11 @@
                             <i class="fa-solid fa-arrows-rotate"></i>
                             <span>Sync Now</span>
                         </button>
+                    </div>
+                    <!-- Disabled Overlay for Local Accounts -->
+                    <div id="sync-disabled-overlay" class="disabled-card-overlay hidden">
+                        <i class="fa-solid fa-cloud-slash"></i>
+                        <span>Sync Disabled (Local Account)</span>
                     </div>
                 </div>
 
@@ -880,7 +890,7 @@
                     </div>
 
                     <!-- Primary Email -->
-                    <div class="account-card bento-card">
+                    <div class="account-card bento-card online-only">
                         <div class="bento-header">
                             <div class="bento-icon">
                                 <i class="fa-solid fa-envelope" style="color: var(--accent-primary);"></i>
@@ -916,7 +926,7 @@
                     </div>
 
                     <!-- Phone Security -->
-                    <div class="account-card bento-card">
+                    <div class="account-card bento-card online-only">
                         <div class="bento-header">
                             <div class="bento-icon">
                                 <i class="fa-solid fa-mobile-screen-button" style="color: var(--accent-primary);"></i>

@@ -87,10 +87,53 @@ export async function setupAuthUI() {
         btnBack?.classList.add('hidden');
     });
 
+    document.getElementById('btn-show-signup-local')?.addEventListener('click', () => {
+        switchState(boxLogin, boxSignup);
+        btnBack?.classList.remove('hidden');
+        setLocalMode(true);
+    });
+
+    document.getElementById('btn-toggle-local')?.addEventListener('click', () => {
+        const isLocal = (document.getElementById('signup-is-local') as HTMLInputElement).value === 'true';
+        setLocalMode(!isLocal);
+    });
+
+    function setLocalMode(isLocal: boolean) {
+        const emailGroup = document.getElementById('signup-email-group');
+        const emailInput = document.getElementById('signup-email') as HTMLInputElement;
+        const passLabel = document.getElementById('label-signup-password');
+        const passInput = document.getElementById('signup-password') as HTMLInputElement;
+        const isLocalInput = document.getElementById('signup-is-local') as HTMLInputElement;
+        const toggleBtn = document.getElementById('btn-toggle-local');
+        const toggleText = document.getElementById('local-toggle-text');
+        const submitBtn = document.getElementById('btn-signup-submit');
+
+        if (isLocal) {
+            emailGroup?.classList.add('hidden');
+            emailInput.removeAttribute('required');
+            if (passLabel) passLabel.textContent = "Encryption Key";
+            if (passInput) passInput.placeholder = "Min 8 characters (Key)";
+            if (isLocalInput) isLocalInput.value = 'true';
+            if (toggleBtn) toggleBtn.textContent = "Enable Online Features";
+            if (toggleText) toggleText.firstChild!.textContent = "Need Cloud Sync? ";
+            if (submitBtn) submitBtn.textContent = "Create Local Vault";
+        } else {
+            emailGroup?.classList.remove('hidden');
+            emailInput.setAttribute('required', 'required');
+            if (passLabel) passLabel.textContent = "Master Password";
+            if (passInput) passInput.placeholder = "Min 8 characters";
+            if (isLocalInput) isLocalInput.value = 'false';
+            if (toggleBtn) toggleBtn.textContent = "Stay Offline (Local Only)";
+            if (toggleText) toggleText.firstChild!.textContent = "Privacy First? ";
+            if (submitBtn) submitBtn.textContent = "Create Vault";
+        }
+    }
+
     btnBack?.addEventListener('click', () => {
         if (!boxSignup.classList.contains('hidden')) {
             switchState(boxSignup, boxLogin);
             btnBack.classList.add('hidden');
+            setLocalMode(false); // Reset to online by default
         } else if (!boxVerify.classList.contains('hidden')) {
             switchState(boxVerify, boxLogin);
             btnBack.classList.add('hidden');
@@ -170,22 +213,43 @@ export async function setupAuthUI() {
             return;
         }
 
-        setAuthLoading(true, "Creating Vault...");
+        const isLocal = (document.getElementById('signup-is-local') as HTMLInputElement).value === 'true';
+
+        setAuthLoading(true, isLocal ? "Creating Local Vault..." : "Creating Vault...");
         try {
-            const result = await (window as any).api.signup(user, email, pass);
-            if (result.success) {
-                switchState(boxSignup, boxVerify);
-                (document.getElementById('verify-email-field') as HTMLInputElement).value = email;
-                if (result.code) showSimulationToast(result.code);
-                startResendTimer();
+            if (isLocal) {
+                const result = await (window as any).api.signupLocal(user, pass);
+                if (result.success) {
+                    // Local accounts go straight to login or can we auto-login?
+                    // signupLocal returns success: true. We usually want them to login to confirm password.
+                    switchState(boxSignup, boxLogin);
+                    (document.getElementById('login-username') as HTMLInputElement).value = user;
+                    const loginErr = document.getElementById('login-error')!;
+                    loginErr.textContent = "Local vault created! Please unlock to continue.";
+                    loginErr.style.color = "var(--accent-primary)";
+                    loginErr.style.opacity = '1';
+                } else {
+                    err.textContent = result.message;
+                    err.style.opacity = '1';
+                    void (err as HTMLElement).offsetWidth; 
+                    err.classList.add('animate-shake');
+                }
             } else {
-                err.textContent = result.message;
-                err.style.opacity = '1';
-                void (err as HTMLElement).offsetWidth; 
-                err.classList.add('animate-shake');
+                const result = await (window as any).api.signup(user, email, pass);
+                if (result.success) {
+                    switchState(boxSignup, boxVerify);
+                    (document.getElementById('verify-email-field') as HTMLInputElement).value = email;
+                    if (result.code) showSimulationToast(result.code);
+                    startResendTimer();
+                } else {
+                    err.textContent = result.message;
+                    err.style.opacity = '1';
+                    void (err as HTMLElement).offsetWidth; 
+                    err.classList.add('animate-shake');
+                }
             }
         } catch (error: any) {
-            err.textContent = "Registration failed.";
+            err.textContent = isLocal ? "Local setup failed." : "Registration failed.";
             err.style.opacity = '1';
             err.classList.add('animate-shake');
         } finally {

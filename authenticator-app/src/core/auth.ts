@@ -40,7 +40,8 @@ export function getCurrentUser() {
         pendingPhone: currentUser.pendingPhone,
         settings: currentUser["Desktop Settings"],
         autolock: currentUser.autolock,
-        profilePicture: currentUser.profilePicture
+        profilePicture: currentUser.profilePicture,
+        isLocal: !!currentUser.isLocal
     };
 }
 
@@ -115,6 +116,36 @@ export async function signup(username: string, email: string, password: string):
     deliverActivationCode(email, activationCode);
 
     return { success: true, message: "Account created. Check your email.", code: activationCode };
+}
+
+export async function signupLocal(username: string, key: string): Promise<{ success: boolean, message: string }> {
+    const users = await getUsers();
+    if (users.find(u => u.username === username)) {
+        return { success: false, message: "Username already exists." };
+    }
+
+    const { hash, salt } = hashPassword(key);
+    
+    const initialKey = deriveKey(key, salt);
+    const emptyVault: AuthenticatorAccount[] = [];
+    const encryptedVaultData = encryptVault(JSON.stringify(emptyVault), initialKey);
+
+    const newUser: UserRecord = {
+        id: crypto.randomUUID(),
+        username,
+        email: 'local@keyra.offline',
+        hash,
+        salt,
+        isActivated: true, // Auto-activated for local
+        isLocal: true,
+        encryptedVaultData,
+        autolock: '0'
+    };
+
+    users.push(newUser);
+    await saveUsers(users);
+
+    return { success: true, message: "Local account created successfully!" };
 }
 
 export async function resendCode(email: string): Promise<{ success: boolean, message: string, code?: string }> {
@@ -213,24 +244,29 @@ export async function login(username: string, password: string): Promise<{ succe
     }
 
     // 2. Cloud First Approach
-    try {
-        const cloudData = await getUserData(resolvedUsername);
-        if (cloudData) {
-            user = cloudData;
-            cloudFetchSuccess = true;
-            
-            // Proactively update local cache with fresh cloud data
-            const localIdx = localUsers.findIndex(u => u.username === resolvedUsername);
-            if (localIdx !== -1) {
-                localUsers[localIdx] = cloudData;
-            } else {
-                localUsers.push(cloudData);
+        // Detect if this is a local user first to avoid unnecessary cloud attempts
+        const isLocalUser = localUsers.find(u => u.username === resolvedUsername)?.isLocal;
+
+        if (!isLocalUser) {
+            try {
+                const cloudData = await getUserData(resolvedUsername);
+                if (cloudData) {
+                    user = cloudData;
+                    cloudFetchSuccess = true;
+                    
+                    // Proactively update local cache with fresh cloud data
+                    const localIdx = localUsers.findIndex(u => u.username === resolvedUsername);
+                    if (localIdx !== -1) {
+                        localUsers[localIdx] = cloudData;
+                    } else {
+                        localUsers.push(cloudData);
+                    }
+                    await saveUsers(localUsers);
+                }
+            } catch (err: any) {
+                console.warn("Cloud login fetch failed, will attempt local fallback:", err.message);
             }
-            await saveUsers(localUsers);
         }
-    } catch (err: any) {
-        console.warn("Cloud login fetch failed, will attempt local fallback:", err.message);
-    }
 
     // 3. Local Fallback (if cloud failed or user not found in cloud)
     if (!user) {
@@ -716,6 +752,7 @@ export function clearPinResetCode(): void {
 
 export async function pollForUpdates(): Promise<{ changed: boolean, settings?: any, accounts?: AuthenticatorAccount[] }> {
     if (!currentUser || !currentKey) return { changed: false };
+    if (currentUser.isLocal) return { changed: false }; // BYPASS CLOUD UPDATES FOR LOCAL USERS
 
     const result = await pollCloudUpdates(currentUser.username);
     

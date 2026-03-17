@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('api', {
     // Auth System
     logToMain: (msg: string) => ipcRenderer.send('log-to-main', msg),
     signup: (user: string, email: string, pass: string) => ipcRenderer.invoke('signup', user, email, pass),
+    signupLocal: (user: string, pass: string) => ipcRenderer.invoke('signup-local', user, pass),
     resendCode: (email: string) => ipcRenderer.invoke('resend-code', email),
     verifyEmail: (email: string, code: string) => ipcRenderer.invoke('verify-email', email, code),
     login: (user: string, pass: string) => ipcRenderer.invoke('login', user, pass),
