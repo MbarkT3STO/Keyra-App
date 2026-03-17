@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('api', {
     getWaStatus: () => ipcRenderer.invoke('get-wa-status'),
     logoutWhatsApp: () => ipcRenderer.invoke('logout-whatsapp'),
     removePhone: () => ipcRenderer.invoke('remove-phone'),
+    verifyMasterPassword: (password: string) => ipcRenderer.invoke('verify-master-password', password),
     verifyPhoneByWhatsAppMatch: (waNumber: string) => ipcRenderer.invoke('verify-phone-wa-match', waNumber),
     onWaInitializing: (callback: () => void) => {
         ipcRenderer.removeAllListeners('wa-initializing');

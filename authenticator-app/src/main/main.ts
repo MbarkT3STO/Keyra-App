@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, globalShortcut, screen, desktopCapturer, Menu, Tray, nativeImage } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
-import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates, changeUsername, changePassword, requestEmailChange, confirmEmailChange, resendEmailChangeCode, cancelEmailChange, requestPhoneVerification, removePhone, verifyPhoneByWhatsAppMatch } from '../core/auth';
+import { signup, resendCode, verifyEmail, login, logout, getCurrentUser, getActiveAccounts, saveActiveAccounts, updateUserSettings, checkSession, getBackupData, importVaultData, pollForUpdates, changeUsername, changePassword, requestEmailChange, confirmEmailChange, resendEmailChangeCode, cancelEmailChange, requestPhoneVerification, removePhone, verifyPhoneByWhatsAppMatch, verifyMasterPassword } from '../core/auth';
 import { service } from '../core/notifier';
 import { generateTOTP, getRemainingSeconds, getBatchOTPs } from '../core/totp';
 import * as fs from 'fs';
@@ -127,6 +127,7 @@ ipcMain.handle('cancel-email-change', () => cancelEmailChange());
 ipcMain.handle('request-phone-verification', (event, phone) => requestPhoneVerification(phone));
 ipcMain.handle('remove-phone', () => removePhone()),
 ipcMain.handle('verify-phone-wa-match', (_event, waNumber) => verifyPhoneByWhatsAppMatch(waNumber)),
+ipcMain.handle('verify-master-password', (_event, password) => verifyMasterPassword(password)),
 ipcMain.handle('logout-whatsapp', () => service.logoutWhatsApp()),
 ipcMain.handle('start-whatsapp-linking', () => service.ensureWhatsAppStarted()),
 

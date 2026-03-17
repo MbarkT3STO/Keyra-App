@@ -639,6 +639,16 @@ export async function verifyPhoneByWhatsAppMatch(waNumber: string): Promise<{ su
     return { success: false, message: "WhatsApp number does not match entered phone." };
 }
 
+export async function verifyMasterPassword(password: string): Promise<{ success: boolean, message: string }> {
+    if (!currentUser) return { success: false, message: "No active user session." };
+    
+    if (!verifyPassword(password, currentUser.hash, currentUser.salt)) {
+        return { success: false, message: "Incorrect password. Please try again." };
+    }
+    
+    return { success: true, message: "Password verified successfully." };
+}
+
 export async function pollForUpdates(): Promise<{ changed: boolean, settings?: any, accounts?: AuthenticatorAccount[] }> {
     if (!currentUser || !currentKey) return { changed: false };
 

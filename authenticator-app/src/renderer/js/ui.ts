@@ -2776,26 +2776,112 @@ export class UIManager {
             return;
         }
 
+        // Reset modal state
+        const passwordInput = document.getElementById('forgot-pin-password') as HTMLInputElement;
+        const errorEl = document.getElementById('forgot-pin-error');
+        if (passwordInput) passwordInput.value = '';
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.classList.add('hidden');
+        }
+
         modal.classList.remove('hidden');
         modal.classList.add('show');
-        modal.style.zIndex = "99999"; // Ensure it's on top of EVERYTHING
+        modal.style.zIndex = "99999";
 
-        document.getElementById('confirm-forgot-pin-btn')?.addEventListener('click', async () => {
-            this.setLoading(true, "Signing Out", "RESETTING PIN SESSION");
+        // Focus on password input
+        setTimeout(() => passwordInput?.focus(), 100);
+
+        const showError = (msg: string) => {
+            const err = document.getElementById('forgot-pin-error');
+            if (err) {
+                err.textContent = msg;
+                err.classList.remove('hidden');
+            }
+        };
+
+        const hideError = () => {
+            const err = document.getElementById('forgot-pin-error');
+            if (err) {
+                err.textContent = '';
+                err.classList.add('hidden');
+            }
+        };
+
+        const confirmHandler = async (e?: Event) => {
+            e?.preventDefault();
+            const passInput = document.getElementById('forgot-pin-password') as HTMLInputElement;
+            const password = passInput?.value || '';
+            
+            hideError();
+            
+            if (!password) {
+                showError('Please enter your master password.');
+                passInput?.focus();
+                return;
+            }
+
+            this.setLoading(true, "Verifying Identity", "CHECKING MASTER PASSWORD");
             try {
+                const verifyResult = await (window as any).api.verifyMasterPassword(password);
+                
+                if (!verifyResult.success) {
+                    this.setLoading(false);
+                    showError(verifyResult.message || 'Incorrect password.');
+                    passInput?.select();
+                    return;
+                }
+
+                this.setLoading(true, "Resetting Security", "REMOVING PIN & SYNCING");
+                
+                localStorage.removeItem(this.getStorageKey('vault_pin'));
+                await this.pushSettings();
+                this.updateLockVaultVisibility();
+                this.updatePinStatus();
+                
+                modal.classList.remove('show');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+                
+                this.setLoading(true, "Signing Out", "RETURNING TO LOGIN");
                 await (window as any).api.logout();
                 window.location.reload();
             } catch (err) {
                 this.setLoading(false);
-                this.showToast("Logout failed", "error");
+                showError('An error occurred. Please try again.');
+                console.error("[UI] Forgot PIN reset error:", err);
             }
-        }, { once: true });
+        };
 
-        document.getElementById('cancel-forgot-pin-btn')?.addEventListener('click', () => {
+        const cancelHandler = () => {
             modal.classList.remove('show');
             setTimeout(() => modal.classList.add('hidden'), 300);
             const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
             pinIn?.focus();
-        }, { once: true });
+        };
+
+        // Remove old listeners by cloning elements
+        const confirmBtn = document.getElementById('confirm-forgot-pin-btn');
+        const cancelBtn = document.getElementById('cancel-forgot-pin-btn');
+        const form = document.getElementById('form-forgot-pin');
+        
+        if (confirmBtn) {
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode?.replaceChild(newBtn, confirmBtn);
+            newBtn.addEventListener('click', confirmHandler);
+        }
+        
+        if (cancelBtn) {
+            const newBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode?.replaceChild(newBtn, cancelBtn);
+            newBtn.addEventListener('click', cancelHandler);
+        }
+
+        if (form) {
+            const newForm = form.cloneNode(true);
+            form.parentNode?.replaceChild(newForm, form);
+            newForm.addEventListener('submit', confirmHandler);
+            // Re-focus after clone
+            setTimeout(() => (document.getElementById('forgot-pin-password') as HTMLInputElement)?.focus(), 150);
+        }
     }
 }
