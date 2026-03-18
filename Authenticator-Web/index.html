@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,10 +9,12 @@
     <!-- Google Fonts: Inter and JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap"
+        rel="stylesheet">
+
     <!-- Lucide Icons moved to bottom for performance -->
-    
+
     <!-- CSS Architecture -->
     <link rel="stylesheet" href="/src/css/themes.css">
     <link rel="stylesheet" href="/src/css/neumorphism.css">
@@ -19,6 +22,7 @@
     <link rel="stylesheet" href="/src/css/components.css">
     <link rel="stylesheet" href="/src/css/animations.css">
 </head>
+
 <body>
     <!-- Premium Splash Screen Overlay -->
     <div id="splash-screen" class="splash-screen">
@@ -62,11 +66,18 @@
                         <label class="form-label">Master Key</label>
                         <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; height: 60px; font-size: 17px; border-radius: var(--radius-lg);">Unlock Vault</button>
-                    <div id="login-error" style="color: #ff3b30; font-size: 14px; margin-top: 20px; text-align: center; opacity: 0; font-weight: 800;"></div>
+                    <button type="submit" class="btn-primary"
+                        style="width: 100%; height: 60px; font-size: 17px; border-radius: var(--radius-lg);">Unlock
+                        Vault</button>
+                    <div id="login-error"
+                        style="color: #ff3b30; font-size: 14px; margin-top: 20px; text-align: center; opacity: 0; font-weight: 800;">
+                    </div>
                 </form>
                 <div style="text-align: center; margin-top: 32px;">
-                    <p style="font-size: 15px; color: var(--text-secondary); font-weight: 600;">First time? <button id="btn-show-signup" style="color: var(--accent-primary); font-weight: 900; background: none; border: none; padding: 0; cursor: pointer;">Create your Vault</button></p>
+                    <p style="font-size: 15px; color: var(--text-secondary); font-weight: 600;">First time? <button
+                            id="btn-show-signup"
+                            style="color: var(--accent-primary); font-weight: 900; background: none; border: none; padding: 0; cursor: pointer;">Create
+                            your Vault</button></p>
                 </div>
             </div>
 
@@ -83,13 +94,20 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Master Password</label>
-                        <input type="password" id="signup-password" class="form-input" placeholder="Min 8 characters" required>
+                        <input type="password" id="signup-password" class="form-input" placeholder="Min 8 characters"
+                            required>
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; height: 60px; border-radius: var(--radius-lg);">Create Vault</button>
-                    <div id="signup-error" style="color: #ff3b30; font-size: 13px; margin-top: 16px; text-align: center; opacity: 0; font-weight: 700;"></div>
+                    <button type="submit" class="btn-primary"
+                        style="width: 100%; height: 60px; border-radius: var(--radius-lg);">Create Vault</button>
+                    <div id="signup-error"
+                        style="color: #ff3b30; font-size: 13px; margin-top: 16px; text-align: center; opacity: 0; font-weight: 700;">
+                    </div>
                 </form>
                 <div style="text-align: center; margin-top: 32px;">
-                    <p style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Already have a vault? <button id="btn-show-login" style="color: var(--accent-primary); font-weight: 800; background: none; border: none; padding: 0; cursor: pointer;">Sign In</button></p>
+                    <p style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Already have a vault?
+                        <button id="btn-show-login"
+                            style="color: var(--accent-primary); font-weight: 800; background: none; border: none; padding: 0; cursor: pointer;">Sign
+                            In</button></p>
                 </div>
             </div>
 
@@ -97,11 +115,13 @@
             <div id="auth-verify-box" class="auth-state-transition hidden">
                 <div style="text-align: center; margin-bottom: 32px;">
                     <h2 style="font-size: 26px; font-weight: 850; margin-bottom: 12px;">Verify it's You</h2>
-                    <p style="color: var(--text-secondary); font-size: 15px;">Enter the 6-digit code we sent to your email.</p>
+                    <p style="color: var(--text-secondary); font-size: 15px;">Enter the 6-digit code we sent to your
+                        email.</p>
                 </div>
                 <form id="form-verify">
                     <input type="hidden" id="verify-email-field">
-                    <div style="display: flex; gap: clamp(6px, 2vw, 12px); justify-content: center; margin-bottom: 32px;">
+                    <div
+                        style="display: flex; gap: clamp(6px, 2vw, 12px); justify-content: center; margin-bottom: 32px;">
                         <input type="text" maxlength="1" class="verify-digit form-input">
                         <input type="text" maxlength="1" class="verify-digit form-input">
                         <input type="text" maxlength="1" class="verify-digit form-input">
@@ -109,12 +129,19 @@
                         <input type="text" maxlength="1" class="verify-digit form-input">
                         <input type="text" maxlength="1" class="verify-digit form-input">
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; height: 60px; border-radius: var(--radius-lg);">Unlock</button>
-                    <div id="verify-error" style="color: #ff3b30; font-size: 13px; margin-top: 16px; text-align: center; opacity: 0; font-weight: 700;"></div>
+                    <button type="submit" class="btn-primary"
+                        style="width: 100%; height: 60px; border-radius: var(--radius-lg);">Unlock</button>
+                    <div id="verify-error"
+                        style="color: #ff3b30; font-size: 13px; margin-top: 16px; text-align: center; opacity: 0; font-weight: 700;">
+                    </div>
                 </form>
                 <div style="text-align: center; margin-top: 32px; display: flex; flex-direction: column; gap: 16px;">
-                    <button id="btn-resend-code" style="color: var(--accent-primary); font-weight: 800; font-size: 14px; background: none; border: none; padding: 0; cursor: pointer;">Resend Code <span id="resend-timer" style="font-weight: 400; opacity: 0.6;"></span></button>
-                    <button id="btn-show-login-from-verify" style="color: var(--text-secondary); font-weight: 700; font-size: 13px; background: none; border: none; padding: 0; cursor: pointer; opacity: 0.7;">Back to Login</button>
+                    <button id="btn-resend-code"
+                        style="color: var(--accent-primary); font-weight: 800; font-size: 14px; background: none; border: none; padding: 0; cursor: pointer;">Resend
+                        Code <span id="resend-timer" style="font-weight: 400; opacity: 0.6;"></span></button>
+                    <button id="btn-show-login-from-verify"
+                        style="color: var(--text-secondary); font-weight: 700; font-size: 13px; background: none; border: none; padding: 0; cursor: pointer; opacity: 0.7;">Back
+                        to Login</button>
                 </div>
             </div>
         </div>
@@ -142,7 +169,7 @@
                         <span class="brand-text">Keyra</span>
                     </div>
                 </div>
-                
+
                 <div class="navbar-section navbar-center">
                     <nav class="nav-tabs">
                         <button class="nav-tab active" data-tab="vault">
@@ -155,7 +182,7 @@
                         </button>
                     </nav>
                 </div>
-                
+
                 <div class="navbar-section navbar-right">
                     <div class="user-menu">
                         <button class="user-button" id="user-dropdown-btn">
@@ -163,7 +190,7 @@
                             <span class="user-name" id="user-name-display">User</span>
                             <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
                         </button>
-                        
+
                         <div class="dropdown-menu" id="user-dropdown">
                             <div class="dropdown-item" id="account-settings-btn">
                                 <i data-lucide="user" style="width: 18px; height: 18px;"></i>
@@ -198,10 +225,11 @@
                         <h1 class="section-title">My Vault</h1>
                         <p class="section-subtitle">YOUR SAVED ACCOUNTS</p>
                     </div>
-                    
+
                     <div class="search-vessel">
                         <i data-lucide="search" class="search-icon"></i>
-                        <input type="text" id="vault-search" class="form-input search-input" placeholder="Search your accounts...">
+                        <input type="text" id="vault-search" class="form-input search-input"
+                            placeholder="Search your accounts...">
                     </div>
 
                     <button class="btn-primary" id="add-account-btn">
@@ -209,20 +237,25 @@
                         <span>Add Account</span>
                     </button>
                 </div>
-                
+
                 <div class="accounts-grid" id="accounts-grid">
                     <!-- Cards dynamically inserted by JS -->
                 </div>
-                
+
                 <!-- Empty State (No accounts at all) -->
                 <div id="empty-state" class="hidden">
                     <div class="empty-state-vessel">
-                        <div class="nm-icon-large" style="margin: 0 auto 32px; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg-primary); box-shadow: var(--nm-out);">
-                            <i data-lucide="fingerprint" style="width: 60px; height: 60px; color: var(--accent-primary);"></i>
+                        <div class="nm-icon-large"
+                            style="margin: 0 auto 32px; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg-primary); box-shadow: var(--nm-out);">
+                            <i data-lucide="fingerprint"
+                                style="width: 60px; height: 60px; color: var(--accent-primary);"></i>
                         </div>
                         <h2 style="font-weight: 900; font-size: 28px; margin-bottom: 12px;">Your Vault is Empty</h2>
-                        <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto 32px; font-weight: 500;">Add your first account to get started.</p>
-                        <button class="btn-primary" id="empty-add-btn" style="padding: 0 48px; min-width: 240px; height: var(--btn-h-lg);">
+                        <p
+                            style="color: var(--text-secondary); max-width: 400px; margin: 0 auto 32px; font-weight: 500;">
+                            Add your first account to get started.</p>
+                        <button class="btn-primary" id="empty-add-btn"
+                            style="padding: 0 48px; min-width: 240px; height: var(--btn-h-lg);">
                             <i data-lucide="plus" style="width: 24px; height: 24px;"></i>
                             <span>Add Account</span>
                         </button>
@@ -232,13 +265,18 @@
                 <!-- Search Empty State (No matches found) -->
                 <div id="search-empty-state" class="hidden" style="padding: 40px 20px; text-align: center;">
                     <div class="empty-state-vessel" style="animation: fadeUp 0.6s ease-out;">
-                        <div class="nm-icon-large" style="margin: 0 auto 32px; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; background: var(--bg-primary); box-shadow: var(--nm-out); color: var(--text-secondary); opacity: 0.6;">
+                        <div class="nm-icon-large"
+                            style="margin: 0 auto 32px; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; background: var(--bg-primary); box-shadow: var(--nm-out); color: var(--text-secondary); opacity: 0.6;">
                             <i data-lucide="search-x" style="width: 48px; height: 48px;"></i>
                         </div>
-                        <h2 style="font-weight: 900; font-size: 24px; color: var(--text-primary); margin-bottom: 8px;">No Results Found</h2>
-                        <p style="color: var(--text-secondary); font-weight: 500; font-size: 16px;">We couldn't find what you're looking for. Try a different search.</p>
+                        <h2 style="font-weight: 900; font-size: 24px; color: var(--text-primary); margin-bottom: 8px;">
+                            No Results Found</h2>
+                        <p style="color: var(--text-secondary); font-weight: 500; font-size: 16px;">We couldn't find
+                            what you're looking for. Try a different search.</p>
                         <div style="margin-top: 32px;">
-                            <button class="user-button" onclick="document.getElementById('vault-search').value = ''; document.getElementById('vault-search').dispatchEvent(new Event('input'));" style="padding: 0 32px; height: 48px; font-weight: 700;">Clear Filter</button>
+                            <button class="user-button"
+                                onclick="document.getElementById('vault-search').value = ''; document.getElementById('vault-search').dispatchEvent(new Event('input'));"
+                                style="padding: 0 32px; height: 48px; font-weight: 700;">Clear Filter</button>
                         </div>
                     </div>
                 </div>
@@ -273,73 +311,92 @@
                                 </div>
                                 <div class="accent-color-compact">
                                     <button class="accent-color-toggle" id="accent-color-toggle">
-                                        <div class="current-accent" id="current-accent" style="background: hsl(258, 100%, 68%);"></div>
+                                        <div class="current-accent" id="current-accent"
+                                            style="background: hsl(258, 100%, 68%);"></div>
                                         <span class="accent-label">Royal Purple</span>
                                         <i data-lucide="chevron-down" class="accent-chevron"></i>
                                     </button>
                                     <div class="accent-dropdown" id="accent-dropdown">
                                         <div class="accent-grid-compact">
                                             <!-- Main Colors -->
-                                            <button class="accent-item active" data-accent="royal-purple" style="background: hsl(258, 100%, 68%);" title="Royal Purple">
+                                            <button class="accent-item active" data-accent="royal-purple"
+                                                style="background: hsl(258, 100%, 68%);" title="Royal Purple">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="electric-blue" style="background: hsl(200, 100%, 68%);" title="Electric Blue">
+                                            <button class="accent-item" data-accent="electric-blue"
+                                                style="background: hsl(200, 100%, 68%);" title="Electric Blue">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="emerald-green" style="background: hsl(145, 100%, 68%);" title="Emerald Green">
+                                            <button class="accent-item" data-accent="emerald-green"
+                                                style="background: hsl(145, 100%, 68%);" title="Emerald Green">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="solar-orange" style="background: hsl(15, 100%, 68%);" title="Solar Orange">
+                                            <button class="accent-item" data-accent="solar-orange"
+                                                style="background: hsl(15, 100%, 68%);" title="Solar Orange">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            
+
                                             <!-- Cute Colors -->
-                                            <button class="accent-item" data-accent="rose-quartz" style="background: hsl(330, 100%, 68%);" title="Rose Quartz">
+                                            <button class="accent-item" data-accent="rose-quartz"
+                                                style="background: hsl(330, 100%, 68%);" title="Rose Quartz">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="peach-blossom" style="background: hsl(20, 100%, 68%);" title="Peach Blossom">
+                                            <button class="accent-item" data-accent="peach-blossom"
+                                                style="background: hsl(20, 100%, 68%);" title="Peach Blossom">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="lavender-dream" style="background: hsl(270, 100%, 68%);" title="Lavender Dream">
+                                            <button class="accent-item" data-accent="lavender-dream"
+                                                style="background: hsl(270, 100%, 68%);" title="Lavender Dream">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="bubblegum" style="background: hsl(320, 100%, 68%);" title="Bubblegum">
+                                            <button class="accent-item" data-accent="bubblegum"
+                                                style="background: hsl(320, 100%, 68%);" title="Bubblegum">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            
+
                                             <!-- Modern Colors -->
-                                            <button class="accent-item" data-accent="sky-blue" style="background: hsl(190, 100%, 68%);" title="Sky Blue">
+                                            <button class="accent-item" data-accent="sky-blue"
+                                                style="background: hsl(190, 100%, 68%);" title="Sky Blue">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="coral-sunset" style="background: hsl(10, 100%, 68%);" title="Coral Sunset">
+                                            <button class="accent-item" data-accent="coral-sunset"
+                                                style="background: hsl(10, 100%, 68%);" title="Coral Sunset">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="lemon-zest" style="background: hsl(45, 100%, 68%);" title="Lemon Zest">
+                                            <button class="accent-item" data-accent="lemon-zest"
+                                                style="background: hsl(45, 100%, 68%);" title="Lemon Zest">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="ocean-teal" style="background: hsl(175, 100%, 68%);" title="Ocean Teal">
+                                            <button class="accent-item" data-accent="ocean-teal"
+                                                style="background: hsl(175, 100%, 68%);" title="Ocean Teal">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            
+
                                             <!-- Elegant Colors -->
-                                            <button class="accent-item" data-accent="amethyst-glow" style="background: hsl(280, 100%, 68%);" title="Amethyst Glow">
+                                            <button class="accent-item" data-accent="amethyst-glow"
+                                                style="background: hsl(280, 100%, 68%);" title="Amethyst Glow">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="sage-serene" style="background: hsl(150, 100%, 68%);" title="Sage Serene">
+                                            <button class="accent-item" data-accent="sage-serene"
+                                                style="background: hsl(150, 100%, 68%);" title="Sage Serene">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="golden-hour" style="background: hsl(35, 100%, 68%);" title="Golden Hour">
+                                            <button class="accent-item" data-accent="golden-hour"
+                                                style="background: hsl(35, 100%, 68%);" title="Golden Hour">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="orchid-mystic" style="background: hsl(300, 100%, 68%);" title="Orchid Mystic">
+                                            <button class="accent-item" data-accent="orchid-mystic"
+                                                style="background: hsl(300, 100%, 68%);" title="Orchid Mystic">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            
+
                                             <!-- Additional Colors -->
-                                            <button class="accent-item" data-accent="mint-fresh" style="background: hsl(160, 100%, 68%);" title="Mint Fresh">
+                                            <button class="accent-item" data-accent="mint-fresh"
+                                                style="background: hsl(160, 100%, 68%);" title="Mint Fresh">
                                                 <span class="accent-check">✓</span>
                                             </button>
-                                            <button class="accent-item" data-accent="turquoise-dream" style="background: hsl(180, 100%, 68%);" title="Turquoise Dream">
+                                            <button class="accent-item" data-accent="turquoise-dream"
+                                                style="background: hsl(180, 100%, 68%);" title="Turquoise Dream">
                                                 <span class="accent-check">✓</span>
                                             </button>
                                         </div>
@@ -379,8 +436,11 @@
                                     <div class="setting-desc">A 4-digit code to unlock the app</div>
                                 </div>
                                 <div style="display: flex; gap: 8px;">
-                                    <button class="user-button" id="setup-pin-btn" style="min-width: 100px; justify-content: center;">Setup PIN</button>
-                                    <button class="user-button danger" id="remove-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Remove PIN</button>
+                                    <button class="user-button" id="setup-pin-btn"
+                                        style="min-width: 100px; justify-content: center;">Setup PIN</button>
+                                    <button class="user-button danger" id="remove-pin-btn"
+                                        style="min-width: 100px; justify-content: center; display: none;">Remove
+                                        PIN</button>
                                 </div>
                             </div>
                             <div class="setting-row">
@@ -445,8 +505,10 @@
                                     <span>Sync Now</span>
                                 </button>
                             </div>
-                            <div style="margin-top: 16px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5;">
-                                <i data-lucide="alert-circle" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>
+                            <div
+                                style="margin-top: 16px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5;">
+                                <i data-lucide="alert-circle"
+                                    style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>
                                 Backups are protected by your master password.
                             </div>
                         </div>
@@ -469,14 +531,17 @@
                                     <div class="setting-name">System Version</div>
                                     <div class="setting-desc">Stable v1.0.0-PRO</div>
                                 </div>
-                                <div class="badge" style="background: var(--bg-primary); box-shadow: var(--nm-pressed); color: var(--text-secondary); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">LATEST</div>
+                                <div class="badge"
+                                    style="background: var(--bg-primary); box-shadow: var(--nm-pressed); color: var(--text-secondary); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">
+                                    LATEST</div>
                             </div>
                             <div class="setting-row">
                                 <div class="setting-info">
                                     <div class="setting-name">Last Activity</div>
                                     <div class="setting-desc" id="last-action-display">No activity</div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; font-weight: 700;">
+                                <div
+                                    style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; font-weight: 700;">
                                     <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
                                     <span id="last-activity-display">Never</span>
                                 </div>
@@ -486,7 +551,8 @@
                                     <div class="setting-name">Cloud Sync Status</div>
                                     <div class="setting-desc" id="cloud-status-display">Connected</div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--success); font-size: 13px; font-weight: 700;">
+                                <div
+                                    style="display: flex; align-items: center; gap: 6px; color: var(--success); font-size: 13px; font-weight: 700;">
                                     <i data-lucide="cloud" style="width: 16px; height: 16px;"></i>
                                     <span>Active</span>
                                 </div>
@@ -531,21 +597,26 @@
                                 </div>
                             </div>
                             <div id="pending-email-container" class="hidden">
-                                <div class="setting-row" style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--bg-secondary);">
+                                <div class="setting-row"
+                                    style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--bg-secondary);">
                                     <div class="setting-info">
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                             <div class="setting-name" style="margin-bottom: 0;">Pending Change</div>
-                                            <div class="badge" style="background: hsla(20, 100%, 65%, 0.1); color: #ff9500; border: 1px solid hsla(20, 100%, 65%, 0.2); font-weight: 800; font-size: 9px; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">not confirmed yet</div>
+                                            <div class="badge"
+                                                style="background: hsla(20, 100%, 65%, 0.1); color: #ff9500; border: 1px solid hsla(20, 100%, 65%, 0.2); font-weight: 800; font-size: 9px; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">
+                                                not confirmed yet</div>
                                         </div>
                                         <div class="setting-desc" id="acc-display-pending-email">new@domain.com</div>
                                     </div>
                                     <div style="display: flex; gap: 8px;">
-                                        <button class="btn-icon" id="btn-remove-pending-email" title="Cancel Change" style="width: 32px; height: 32px; color: var(--text-secondary);">
+                                        <button class="btn-icon" id="btn-remove-pending-email" title="Cancel Change"
+                                            style="width: 32px; height: 32px; color: var(--text-secondary);">
                                             <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <button class="btn-primary" id="btn-verify-new-email" style="width: 100%; margin-top: 12px; height: 44px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <button class="btn-primary" id="btn-verify-new-email"
+                                    style="width: 100%; margin-top: 12px; height: 44px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                     <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
                                     Verify & Activate
                                 </button>
@@ -568,9 +639,12 @@
                             <form id="form-change-name">
                                 <div class="form-group">
                                     <label class="form-label">New Full Name</label>
-                                    <input type="text" id="change-name-input" class="form-input" placeholder="Enter new name" required>
+                                    <input type="text" id="change-name-input" class="form-input"
+                                        placeholder="Enter new name" required>
                                 </div>
-                                <button type="submit" class="btn-primary" style="width: 100%; height: 50px; border-radius: var(--radius-md);">Update Name</button>
+                                <button type="submit" class="btn-primary"
+                                    style="width: 100%; height: 50px; border-radius: var(--radius-md);">Update
+                                    Name</button>
                             </form>
                         </div>
                     </div>
@@ -590,9 +664,12 @@
                             <form id="form-change-email">
                                 <div class="form-group">
                                     <label class="form-label">New Email Address</label>
-                                    <input type="email" id="change-email-input" class="form-input" placeholder="new@domain.com" required>
+                                    <input type="email" id="change-email-input" class="form-input"
+                                        placeholder="new@domain.com" required>
                                 </div>
-                                <button type="submit" class="btn-primary" style="width: 100%; height: 50px; border-radius: var(--radius-md);">Change Email</button>
+                                <button type="submit" class="btn-primary"
+                                    style="width: 100%; height: 50px; border-radius: var(--radius-md);">Change
+                                    Email</button>
                             </form>
                         </div>
                     </div>
@@ -612,16 +689,22 @@
                             <form id="form-change-password">
                                 <div class="form-group">
                                     <label class="form-label">New Master Password</label>
-                                    <input type="password" id="change-pass-input" class="form-input" placeholder="Min 8 characters" required>
+                                    <input type="password" id="change-pass-input" class="form-input"
+                                        placeholder="Min 8 characters" required>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Confirm New Password</label>
-                                    <input type="password" id="change-pass-confirm" class="form-input" placeholder="Repeat password" required>
+                                    <input type="password" id="change-pass-confirm" class="form-input"
+                                        placeholder="Repeat password" required>
                                 </div>
-                                <button type="submit" class="btn-primary" style="width: 100%; height: 50px; border-radius: var(--radius-md);">Update Master Key</button>
+                                <button type="submit" class="btn-primary"
+                                    style="width: 100%; height: 50px; border-radius: var(--radius-md);">Update Master
+                                    Key</button>
                             </form>
-                            <div style="margin-top: 16px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5; color: #ff3b30;">
-                                <i data-lucide="alert-triangle" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>
+                            <div
+                                style="margin-top: 16px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5; color: #ff3b30;">
+                                <i data-lucide="alert-triangle"
+                                    style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>
                                 Changing your password will re-encrypt your entire vault.
                             </div>
                         </div>
@@ -641,11 +724,15 @@
                 <div style="margin-bottom: 24px; color: #ff3b30;">
                     <i data-lucide="log-out" style="width: 64px; height: 64px;"></i>
                 </div>
-                <h2 style="margin-bottom: 12px; font-weight: 850; font-size: 26px; color: var(--text-primary);">Sign Out?</h2>
-                <div class="modal-help-text" style="font-size: 16px; margin-bottom: 40px;">YOUR VAULT WILL BE LOCKED</div>
+                <h2 style="margin-bottom: 12px; font-weight: 850; font-size: 26px; color: var(--text-primary);">Sign
+                    Out?</h2>
+                <div class="modal-help-text" style="font-size: 16px; margin-bottom: 40px;">YOUR VAULT WILL BE LOCKED
+                </div>
                 <div style="display: flex; gap: 16px;">
-                    <button class="btn-primary" id="btn-confirm-logout" style="flex: 1; height: 56px; background: #ff3b30; box-shadow: 0 8px 24px rgba(255, 59, 48, 0.2);">Sign Out</button>
-                    <button class="user-button" id="btn-cancel-logout" style="flex: 1; justify-content: center; height: 56px;">Discard</button>
+                    <button class="btn-primary danger" id="btn-confirm-logout" style="flex: 1; height: 56px;">Sign
+                        Out</button>
+                    <button class="user-button" id="btn-cancel-logout"
+                        style="flex: 1; justify-content: center; height: 56px;">Discard</button>
                 </div>
             </div>
         </div>
@@ -659,7 +746,7 @@
                         <div class="lock-glow"></div>
                     </div>
                 </div>
-                
+
                 <div class="pin-header">
                     <h2 class="pin-title">Vault Locked</h2>
                     <p class="pin-subtitle">Identity verification required</p>
@@ -675,9 +762,9 @@
                             <div class="pin-dot" data-digit="4"></div>
                         </div>
                     </div>
-                    
+
                     <div class="pin-helper">Secure 4-Digit Master Code</div>
-                    
+
                     <button type="submit" class="btn-primary pin-submit-btn">
                         <i data-lucide="shield-check"></i>
                         Confirm Identity
@@ -687,11 +774,15 @@
         </div>
 
         <!-- Simulation Toast (Dynamic Backup) -->
-        <div id="simulation-toast" class="hidden nm-card" style="position: fixed; top: 24px; right: 24px; z-index: 3000; animation: slideDown 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); max-width: calc(100% - 48px);">
-            <div style="font-size: 14px; font-weight: 850; color: var(--accent-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <div id="simulation-toast" class="hidden nm-card"
+            style="position: fixed; top: 24px; right: 24px; z-index: 3000; animation: slideDown 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); max-width: calc(100% - 48px);">
+            <div
+                style="font-size: 14px; font-weight: 850; color: var(--accent-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="mail" style="width: 20px; height: 20px;"></i> SECURE INBOUND CODE
             </div>
-            <div style="font-size: 16px; font-weight: 600;">Code: <strong id="sim-code" style="color: var(--accent-primary); letter-spacing: 4px; font-size: 26px; font-family: 'JetBrains Mono'; margin-left: 16px;">000000</strong></div>
+            <div style="font-size: 16px; font-weight: 600;">Code: <strong id="sim-code"
+                    style="color: var(--accent-primary); letter-spacing: 4px; font-size: 26px; font-family: 'JetBrains Mono'; margin-left: 16px;">000000</strong>
+            </div>
         </div>
 
         <!-- Privacy Guard Blur Overlay (Web Screen Guardian) -->
@@ -706,7 +797,9 @@
         </div>
 
         <!-- Notification Feed -->
-        <div id="toast-container" style="position: fixed; bottom: clamp(20px, 8vw, 40px); left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; pointer-events: none;"></div>
+        <div id="toast-container"
+            style="position: fixed; bottom: clamp(20px, 8vw, 40px); left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; pointer-events: none;">
+        </div>
     </div>
 
     <!-- Cloud Sync Floating Pill -->
@@ -724,4 +817,5 @@
         });
     </script>
 </body>
+
 </html>

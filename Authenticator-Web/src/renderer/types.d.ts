@@ -7,7 +7,7 @@ interface Window {
         checkSession: () => Promise<any>;
         logout: () => Promise<void>;
         getCurrentUser: () => Promise<any>;
-        
+
         getAccounts: () => Promise<any[]>;
         saveAccount: (account: any) => Promise<void>;
         deleteAccount: (id: string) => Promise<void>;

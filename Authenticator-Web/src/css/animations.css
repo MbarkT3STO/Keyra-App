@@ -47,11 +47,11 @@
     transform: translate(-50%, -80%);
 }
 
-/* Glassmorphism utility */
+/* Neumorphic glass-replacement utility */
 .glass {
-    background: var(--glass-bg);
-    /* backdrop-filter removed for performance */
-    border: 1px solid var(--glass-border);
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
+    border: none;
 }
 
 /* Hover elevation */

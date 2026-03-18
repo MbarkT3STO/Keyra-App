@@ -42,7 +42,7 @@ async function init() {
 
         // 2. Setup UI Components (Now User-Aware)
         (window as any).ui = new UIManager(uid);
-        
+
         if (resumed && hasPin) (window as any).ui.lockVault();
 
         // 5. Initialize Security Logic

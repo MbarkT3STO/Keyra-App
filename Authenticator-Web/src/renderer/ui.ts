@@ -881,7 +881,7 @@ export class UIManager {
         const emptyState = document.getElementById('empty-state');
         const searchEmptyState = document.getElementById('search-empty-state');
         const searchTermSpan = document.getElementById('empty-search-term');
-        
+
         if (!grid || !emptyState || !searchEmptyState) return;
 
         // Filter accounts based on search query
@@ -1136,7 +1136,7 @@ export class UIManager {
 
     private getIcon(issuer: string): string {
         const name = issuer.toLowerCase();
-        
+
         // 1. Precise Brand Mapping (Top Tier)
         const icons: { [key: string]: string } = {
             'google': 'search', 'github': 'github', 'microsoft': 'cloud', 'apple': 'apple',
@@ -1164,28 +1164,28 @@ export class UIManager {
             [/azure|microsoft/i, 'cloud'],
             [/server|host|vps|deploy/i, 'server'],
             [/db|database|mongo|sql|redis/i, 'database'],
-            
+
             // Communication & Social
             [/mail|email|outlook|gmail/i, 'mail'],
             [/chat|message|messenger|slack|discord/i, 'message-square'],
             [/social|network|brand/i, 'share-2'],
-            
+
             // Finance
             [/bank|finance|money|wallet|pay/i, 'wallet'],
             [/crypto|coin|token|eth|btc/i, 'coins'],
             [/card|credit|debit/i, 'credit-card'],
-            
+
             // Security & Dev
             [/auth|security|protect|shield|vault/i, 'shield-check'],
             [/key|password|pass|login|access/i, 'key'],
             [/code|dev|git|build|repo/i, 'code-2'],
             [/api|endpoint|webhook/i, 'webhook'],
-            
+
             // Media & Entertainment
             [/video|movie|tv|stream|netflix|yt|youtube/i, 'video'],
             [/music|audio|song|sound/i, 'music'],
             [/game|play|epic|xbox|psn/i, 'gamepad-2'],
-            
+
             // Business & Identity
             [/shop|store|cart|ebay|buy/i, 'shopping-cart'],
             [/user|account|profile|id/i, 'user'],
@@ -1488,7 +1488,7 @@ export class UIManager {
                 this.showToast("Passwords do not match.", "error");
                 return;
             }
-            
+
             if (pass.length < 8) {
                 this.showToast("Password must be at least 8 characters.", "error");
                 return;
