@@ -94,6 +94,7 @@ export class UIManager {
                 accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
                 privacyMode: this.privacyMode,
                 screenGuardian: this.screenGuardian,
+                vaultViewStyle: this.vaultViewStyle,
                 vaultPin: vPin
             },
             "Web Settings": {
@@ -101,6 +102,7 @@ export class UIManager {
                 accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
                 privacyMode: this.privacyMode,
                 screenGuardian: this.screenGuardian,
+                vaultViewStyle: this.vaultViewStyle,
                 vaultPin: vPin
             }
         };
@@ -160,6 +162,7 @@ export class UIManager {
                 accentColor: localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
                 privacyMode: this.privacyMode,
                 screenGuardian: this.screenGuardian,
+                vaultViewStyle: this.vaultViewStyle,
                 vaultPin: vPin
             }
         };
@@ -188,6 +191,11 @@ export class UIManager {
 
         this.privacyMode = !!settingsToApply.privacyMode;
         this.screenGuardian = !!settingsToApply.screenGuardian;
+        
+        // Apply vault view style
+        if (settingsToApply.vaultViewStyle && ['unified', 'compact', 'secure'].includes(settingsToApply.vaultViewStyle)) {
+            this.vaultViewStyle = settingsToApply.vaultViewStyle;
+        }
 
         // Apply to localStorage if requested (e.g. on initial sync from cloud)
         if (saveLocal || settings.vaultPin !== undefined || settings.autolock !== undefined || settingsToApply.privacyMode !== undefined) {
@@ -196,6 +204,10 @@ export class UIManager {
 
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
+            
+            if (settingsToApply.vaultViewStyle) {
+                localStorage.setItem(this.getStorageKey('vault_view_style'), settingsToApply.vaultViewStyle);
+            }
 
             const finalAutolock = settings.autolock !== undefined ? settings.autolock : settingsToApply.autolock;
             if (finalAutolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(finalAutolock));
@@ -467,6 +479,7 @@ export class UIManager {
                 this.vaultViewStyle = val;
                 localStorage.setItem(this.getStorageKey('vault_view_style'), val);
                 this.updateSegmentedUI('vault-view-segmented', val);
+                this.pushWebSettings();
                 const globalVessel = document.getElementById('global-timer-vessel');
                 if (globalVessel) globalVessel.classList.toggle('hidden', val !== 'unified');
                 this.renderAccounts();
