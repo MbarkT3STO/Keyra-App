@@ -224,9 +224,43 @@ export class UIManager {
         // Autolock
         const autolock = localStorage.getItem(this.getStorageKey('autolock')) || '0';
         this.updateSegmentedUI('autolock-segmented', autolock);
+        this.updateAutoLockState();
 
         // Vault View Style
         this.updateSegmentedUI('vault-view-segmented', this.vaultViewStyle);
+    }
+
+    private updateAutoLockState() {
+        const hasPin = !!localStorage.getItem(this.getStorageKey('vault_pin'));
+        const container = document.getElementById('autolock-segmented');
+        if (!container) return;
+
+        const segments = container.querySelectorAll('.segment');
+        
+        segments.forEach((seg) => {
+            const val = seg.getAttribute('data-val');
+            if (val !== '0') {
+                if (hasPin) {
+                    seg.removeAttribute('disabled');
+                    (seg as HTMLElement).style.opacity = '1';
+                    (seg as HTMLElement).style.cursor = 'pointer';
+                } else {
+                    seg.setAttribute('disabled', 'true');
+                    (seg as HTMLElement).style.opacity = '0.4';
+                    (seg as HTMLElement).style.cursor = 'not-allowed';
+                }
+            }
+        });
+
+        // If no PIN and auto-lock is enabled, reset to off
+        if (!hasPin) {
+            const currentAutolock = localStorage.getItem(this.getStorageKey('autolock')) || '0';
+            if (currentAutolock !== '0') {
+                localStorage.setItem(this.getStorageKey('autolock'), '0');
+                this.updateSegmentedUI('autolock-segmented', '0');
+                this.pushWebSettings();
+            }
+        }
     }
 
     private updateSegmentedUI(containerId: string, value: string) {
@@ -408,6 +442,16 @@ export class UIManager {
             seg.addEventListener('click', (e) => {
                 const target = e.currentTarget as HTMLElement;
                 const val = target.getAttribute('data-val')!;
+                
+                // Check if PIN is set up
+                const hasPin = !!localStorage.getItem(this.getStorageKey('vault_pin'));
+                
+                // If trying to enable auto-lock without PIN, show error and prevent
+                if (val !== '0' && !hasPin) {
+                    this.showToast("Please set up a PIN first to enable auto-lock", "error");
+                    return;
+                }
+                
                 localStorage.setItem(this.getStorageKey('autolock'), val);
                 this.updateSegmentedUI('autolock-segmented', val);
                 this.pushWebSettings();
@@ -2141,6 +2185,7 @@ export class UIManager {
                     localStorage.setItem(this.getStorageKey('vault_pin'), encryptedPin);
                     this.pushWebSettings();
                     this.updateLockVaultVisibility();
+                    this.updateAutoLockState();
                     this.showToast("PIN security activated successfully", "success");
                     this.hideModal();
                 } else {
@@ -2203,6 +2248,7 @@ export class UIManager {
             localStorage.removeItem(this.getStorageKey('vault_pin'));
             this.pushSettings(); // Use pushSettings for vault security changes
             this.updateLockVaultVisibility();
+            this.updateAutoLockState();
             this.showToast("PIN security removed", "info");
             this.hideModal();
         });
@@ -2258,6 +2304,7 @@ export class UIManager {
             localStorage.removeItem(this.getStorageKey('vault_pin'));
             await this.pushSettings();
             this.updateLockVaultVisibility();
+            this.updateAutoLockState();
             modal.classList.remove('show');
             setTimeout(() => modal.classList.add('hidden'), 300);
             this.showToast("Signing Out...", "info");
