@@ -10,6 +10,12 @@ import * as path from 'path';
 import { app, safeStorage } from 'electron';
 import { sendActivationEmail } from './mailer';
 
+export interface SyncResult {
+    success: boolean;
+    conflict?: boolean;
+    message?: string;
+}
+
 let currentUser: UserRecord | null = null;
 let currentKey: Buffer | null = null;
 
@@ -50,7 +56,7 @@ export function getCurrentUser() {
     };
 }
 
-export async function cancelEmailChange(): Promise<{ success: boolean, message: string }> {
+export async function cancelEmailChange(): Promise<SyncResult> {
     if (!currentUser) throw new Error("No active user session.");
     
     const users = await getUsers();
@@ -64,12 +70,10 @@ export async function cancelEmailChange(): Promise<{ success: boolean, message: 
     delete currentUser.pendingEmail; // Sync local session
 
     await saveUsers(users);
-    await syncUserData(currentUser.username, users[userIndex]);
-
-    return { success: true, message: "Pending email change cancelled." };
+    return await syncUserData(currentUser.username, users[userIndex]);
 }
 
-export async function updateProfilePicture(base64Image: string): Promise<{ success: boolean, message: string }> {
+export async function updateProfilePicture(base64Image: string): Promise<SyncResult> {
     if (!currentUser) throw new Error("No active user session.");
     
     const users = await getUsers();
@@ -81,13 +85,12 @@ export async function updateProfilePicture(base64Image: string): Promise<{ succe
     currentUser.profilePicture = base64Image; // Sync local session
 
     await saveUsers(users);
-    await syncUserData(currentUser.username, user);
-
-    return { success: true, message: "Profile picture updated successfully." };
+    const res = await syncUserData(currentUser.username, user);
+    return { ...res, message: res.success ? "Profile picture updated successfully." : (res.message || "Sync failed") };
 }
 
 
-export async function signup(username: string, email: string, password: string): Promise<{ success: boolean, message: string, code?: string }> {
+export async function signup(username: string, email: string, password: string): Promise<SyncResult & { code?: string }> {
     const users = await getUsers();
     if (users.find(u => u.username === username || u.email === email)) {
         return { success: false, message: "Username or email already exists." };
@@ -116,21 +119,25 @@ export async function signup(username: string, email: string, password: string):
     await saveUsers(users);
 
     // Sync to cloud
-    await syncUserData(username, newUser);
+    const res = await syncUserData(username, newUser);
 
     deliverActivationCode(email, activationCode);
 
-    return { success: true, message: "Account created. Check your email.", code: activationCode };
+    return { 
+        ...res, 
+        message: res.success ? "Account created. Check your email." : (res.message || "Sync failed"),
+        code: activationCode 
+    };
 }
 
-export async function signupLocal(username: string, key: string): Promise<{ success: boolean, message: string }> {
+export async function signupLocal(username: string, key: string): Promise<SyncResult> {
     const users = await getUsers();
     if (users.find(u => u.username === username)) {
         return { success: false, message: "Username already exists." };
     }
 
     const { hash, salt } = hashPassword(key);
-    
+
     const initialKey = deriveKey(key, salt);
     const emptyVault: AuthenticatorAccount[] = [];
     const encryptedVaultData = encryptVault(JSON.stringify(emptyVault), initialKey);
@@ -149,11 +156,10 @@ export async function signupLocal(username: string, key: string): Promise<{ succ
 
     users.push(newUser);
     await saveUsers(users);
-
     return { success: true, message: "Local account created successfully!" };
 }
 
-export async function resendCode(email: string): Promise<{ success: boolean, message: string, code?: string }> {
+export async function resendCode(email: string): Promise<SyncResult & { code?: string }> {
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.email === email);
     if (userIndex === -1) return { success: false, message: "User not found." };
@@ -167,7 +173,7 @@ export async function resendCode(email: string): Promise<{ success: boolean, mes
     return { success: true, message: "Verification code resent.", code: newCode };
 }
 
-export async function verifyEmail(email: string, code: string): Promise<{ success: boolean, message: string }> {
+export async function verifyEmail(email: string, code: string): Promise<SyncResult> {
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.email === email);
     if (userIndex === -1) return { success: false, message: "User not found." };
@@ -176,13 +182,15 @@ export async function verifyEmail(email: string, code: string): Promise<{ succes
 
     if (users[userIndex].activationCode === code) {
         users[userIndex].isActivated = true;
-        delete users[userIndex].activationCode;
         await saveUsers(users);
-        
-        // Sync to cloud
-        await syncUserData(users[userIndex].username, users[userIndex]);
 
-        return { success: true, message: "Account activated successfully." };
+        // Sync to cloud
+        const res = await syncUserData(users[userIndex].username, users[userIndex]);
+
+        return {
+            ...res,
+            message: res.success ? "Account activated successfully." : (res.message || "Sync failed")
+        };
     }
 
     return { success: false, message: "Invalid activation code." };
@@ -227,7 +235,7 @@ export async function login(username: string, password: string): Promise<{ succe
     // 1. Resolve Identity (Username or Phone)
     const normalizedInput = username.trim();
     const isPhoneInput = normalizedInput.startsWith('+') || /^\d{8,}$/.test(normalizedInput.replace(/\s/g, ''));
-    
+
     let resolvedUsername = normalizedInput;
     const localUsers = await getUsers();
 
@@ -258,7 +266,7 @@ export async function login(username: string, password: string): Promise<{ succe
                 if (cloudData) {
                     user = cloudData;
                     cloudFetchSuccess = true;
-                    
+
                     // Proactively update local cache with fresh cloud data
                     const localIdx = localUsers.findIndex(u => u.username === resolvedUsername);
                     if (localIdx !== -1) {
@@ -333,7 +341,7 @@ export async function getActiveAccounts(): Promise<AuthenticatorAccount[]> {
     }
 }
 
-export async function saveActiveAccounts(accounts: AuthenticatorAccount[]): Promise<void> {
+export async function saveActiveAccounts(accounts: AuthenticatorAccount[], force: boolean = false): Promise<SyncResult> {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
 
     const users = await getUsers();
@@ -344,12 +352,16 @@ export async function saveActiveAccounts(accounts: AuthenticatorAccount[]): Prom
     users[userIndex].encryptedVaultData = newEncryptedVault;
 
     await saveUsers(users);
-    
+
     // Sync specifically this user's data folder
-    await syncUserData(currentUser.username, users[userIndex]);
+    const res = await syncUserData(currentUser.username, users[userIndex], force);
+    return {
+        ...res,
+        message: res.success ? "Vault saved successfully." : (res.message || "Sync failed")
+    };
 }
 
-export async function updateUserSettings(settings: any): Promise<void> {
+export async function updateUserSettings(settings: any, force: boolean = false): Promise<SyncResult> {
     if (!currentUser) throw new Error("No active user session.");
 
     const users = await getUsers();
@@ -367,10 +379,10 @@ export async function updateUserSettings(settings: any): Promise<void> {
     currentUser["Desktop Settings"] = settings;
 
     await saveUsers(users);
-    await syncUserData(currentUser.username, users[userIndex]);
+    return await syncUserData(currentUser.username, users[userIndex], force);
 }
 
-export async function updatePrivateSyncConfig(config: PrivateSyncConfig): Promise<void> {
+export async function updatePrivateSyncConfig(config: PrivateSyncConfig): Promise<SyncResult> {
     if (!currentUser) throw new Error("No active user session.");
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
@@ -382,12 +394,49 @@ export async function updatePrivateSyncConfig(config: PrivateSyncConfig): Promis
     await saveUsers(users);
     // Trigger an immediate sync to the new repo if enabled
     if (config.enabled && config.pat) {
-        await syncUserData(currentUser.username, users[userIndex]);
+        const res = await syncUserData(currentUser.username, users[userIndex]);
+        return { 
+            ...res, 
+            message: res.success ? "Sync configuration updated." : (res.message || "Sync failed") 
+        };
     }
+    return { success: true, message: "Sync configuration saved." };
 }
 
 export async function testPrivateSyncConnection(config: PrivateSyncConfig): Promise<{ success: boolean, message: string }> {
     return await testGitHubConnection(config);
+}
+
+export async function resumeFromGitHub(pat: string, owner: string, repo: string): Promise<{ success: boolean, message: string, username?: string }> {
+    try {
+        const config: PrivateSyncConfig = { enabled: true, pat, owner, repo };
+        
+        // 1. Verify connection
+        const test = await testGitHubConnection(config);
+        if (!test.success) return { success: false, message: test.message };
+
+        // 2. Fetch vault data
+        const filePath = `vault/vault.json`;
+        const { getUserDataDirect } = require('./storage');
+        const userData = await getUserDataDirect(filePath, config);
+        
+        if (!userData) {
+            return { success: false, message: "No vault data found. Ensure you have synced your vault at least once from another device." };
+        }
+
+        // 3. Import locally
+        const users = await getUsers();
+        if (users.find(u => u.username === userData.username)) {
+            return { success: false, message: `Account "${userData.username}" already exists locally.` };
+        }
+
+        users.push(userData);
+        await saveUsers(users);
+
+        return { success: true, message: "Vault restored! Please sign in.", username: userData.username };
+    } catch (err: any) {
+        return { success: false, message: "Failed to resume from GitHub." };
+    }
 }
 
 export function getBackupData(): { 
@@ -424,7 +473,7 @@ export async function importVaultData(
     autolock?: string, 
     desktopSettings?: any, 
     webSettings?: any
-): Promise<{ success: boolean, message: string }> {
+): Promise<SyncResult> {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
 
     try {
@@ -464,7 +513,7 @@ export async function importVaultData(
     }
 }
 
-export async function changePassword(newPassword: string): Promise<{ success: boolean, message: string }> {
+export async function changePassword(newPassword: string): Promise<SyncResult> {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
     if (newPassword.length < 8) return { success: false, message: "Password must be at least 8 characters." };
 
@@ -496,7 +545,9 @@ export async function changePassword(newPassword: string): Promise<{ success: bo
 
         // 6. Save and Sync
         await saveUsers(users);
-        await syncUserData(currentUser.username, users[userIndex]);
+        const res = await syncUserData(currentUser.username, users[userIndex]);
+
+        if (!res.success) return res;
 
         // 7. Update local session (Electron safeStorage)
         saveSession(currentUser.username, newPassword);
@@ -508,7 +559,7 @@ export async function changePassword(newPassword: string): Promise<{ success: bo
     }
 }
 
-export async function changeUsername(newUsername: string): Promise<{ success: boolean, message: string }> {
+export async function changeUsername(newUsername: string): Promise<SyncResult> {
     if (!currentUser) throw new Error("No active user session.");
     
     const users = await getUsers();
@@ -546,7 +597,7 @@ export async function changeUsername(newUsername: string): Promise<{ success: bo
     return { success: true, message: "Display name updated." };
 }
 
-export async function requestEmailChange(newEmail: string): Promise<{ success: boolean, message: string, code?: string }> {
+export async function requestEmailChange(newEmail: string): Promise<SyncResult & { code?: string }> {
     if (!currentUser) throw new Error("No active user session.");
     
     const users = await getUsers();
@@ -567,14 +618,18 @@ export async function requestEmailChange(newEmail: string): Promise<{ success: b
     user.emailChangeCode = code;
 
     await saveUsers(users);
-    await syncUserData(currentUser.username, user);
+    const syncRes = await syncUserData(currentUser.username, user);
 
     deliverActivationCode(newEmail, code);
 
-    return { success: true, message: "Verification code sent to new email." };
+    return { 
+        success: syncRes.success, 
+        conflict: syncRes.conflict, 
+        message: syncRes.success ? "Verification code sent to new email." : (syncRes.message || "Sync failed")
+    };
 }
 
-export async function confirmEmailChange(code: string): Promise<{ success: boolean, message: string }> {
+export async function confirmEmailChange(code: string): Promise<SyncResult> {
     if (!currentUser) throw new Error("No active user session.");
     
     const users = await getUsers();
@@ -597,9 +652,7 @@ export async function confirmEmailChange(code: string): Promise<{ success: boole
     currentUser.email = user.email; // Sync local session
 
     await saveUsers(users);
-    await syncUserData(currentUser.username, users[userIndex]);
-
-    return { success: true, message: "Email changed successfully." };
+    return await syncUserData(currentUser.username, users[userIndex]);
 }
 
 export async function resendEmailChangeCode(): Promise<{ success: boolean, message: string, code?: string }> {
@@ -616,17 +669,17 @@ export async function resendEmailChangeCode(): Promise<{ success: boolean, messa
     user.emailChangeCode = newCode;
     
     await saveUsers(users);
-    await syncUserData(currentUser.username, users[userIndex]);
+    const res = await syncUserData(currentUser.username, users[userIndex]);
 
     deliverActivationCode(user.pendingEmail, newCode);
-    return { success: true, message: "New verification code sent." };
+    return { ...res, message: res.success ? "New verification code sent." : (res.message || "Sync failed") };
 }
 
 // ─── Phone Verification Logic ───────────────────────────────────────
 
 import { sendPhoneVerification } from './notifier';
 
-export async function requestPhoneVerification(phoneNumber: string): Promise<{ success: boolean, message: string }> {
+export async function requestPhoneVerification(phoneNumber: string): Promise<SyncResult> {
     if (!currentUser) throw new Error("No active user session.");
     
     // Robust validation: Starts with + and contains 8 to 15 digits
@@ -650,14 +703,12 @@ export async function requestPhoneVerification(phoneNumber: string): Promise<{ s
     }
 
     await saveUsers(users);
-    await syncUserData(currentUser.username, user);
-
-    return { success: true, message: "Phone number updated. Please link WhatsApp to verify." };
+    return await syncUserData(currentUser.username, user);
 }
 
 // remove confirmPhoneVerification...
 
-export async function removePhone(): Promise<{ success: boolean, message: string }> {
+export async function removePhone(): Promise<SyncResult> {
     if (!currentUser) throw new Error("No active user session.");
     
     const users = await getUsers();
@@ -682,7 +733,7 @@ export async function removePhone(): Promise<{ success: boolean, message: string
     return { success: true, message: "Phone number removed successfully." };
 }
 
-export async function verifyPhoneByWhatsAppMatch(waNumber: string): Promise<{ success: boolean, message: string }> {
+export async function verifyPhoneByWhatsAppMatch(waNumber: string): Promise<SyncResult> {
     if (!currentUser) throw new Error("No active user session.");
     
     const users = await getUsers();
@@ -714,9 +765,7 @@ export async function verifyPhoneByWhatsAppMatch(waNumber: string): Promise<{ su
         currentUser.isPhoneVerified = true;
 
         await saveUsers(users);
-        await syncUserData(currentUser.username, user);
-
-        return { success: true, message: "Phone matched and auto-verified via WhatsApp!" };
+        return await syncUserData(currentUser.username, user);
     }
 
     return { success: false, message: "WhatsApp number does not match entered phone." };

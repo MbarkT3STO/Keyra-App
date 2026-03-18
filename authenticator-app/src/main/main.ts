@@ -117,6 +117,10 @@ ipcMain.handle('signup-local', (event, user, pass) => signupLocal(user, pass));
 ipcMain.handle('resend-code', (event, email) => resendCode(email));
 ipcMain.handle('verify-email', (event, email, code) => verifyEmail(email, code));
 ipcMain.handle('login', (event, user, pass) => login(user, pass));
+ipcMain.handle('resume-from-github', (event, pat, owner, repo) => {
+    const { resumeFromGitHub } = require('../core/auth');
+    return resumeFromGitHub(pat, owner, repo);
+});
 ipcMain.handle('check-session', () => checkSession());
 ipcMain.handle('logout', () => logout());
 ipcMain.handle('get-current-user', () => getCurrentUser());
@@ -162,7 +166,7 @@ ipcMain.handle('get-accounts', async () => {
     catch (err) { return []; }
 });
 
-ipcMain.handle('save-account', async (event, account) => {
+ipcMain.handle('save-account', async (event, account, force = false) => {
     try {
         const accounts = await getActiveAccounts();
         const existingIndex = accounts.findIndex((a: any) => a.id === account.id);
@@ -171,31 +175,30 @@ ipcMain.handle('save-account', async (event, account) => {
         } else {
             accounts.push(account); // Add new
         }
-        await saveActiveAccounts(accounts);
-        return accounts;
-    } catch (err) {
+        const syncRes = await saveActiveAccounts(accounts, force);
+        return { ...syncRes, accounts };
+    } catch (err: any) {
         console.error("Save Account Error:", err);
-        return [];
+        return { success: false, message: err.message, accounts: [] };
     }
 });
 
-ipcMain.handle('delete-account', async (event, id) => {
+ipcMain.handle('delete-account', async (event, id, force = false) => {
     try {
         let accounts = await getActiveAccounts();
         accounts = accounts.filter((a: any) => a.id !== id);
-        await saveActiveAccounts(accounts);
-        return accounts;
-    } catch (err) {
-        return [];
+        const syncRes = await saveActiveAccounts(accounts, force);
+        return { ...syncRes, accounts };
+    } catch (err: any) {
+        return { success: false, message: err.message, accounts: [] };
     }
 });
 
-ipcMain.handle('update-user-settings', async (event, settings) => {
+ipcMain.handle('update-user-settings', async (event, settings, force = false) => {
     try {
-        await updateUserSettings(settings);
-        return { success: true };
-    } catch (err) {
-        return { success: false };
+        return await updateUserSettings(settings, force);
+    } catch (err: any) {
+        return { success: false, message: err.message };
     }
 });
 

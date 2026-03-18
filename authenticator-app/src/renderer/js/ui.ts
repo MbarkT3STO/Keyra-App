@@ -16,6 +16,7 @@ export class UIManager {
     private searchQuery: string = '';
     private syncCount: number = 0;
     private liveSyncInterval: any = null;
+    private lastSyncUpdateInterval: any = null;
     private emailResendTimer: number = 0;
     private emailResendInterval: any = null;
     private cardCache: HTMLElement[] = [];
@@ -23,8 +24,12 @@ export class UIManager {
     private minimizeToTray: boolean = false;
     private globalHotkey: boolean = false;
     private autoCheckUpdates: boolean = true;
-    private vaultViewStyle: 'unified' | 'compact' | 'secure' = 'unified';
+    private vaultViewStyle: 'unified' | 'compact' | 'secure' = 'compact';
     private activeOtpAccount: any = null;
+    private pendingConflictAction: string | null = null;
+    private pendingConflictData: any = null;
+    private syncVisible: boolean = true;
+
 
     constructor(public userId: string = 'default') {
         this.initTheme();
@@ -42,6 +47,7 @@ export class UIManager {
         this.loadInitialData();
         this.initFromCloud();
         this.startLiveSync();
+        this.startLastSyncTimer();
         this.initConnectivityStatus();
         this.updatePinStatus();
         this.initUpdateSystem();
@@ -228,9 +234,70 @@ export class UIManager {
         if (isSyncing) this.syncCount++;
         else this.syncCount = Math.max(0, this.syncCount - 1);
 
-        const indicator = document.getElementById('cloud-sync-indicator');
-        if (indicator) {
-            indicator.classList.toggle('hidden', this.syncCount === 0);
+        this.updateSyncIndicator(this.syncCount > 0 ? 'syncing' : 'synced');
+    }
+
+    public updateSyncIndicator(state: 'synced' | 'syncing' | 'error' | 'warning', message?: string) {
+        const indicator = document.getElementById('navbar-sync-indicator');
+        if (!indicator) return;
+
+        // Reset classes
+        indicator.className = 'sync-indicator ' + state;
+        
+        // Hide if sync is not enabled/setup for this user
+        indicator.classList.toggle('hidden', !this.syncVisible);
+        if (!this.syncVisible) return;
+        
+        // Update Title/Tooltip
+        let title = 'Synced and up to date';
+        if (state === 'syncing') title = 'Syncing in progress...';
+        if (state === 'error') title = message || 'Connection issue or PAT expired';
+        if (state === 'warning') title = message || 'Sync issue detected';
+        
+        indicator.title = title;
+
+        // Force a small pulse on state change
+        indicator.style.transform = 'scale(1.2)';
+        setTimeout(() => indicator.style.transform = '', 200);
+
+        // Also update the textual display in settings if it exists
+        if (state === 'synced') {
+            this.updateLastSyncDisplay();
+        }
+    }
+
+    private startLastSyncTimer() {
+        this.updateLastSyncDisplay();
+        if (this.lastSyncUpdateInterval) clearInterval(this.lastSyncUpdateInterval);
+        this.lastSyncUpdateInterval = setInterval(() => this.updateLastSyncDisplay(), 30000); // Every 30s
+    }
+
+    private updateLastSyncDisplay() {
+        const lastSyncEl = document.getElementById('sync-last-time');
+        if (!lastSyncEl) return;
+
+        const lastSyncStr = localStorage.getItem(this.getStorageKey('last_sync'));
+        if (!lastSyncStr) {
+            lastSyncEl.textContent = 'Never synced';
+            return;
+        }
+
+        const lastSync = new Date(lastSyncStr);
+        const now = new Date();
+        const diffMs = now.getTime() - lastSync.getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+
+        if (diffMin < 1) {
+            lastSyncEl.textContent = 'Last synced: Just now';
+        } else if (diffMin < 60) {
+            lastSyncEl.textContent = `Last synced: ${diffMin}m ago`;
+        } else {
+            const diffHrs = Math.floor(diffMin / 60);
+            if (diffHrs < 24) {
+                lastSyncEl.textContent = `Last synced: ${diffHrs}h ago`;
+            } else {
+                lastSyncEl.textContent = `Last synced: ${Math.floor(diffHrs / 24)}d ago`;
+            }
         }
     }
 
@@ -286,12 +353,25 @@ export class UIManager {
         };
     }
 
-    public async pushSettings() {
+    public async pushSettings(updateLocal: boolean = true) {
         this.setSyncing(true);
         try {
             const settings = this.getSettingsObject();
-            await (window as any).api.updateUserSettings(settings);
+            const res = await (window as any).api.updateUserSettings(settings);
+            
+            if (res.conflict) {
+                this.showSyncConflictModal('update-user-settings', settings);
+                return;
+            }
+
+            if (res.success && updateLocal) {
+                localStorage.setItem(this.getStorageKey('settings'), JSON.stringify(settings));
+            }
             localStorage.setItem(this.getStorageKey('last_sync'), new Date().toISOString());
+            return res;
+        } catch (err) {
+            console.error("Failed to push settings:", err);
+            return { success: false };
         } finally {
             this.setSyncing(false);
             this.updateLastActivityDisplay();
@@ -941,6 +1021,8 @@ export class UIManager {
                 if (user.privateSync) {
                     const newConfig = { ...user.privateSync, enabled: target.checked };
                     await (window as any).api.updatePrivateSyncConfig(newConfig);
+                    this.syncVisible = target.checked;
+                    this.updateSyncIndicator(this.syncCount > 0 ? 'syncing' : 'synced');
                     this.showToast(target.checked ? "Private Auto-Sync enabled" : "Private Auto-Sync disabled", "info");
                 }
             } else {
@@ -1456,13 +1538,22 @@ export class UIManager {
                     (syncOverlay as HTMLElement).style.display = 'flex';
                 }
             }
+
+            // Sync Indicator Visibility
+            this.syncVisible = !!(user.privateSync && user.privateSync.enabled);
+            this.updateSyncIndicator(this.syncCount > 0 ? 'syncing' : 'synced');
         } else {
             document.body.classList.remove('local-only');
             if (syncTitle) syncTitle.textContent = "Cloud Sync";
             if (syncSubtitle) syncSubtitle.textContent = "Keep your Vault safe on GitHub";
             if (syncCard) syncCard.classList.remove('disabled-card');
             if (syncOverlay) syncOverlay.classList.add('hidden');
+
+            // Online users always see the indicator (sync is part of the core experience)
+            this.syncVisible = true;
+            this.updateSyncIndicator(this.syncCount > 0 ? 'syncing' : 'synced');
         }
+
 
         // Handle the visibility of Private Sync button specifically
         const privateSyncBtn = document.getElementById('btn-open-private-sync');
@@ -1616,8 +1707,10 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('last_sync'), new Date().toISOString());
             this.updateLastActivity('Manual Cloud Sync');
             if (statusDesc) statusDesc.textContent = 'Synchronized';
-        } catch (err) {
+            this.updateSyncIndicator('synced');
+        } catch (err: any) {
             this.showToast("Sync failed", "error");
+            this.updateSyncIndicator('error', err.message || 'Sync failed');
             if (statusDesc) statusDesc.textContent = 'Sync Failed';
         } finally {
             if (icon) icon.classList.remove('sync-spin');
@@ -1892,12 +1985,24 @@ export class UIManager {
                 const parsed = await (window as any).api.parseURI(data);
                 await (window as any).api.generateTOTP(parsed.secret);
 
-                this.accounts = await (window as any).api.saveAccount({
+                const res = await (window as any).api.saveAccount({
                     id: Date.now().toString(),
                     issuer: parsed.issuer,
                     account: parsed.account,
                     secret: parsed.secret
                 });
+
+                if (res.conflict) {
+                    this.showSyncConflictModal('save-account', {
+                        id: Date.now().toString(),
+                        issuer: parsed.issuer,
+                        account: parsed.account,
+                        secret: parsed.secret
+                    });
+                    return;
+                }
+
+                this.accounts = res.accounts || [];
                 this.renderAccounts();
                 this.showToast(`Account added!`, "success");
                 this.updateLastActivity('Added token via Scan');
@@ -2044,6 +2149,97 @@ export class UIManager {
                 }
             }
         }, 1000);
+    }
+
+    private showSyncConflictModal(action: string, data: any) {
+        this.pendingConflictAction = action;
+        this.pendingConflictData = data;
+
+        const modal = document.getElementById('modal-sync-conflict');
+        if (!modal) return;
+
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.add('show'), 10);
+
+        const forcePushOption = document.getElementById('option-force-push');
+        const pullRemoteOption = document.getElementById('option-pull-remote');
+        const resolveBtn = document.getElementById('btn-resolve-sync-conflict') as HTMLButtonElement;
+        const closeBtn = document.getElementById('btn-close-sync-conflict');
+
+        let selectedResolution: 'force' | 'pull' | null = null;
+
+        const updateSelection = (res: 'force' | 'pull') => {
+            selectedResolution = res;
+            forcePushOption?.classList.toggle('selected', res === 'force');
+            pullRemoteOption?.classList.toggle('selected', res === 'pull');
+            if (resolveBtn) {
+                resolveBtn.classList.remove('disabled');
+                resolveBtn.disabled = false;
+            }
+        };
+
+        forcePushOption?.addEventListener('click', () => updateSelection('force'));
+        pullRemoteOption?.addEventListener('click', () => updateSelection('pull'));
+
+        closeBtn?.addEventListener('click', () => {
+            modal.classList.remove('show');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+            this.pendingConflictAction = null;
+            this.pendingConflictData = null;
+        });
+
+        resolveBtn.addEventListener('click', async () => {
+            if (!selectedResolution) return;
+
+            this.setLoading(true, "Resolving Conflict", "SYNCHRONIZING SECURE DATA");
+            try {
+                if (selectedResolution === 'force') {
+                    // Retrying the same action with force=true
+                    // I need to update the IPC calls to support a 'force' argument if I go this way.
+                    // Actually, I'll update syncUserData in auth.ts to handle force-push.
+                    // For now, let's assume we can pass a 'force' flag.
+                    
+                    let res: any;
+                    if (this.pendingConflictAction === 'save-account') {
+                        res = await (window as any).api.saveAccount(this.pendingConflictData, true);
+                    } else if (this.pendingConflictAction === 'delete-account') {
+                        res = await (window as any).api.deleteAccount(this.pendingConflictData, true);
+                    } else if (this.pendingConflictAction === 'update-user-settings') {
+                        res = await (window as any).api.updateUserSettings(this.pendingConflictData, true);
+                    }
+
+                    if (res && res.success) {
+                        this.showToast("Conflict resolved: local data pushed", "success");
+                        if (res.accounts) {
+                            this.accounts = res.accounts;
+                            this.renderAccounts();
+                        }
+                        modal.classList.remove('show');
+                        setTimeout(() => modal.classList.add('hidden'), 300);
+                        this.hideModal(); // Hide the original action modal if any
+                    } else {
+                        this.showToast(res?.message || "Resolution failed", "error");
+                    }
+                } else {
+                    // Pull Remote
+                    await this.refreshAccounts();
+                    const user = await (window as any).api.getCurrentUser();
+                    if (user) {
+                        this.handleLocalAccountUI(user);
+                        this.applySettings(user.settings || {}, true);
+                    }
+                    this.showToast("Conflict resolved: remote data pulled", "success");
+                    modal.classList.remove('show');
+                    setTimeout(() => modal.classList.add('hidden'), 300);
+                    this.hideModal();
+                }
+            } catch (err) {
+                console.error("Resolution Error:", err);
+                this.showToast("An error occurred during resolution", "error");
+            } finally {
+                this.setLoading(false);
+            }
+        });
     }
 
     private getIcon(issuer: string): string {
@@ -2638,7 +2834,14 @@ export class UIManager {
             if (issuer && secret) {
                 this.setLoading(true, "Securing Token", "ENCRYPTING NEW IDENTITY");
                 try {
-                    this.accounts = await (window as any).api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
+                    const res = await (window as any).api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
+                    
+                    if (res.conflict) {
+                        this.showSyncConflictModal('save-account', { id: Date.now().toString(), issuer, account, secret });
+                        return;
+                    }
+
+                    this.accounts = res.accounts || [];
                     this.renderAccounts();
                     this.hideModal();
                     this.showToast("Account saved!", "success");
@@ -2710,7 +2913,14 @@ export class UIManager {
             if (issuer) {
                 this.setLoading(true, "Updating Identity", "SYNCHRONIZING CHANGES");
                 try {
-                    this.accounts = await (window as any).api.saveAccount({ ...account, issuer, account: accName });
+                    const res = await (window as any).api.saveAccount({ ...account, issuer, account: accName });
+                    
+                    if (res.conflict) {
+                        this.showSyncConflictModal('save-account', { ...account, issuer, account: accName });
+                        return;
+                    }
+
+                    this.accounts = res.accounts || [];
                     this.renderAccounts();
                     this.hideModal();
                     this.showToast("Account updated!", "success");
@@ -2770,7 +2980,14 @@ export class UIManager {
         document.getElementById('confirm-delete')?.addEventListener('click', async () => {
             this.setLoading(true, "Removing Token", "PERMANENT DELETION IN PROGRESS");
             try {
-                this.accounts = await (window as any).api.deleteAccount(account.id);
+                const res = await (window as any).api.deleteAccount(account.id);
+                
+                if (res.conflict) {
+                    this.showSyncConflictModal('delete-account', account.id);
+                    return;
+                }
+
+                this.accounts = res.accounts || [];
                 this.renderAccounts();
                 this.hideModal();
                 this.showToast("Account removed", "info");
@@ -2871,16 +3088,16 @@ export class UIManager {
                 await this.refreshAccounts();
 
                 // Successful sync pulse
-                const indicator = document.getElementById('cloud-sync-indicator');
-                indicator?.classList.add('sync-pulse');
-                setTimeout(() => indicator?.classList.remove('sync-pulse'), 2000);
-
+                this.updateSyncIndicator('synced');
                 this.setSyncing(false);
             }
-        } catch (e) {
-            console.error("Live Sync Polling Failed", e);
+        } catch (e: any) {
+            console.error("Background sync failed:", e);
+            this.updateSyncIndicator('warning', 'Background sync failed');
+            this.setSyncing(false);
         }
     }
+
 
     private async loadInitialData() {
         try {
@@ -2914,6 +3131,7 @@ export class UIManager {
             }
             await this.refreshAccounts();
             this.updateAccountView();
+            this.updateSyncIndicator('synced');
         } catch (err) {
             console.error("Load failed", err);
         }

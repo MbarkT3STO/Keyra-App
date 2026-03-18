@@ -1,5 +1,6 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,7 +8,9 @@
     <!-- Local Fonts & Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         @font-face {
             font-family: 'Inter';
@@ -16,36 +19,36 @@
             font-display: swap;
         }
     </style>
-    
+
     <!-- Font Awesome 6 (Local/Offline) -->
     <link rel="stylesheet" href="css/all.min.css">
-    
+
     <!-- CSS Architecture -->
     <link rel="stylesheet" href="css/themes.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/animations.css">
-    
+
     <!-- Instant Theme Application: OS Detection for Auth ONLY -->
     <script>
-        (function() {
+        (function () {
             function applyAppTheme() {
                 const theme = localStorage.getItem('keyra_theme') || 'auto';
                 const authVessel = document.getElementById('auth-vessel');
                 const isAuthActive = !authVessel || !authVessel.classList.contains('hidden');
-                
+
                 let themeToApply = theme;
                 if (theme === 'auto' || isAuthActive) {
                     themeToApply = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 }
-                
+
                 document.documentElement.setAttribute('data-theme', themeToApply);
                 document.body.classList.remove('light-theme', 'dark-theme');
                 document.body.classList.add(themeToApply + '-theme');
             }
             applyAppTheme();
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyAppTheme);
-            
+
             // Re-apply when auth state might have changed (e.g. login/logout)
             window.addEventListener('storage', (e) => {
                 if (e.key === 'keyra_theme') applyAppTheme();
@@ -53,6 +56,7 @@
         })();
     </script>
 </head>
+
 <body>
     <!-- Premium Splash Screen Overlay -->
     <div id="splash-screen" class="splash-screen">
@@ -64,7 +68,7 @@
             <div class="splash-text">
                 <h1 class="splash-title">Keyra</h1>
                 <div class="splash-status">
-                <span id="splash-status-text">Getting things ready...</span>
+                    <span id="splash-status-text">Getting things ready...</span>
                     <div class="splash-progress-bar">
                         <div class="splash-progress-inner"></div>
                     </div>
@@ -92,24 +96,55 @@
                     <p class="auth-subtitle">YOUR VAULT IS SECURE</p>
                 </div>
 
+                <div id="auth-entry-box">
+                    <div class="auth-entry-options">
+                        <button id="btn-entry-login" class="entry-card-btn">
+                            <div class="entry-btn-icon"><i class="fa-solid fa-vault"></i></div>
+                            <div class="entry-btn-text">
+                                <span class="entry-btn-title">Unlock Vault</span>
+                                <span class="entry-btn-desc">Sign in to your existing vault</span>
+                            </div>
+                        </button>
+                        <button id="btn-entry-signup" class="entry-card-btn">
+                            <div class="entry-btn-icon cloud-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                            <div class="entry-btn-text">
+                                <span class="entry-btn-title">Create Cloud Vault</span>
+                                <span class="entry-btn-desc">Sync across devices with GitHub</span>
+                            </div>
+                        </button>
+                        <button id="btn-entry-local" class="entry-card-btn">
+                            <div class="entry-btn-icon local-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div class="entry-btn-text">
+                                <span class="entry-btn-title">Stay Offline</span>
+                                <span class="entry-btn-desc">Local vault, no cloud sync</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="auth-footer-divider"></div>
+                    <div class="auth-footer-options">
+                        <div class="auth-footer-row secondary">
+                            <span>Moving between machines?</span>
+                            <button id="btn-show-resume" class="auth-link-special">Restore from GitHub</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Login Box -->
-                <div id="auth-login-box">
+                <div id="auth-login-box" class="hidden">
                     <form id="form-login">
                         <div class="form-group">
                             <label class="form-label">Vault Identity</label>
-                            <input type="text" id="login-username" class="form-input" placeholder="Name or +123456789" required>
+                            <input type="text" id="login-username" class="form-input" placeholder="Name or +123456789"
+                                required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Master Password</label>
-                            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+                            <input type="password" id="login-password" class="form-input" placeholder="••••••••"
+                                required>
                         </div>
                         <button type="submit" class="btn-primary auth-submit-btn btn-shimmer">Unlock Vault</button>
                         <div id="login-error" class="auth-error"></div>
                     </form>
-                    <div class="auth-footer">
-                        <p>First time? <button id="btn-show-signup" class="auth-link">Create your Vault</button></p>
-                        <p style="margin-top: 8px; font-size: 11px; opacity: 0.6;">Or <button id="btn-show-signup-local" class="auth-link" style="font-weight: 800; color: var(--accent-primary);">Stay Offline (Local Account)</button></p>
-                    </div>
                 </div>
 
                 <!-- Signup Box -->
@@ -121,21 +156,59 @@
                         </div>
                         <div class="form-group" id="signup-email-group">
                             <label class="form-label">Email Address</label>
-                            <input type="email" id="signup-email" class="form-input" placeholder="name@domain.com" required>
+                            <input type="email" id="signup-email" class="form-input" placeholder="name@domain.com"
+                                required>
                         </div>
                         <div class="form-group">
                             <label class="form-label" id="label-signup-password">Master Password</label>
-                            <input type="password" id="signup-password" class="form-input" placeholder="Min 8 characters" required>
+                            <input type="password" id="signup-password" class="form-input"
+                                placeholder="Min 8 characters" required>
                         </div>
                         <input type="hidden" id="signup-is-local" value="false">
-                        <button type="submit" id="btn-signup-submit" class="btn-primary auth-submit-btn btn-shimmer">Create Vault</button>
+                        <button type="submit" id="btn-signup-submit"
+                            class="btn-primary auth-submit-btn btn-shimmer">Create Vault</button>
                         <div id="signup-error" class="auth-error"></div>
                     </form>
-                    <div class="auth-footer" style="margin-top: 10px;">
-                        <p id="local-toggle-text">Need Cloud Sync? <button id="btn-toggle-local" class="auth-link">Enable Online Features</button></p>
+
+                    <div class="auth-footer-divider"></div>
+                    <div class="auth-footer-options">
+                        <div class="auth-footer-row" id="local-toggle-container">
+                            <p id="local-toggle-text">Need Cloud Sync? <button id="btn-toggle-local"
+                                    class="auth-link-bold">Enable Online</button></p>
+                        </div>
                     </div>
-                    <div class="auth-footer">
-                        <p>Already have a vault? <button id="btn-show-login" class="auth-link">Sign In</button></p>
+                </div>
+
+                <!-- Resume Box (New Flow) -->
+                <div id="auth-resume-box" class="hidden">
+                    <h2 class="auth-verify-title">Restore your Vault</h2>
+                    <p class="auth-verify-subtitle">Provide your Private Sync credentials.</p>
+                    <form id="form-resume">
+                        <div class="form-group">
+                            <label class="form-label">Personal Access Token (PAT)</label>
+                            <input type="password" id="resume-pat" class="form-input" placeholder="ghp_xxxxxxxxxxxx"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Repository Owner</label>
+                            <input type="text" id="resume-owner" class="form-input" placeholder="GitHub Username"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Repository Name</label>
+                            <input type="text" id="resume-repo" class="form-input" placeholder="e.g. keyra-vault"
+                                required>
+                        </div>
+                        <button type="submit" class="btn-primary auth-submit-btn">Continue to Restore</button>
+                        <div id="resume-error" class="auth-error"></div>
+                    </form>
+
+                    <div class="auth-footer-divider"></div>
+                    <div class="auth-footer-options">
+                        <div class="auth-footer-row">
+                            <span>Lost access?</span>
+                            <button id="btn-show-login-resume" class="auth-link-bold">Back to Sign In</button>
+                        </div>
                     </div>
                 </div>
 
@@ -157,7 +230,8 @@
                         <div id="verify-error" class="auth-error"></div>
                     </form>
                     <div class="auth-footer">
-                        <button id="btn-resend-code" class="auth-resend-btn">Resend Code <span id="resend-timer"></span></button>
+                        <button id="btn-resend-code" class="auth-resend-btn">Resend Code <span
+                                id="resend-timer"></span></button>
                     </div>
                 </div>
             </div>
@@ -175,114 +249,118 @@
         </div>
     </div>
 
-        <!-- Screen Capture Selection Overlay -->
-        <div id="screen-capture-overlay" class="screen-capture-overlay hidden">
-            <div class="capture-hint">Drag a box over the QR code (Esc to Cancel)</div>
-            <div id="selection-box" class="selection-box"></div>
-        </div>
+    <!-- Screen Capture Selection Overlay -->
+    <div id="screen-capture-overlay" class="screen-capture-overlay hidden">
+        <div class="capture-hint">Drag a box over the QR code (Esc to Cancel)</div>
+        <div id="selection-box" class="selection-box"></div>
+    </div>
 
-        <!-- Dynamic Privacy Blur Overlay -->
-        <div id="privacy-blur-overlay" class="modal-overlay privacy-overlay">
-            <div class="privacy-content">
-                <div class="privacy-shield-vessel">
-                    <div class="privacy-shield-icon">
-                        <img src="assets/logo.png" class="app-logo-large">
-                    </div>
-                    <div class="privacy-scan-line"></div>
+    <!-- Dynamic Privacy Blur Overlay -->
+    <div id="privacy-blur-overlay" class="modal-overlay privacy-overlay">
+        <div class="privacy-content">
+            <div class="privacy-shield-vessel">
+                <div class="privacy-shield-icon">
+                    <img src="assets/logo.png" class="app-logo-large">
                 </div>
-                <h2>Vault Hidden</h2>
-                <p>We've hidden your data to keep it private.</p>
-                <div class="privacy-hint">Click or focus here to continue</div>
+                <div class="privacy-scan-line"></div>
             </div>
+            <h2>Vault Hidden</h2>
+            <p>We've hidden your data to keep it private.</p>
+            <div class="privacy-hint">Click or focus here to continue</div>
         </div>
+    </div>
 
-        <!-- Premium Neumorphic About Modal -->
-        <div id="about-modal" class="modal-overlay hidden">
-            <div class="modal about-modal-card animate-fade-in">
-                <div class="about-header-hero">
-                    <div class="about-hero-vessel">
-                        <img src="assets/logo.png" alt="Keyra Logo" class="app-logo-medium">
-                    </div>
-                    <div class="about-title-group">
-                        <h1 class="about-app-name">Keyra Authenticator</h1>
-                        <p class="about-mission-tag">Professional Security Made Simple</p>
-                    </div>
+    <!-- Premium Neumorphic About Modal -->
+    <div id="about-modal" class="modal-overlay hidden">
+        <div class="modal about-modal-card animate-fade-in">
+            <div class="about-header-hero">
+                <div class="about-hero-vessel">
+                    <img src="assets/logo.png" alt="Keyra Logo" class="app-logo-medium">
                 </div>
-
-                <div class="modal-divider"></div>
-
-                <div class="about-info-sections">
-                    <!-- App Status Row -->
-                    <div class="about-info-row">
-                        <div class="info-row-label">
-                            <i class="fa-solid fa-code-branch"></i>
-                            <span class="label-text">VERSION</span>
-                        </div>
-                        <div class="info-row-content">
-                            <span class="version-badge">v1.2.0</span>
-                            <span class="pro-tag">PRO</span>
-                        </div>
-                    </div>
-
-                    <!-- System Status Row -->
-                    <div class="about-info-row">
-                        <div class="info-row-label">
-                            <i class="fa-solid fa-shield-halved"></i>
-                            <span class="label-text">STATUS</span>
-                        </div>
-                        <div class="info-row-content">
-                            <span class="status-indicator online">
-                                <span class="status-dot"></span>
-                                PROTECTED
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Action Row -->
-                    <div class="about-info-row">
-                        <div class="info-row-label">
-                            <i class="fa-solid fa-bolt"></i>
-                            <span class="label-text">ACTIVITY</span>
-                        </div>
-                        <div class="info-row-content">
-                            <span id="about-last-action" style="font-size: 11px; font-weight: 700;">Nothing yet</span>
-                        </div>
-                    </div>
-
-                    <!-- Sync Row -->
-                    <div id="about-sync-row" class="about-info-row online-only">
-                        <div class="info-row-label">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span class="label-text">CLOUD SYNC</span>
-                        </div>
-                        <div class="info-row-content">
-                            <span id="about-last-sync" style="font-size: 11px; font-weight: 700;">Never Secured</span>
-                        </div>
-                    </div>
+                <div class="about-title-group">
+                    <h1 class="about-app-name">Keyra Authenticator</h1>
+                    <p class="about-mission-tag">Professional Security Made Simple</p>
                 </div>
-
-                <div class="modal-divider"></div>
-
-                <div class="about-footer-actions">
-                    <p class="footer-label">Connect with us</p>
-                    <div class="about-social-group">
-                        <button class="social-btn" title="GitHub" onclick="window.api.openExternal('https://github.com/MbarkT3STO/Keyra-App')">
-                            <i class="fa-brands fa-github"></i>
-                        </button>
-                        <button class="social-btn" title="X (Twitter)" onclick="window.api.openExternal('https://x.com/mbarkt3sto')">
-                            <i class="fa-brands fa-x-twitter"></i>
-                        </button>
-                        <button class="social-btn" title="Website" onclick="window.api.openExternal('https://keyraauth.netlify.app/')">
-                            <i class="fa-solid fa-globe"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <button class="auth-close-btn" onclick="document.getElementById('about-modal').classList.remove('show'); setTimeout(() => document.getElementById('about-modal').classList.add('hidden'), 300)">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
             </div>
+
+            <div class="modal-divider"></div>
+
+            <div class="about-info-sections">
+                <!-- App Status Row -->
+                <div class="about-info-row">
+                    <div class="info-row-label">
+                        <i class="fa-solid fa-code-branch"></i>
+                        <span class="label-text">VERSION</span>
+                    </div>
+                    <div class="info-row-content">
+                        <span class="version-badge">v1.2.0</span>
+                        <span class="pro-tag">PRO</span>
+                    </div>
+                </div>
+
+                <!-- System Status Row -->
+                <div class="about-info-row">
+                    <div class="info-row-label">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span class="label-text">STATUS</span>
+                    </div>
+                    <div class="info-row-content">
+                        <span class="status-indicator online">
+                            <span class="status-dot"></span>
+                            PROTECTED
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Action Row -->
+                <div class="about-info-row">
+                    <div class="info-row-label">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span class="label-text">ACTIVITY</span>
+                    </div>
+                    <div class="info-row-content">
+                        <span id="about-last-action" style="font-size: 11px; font-weight: 700;">Nothing yet</span>
+                    </div>
+                </div>
+
+                <!-- Sync Row -->
+                <div id="about-sync-row" class="about-info-row online-only">
+                    <div class="info-row-label">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span class="label-text">CLOUD SYNC</span>
+                    </div>
+                    <div class="info-row-content">
+                        <span id="about-last-sync" style="font-size: 11px; font-weight: 700;">Never Secured</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-divider"></div>
+
+            <div class="about-footer-actions">
+                <p class="footer-label">Connect with us</p>
+                <div class="about-social-group">
+                    <button class="social-btn" title="GitHub"
+                        onclick="window.api.openExternal('https://github.com/MbarkT3STO/Keyra-App')">
+                        <i class="fa-brands fa-github"></i>
+                    </button>
+                    <button class="social-btn" title="X (Twitter)"
+                        onclick="window.api.openExternal('https://x.com/mbarkt3sto')">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </button>
+                    <button class="social-btn" title="Website"
+                        onclick="window.api.openExternal('https://keyraauth.netlify.app/')">
+                        <i class="fa-solid fa-globe"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button class="auth-close-btn"
+                onclick="document.getElementById('about-modal').classList.remove('show'); setTimeout(() => document.getElementById('about-modal').classList.add('hidden'), 300)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
+    </div>
 
     <div class="app-container">
         <!-- Modern Top Navigation Bar -->
@@ -296,7 +374,7 @@
                         <span class="brand-text">Keyra</span>
                     </div>
                 </div>
-                
+
                 <div class="navbar-section navbar-center">
                     <nav class="nav-tabs">
                         <button class="nav-tab active" data-tab="vault">
@@ -309,7 +387,7 @@
                         </button>
                     </nav>
                 </div>
-                
+
                 <div class="navbar-section navbar-right">
                     <!-- Modern Connectivity Indicator (Glass Pill) -->
                     <div id="connectivity-status" class="connectivity-indicator online">
@@ -319,14 +397,20 @@
 
                     <div class="user-menu">
                         <button class="user-button" id="user-dropdown-btn">
+                            <!-- Live Sync Indicator -->
+                            <div id="navbar-sync-indicator" class="sync-indicator synced hidden" title="Synced and up to date">
+                                <i class="fa-solid fa-cloud"></i>
+                                <span class="sync-dot"></span>
+                            </div>
                             <div class="user-avatar" id="user-avatar" style="overflow: hidden;">
-                                <img id="navbar-avatar-img" class="hidden" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                <img id="navbar-avatar-img" class="hidden"
+                                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                                 <span id="navbar-avatar-initials">?</span>
                             </div>
                             <span class="user-name" id="user-name-display">User</span>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
-                        
+
                         <div class="dropdown-menu" id="user-dropdown">
                             <div class="dropdown-header">
                                 <div class="dropdown-user-name" id="dropdown-user-name">User</div>
@@ -391,7 +475,8 @@
                         </div>
                         <div class="search-vessel">
                             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input type="text" id="vault-search" class="search-input" placeholder="Search your accounts...">
+                            <input type="text" id="vault-search" class="search-input"
+                                placeholder="Search your accounts...">
                         </div>
                         <button class="btn-primary" id="add-account-btn">
                             <i class="fa-solid fa-plus"></i>
@@ -399,8 +484,8 @@
                         </button>
                     </div>
                 </div>
-                
-                <div class="global-timer-vessel" id="global-timer-vessel">
+
+                <div class="global-timer-vessel hidden" id="global-timer-vessel">
                     <div class="global-timer-label">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                         <span>Security Sync</span>
@@ -409,14 +494,14 @@
                         <div class="timer-linear-progress" id="global-otp-timer"></div>
                     </div>
                 </div>
-                
+
                 <div class="accounts-grid" id="accounts-grid">
                     <!-- Cards dynamically inserted by JS -->
                 </div>
-                
+
                 <!-- Empty State (No Accounts) -->
                 <div id="empty-state" class="hidden">
-                        <div class="empty-state-vessel">
+                    <div class="empty-state-vessel">
                         <i class="fa-solid fa-fingerprint empty-state-icon"></i>
                         <h2>Your Vault is Empty</h2>
                         <p>Add your first account to get started.</p>
@@ -450,87 +535,89 @@
 
                 <div class="settings-grid">
 
-                <!-- 1. Security Enclave Card — Most Critical First -->
-                <div class="account-card bento-card">
-                    <div class="bento-header">
-                        <div class="bento-icon">
-                            <i class="fa-solid fa-shield-halved" style="color: var(--accent-primary);"></i>
+                    <!-- 1. Security Enclave Card — Most Critical First -->
+                    <div class="account-card bento-card">
+                        <div class="bento-header">
+                            <div class="bento-icon">
+                                <i class="fa-solid fa-shield-halved" style="color: var(--accent-primary);"></i>
+                            </div>
+                            <div class="bento-title-vessel">
+                                <h3 class="bento-title">Security</h3>
+                                <div class="bento-subtitle">How you access your Vault</div>
+                            </div>
                         </div>
-                        <div class="bento-title-vessel">
-                            <h3 class="bento-title">Security</h3>
-                            <div class="bento-subtitle">How you access your Vault</div>
+                        <div class="bento-content">
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">App PIN</div>
+                                    <div class="setting-desc">A 4-digits to unlock the app</div>
+                                </div>
+                                <div id="pin-status-badge"></div>
+                                <button class="btn-icon danger hidden" id="remove-pin-btn"
+                                    title="Remove Security Policy" style="margin-right: 8px;">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button class="user-button" id="setup-pin-btn"
+                                    style="min-width: 100px; justify-content: center;">Setup</button>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Auto-Lock App</div>
+                                    <div class="setting-desc">Lock automatically when inactive</div>
+                                </div>
+                                <div class="segmented-control" id="autolock-segmented">
+                                    <button class="segment" data-val="0">Off</button>
+                                    <button class="segment" data-val="1">1m</button>
+                                    <button class="segment" data-val="5">5m</button>
+                                    <button class="segment" data-val="15">15m</button>
+                                    <div class="segment-indicator"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Hide Codes</div>
+                                    <div class="setting-desc">Tap to reveal your security codes</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="privacy-mode-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Anti-Peek Protection</div>
+                                    <div class="setting-desc">Block screenshots and recordings</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="screen-guardian-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Auto-Blur</div>
+                                    <div class="setting-desc">Blur the app when you click away</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="privacy-blur-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                    <div class="bento-content">
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">App PIN</div>
-                                <div class="setting-desc">A 4-digits to unlock the app</div>
-                            </div>
-                            <div id="pin-status-badge"></div>
-                            <button class="btn-icon danger hidden" id="remove-pin-btn" title="Remove Security Policy" style="margin-right: 8px;">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                            <button class="user-button" id="setup-pin-btn" style="min-width: 100px; justify-content: center;">Setup</button>
-                        </div>
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Auto-Lock App</div>
-                                <div class="setting-desc">Lock automatically when inactive</div>
-                            </div>
-                            <div class="segmented-control" id="autolock-segmented">
-                                <button class="segment" data-val="0">Off</button>
-                                <button class="segment" data-val="1">1m</button>
-                                <button class="segment" data-val="5">5m</button>
-                                <button class="segment" data-val="15">15m</button>
-                                <div class="segment-indicator"></div>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Hide Codes</div>
-                                <div class="setting-desc">Tap to reveal your security codes</div>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="privacy-mode-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Anti-Peek Protection</div>
-                                <div class="setting-desc">Block screenshots and recordings</div>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="screen-guardian-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Auto-Blur</div>
-                                <div class="setting-desc">Blur the app when you click away</div>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="privacy-blur-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- 2. Visual Interface Card -->
-                <div class="account-card bento-card">
-                    <div class="bento-header">
-                        <div class="bento-icon">
-                            <i class="fa-solid fa-palette" style="color: var(--accent-primary);"></i>
+                    <!-- 2. Visual Interface Card -->
+                    <div class="account-card bento-card">
+                        <div class="bento-header">
+                            <div class="bento-icon">
+                                <i class="fa-solid fa-palette" style="color: var(--accent-primary);"></i>
+                            </div>
+                            <div class="bento-title-vessel">
+                                <h3 class="bento-title">Look & Feel</h3>
+                                <div class="bento-subtitle">Theme and colors</div>
+                            </div>
                         </div>
-                        <div class="bento-title-vessel">
-                            <h3 class="bento-title">Look & Feel</h3>
-                            <div class="bento-subtitle">Theme and colors</div>
-                        </div>
-                    </div>
-                    <div class="bento-content">
+                        <div class="bento-content">
                             <div class="setting-row">
                                 <div class="setting-info">
                                     <div class="setting-name">Appearance</div>
@@ -544,288 +631,318 @@
                                 </div>
                             </div>
 
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Accent Color</div>
-                                <div class="setting-desc">Choose your favorite color</div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Accent Color</div>
+                                    <div class="setting-desc">Choose your favorite color</div>
+                                </div>
+                                <div class="accent-color-selector">
+                                    <button class="accent-color-option active" data-accent="royal-purple"
+                                        style="background: hsl(258, 100%, 68%);" title="Royal Purple">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="electric-blue"
+                                        style="background: hsl(200, 100%, 68%);" title="Electric Blue">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="emerald-green"
+                                        style="background: hsl(145, 100%, 68%);" title="Emerald Green">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="solar-orange"
+                                        style="background: hsl(15, 100%, 68%);" title="Solar Orange">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="rose-quartz"
+                                        style="background: hsl(330, 100%, 68%);" title="Rose Quartz">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="peach-blossom"
+                                        style="background: hsl(20, 100%, 68%);" title="Peach Blossom">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="lavender-dream"
+                                        style="background: hsl(270, 100%, 68%);" title="Lavender Dream">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="bubblegum"
+                                        style="background: hsl(320, 100%, 68%);" title="Bubblegum">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="sky-blue"
+                                        style="background: hsl(190, 100%, 68%);" title="Sky Blue">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="coral-sunset"
+                                        style="background: hsl(10, 100%, 68%);" title="Coral Sunset">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="lemon-zest"
+                                        style="background: hsl(45, 100%, 68%);" title="Lemon Zest">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="amethyst-glow"
+                                        style="background: hsl(280, 100%, 68%);" title="Amethyst Glow">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="golden-hour"
+                                        style="background: hsl(35, 100%, 68%);" title="Golden Hour">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                    <button class="accent-color-option" data-accent="orchid-mystic"
+                                        style="background: hsl(300, 100%, 68%);" title="Orchid Mystic">
+                                        <span class="accent-check">✓</span>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="accent-color-selector">
-                                <button class="accent-color-option active" data-accent="royal-purple" style="background: hsl(258, 100%, 68%);" title="Royal Purple">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="electric-blue" style="background: hsl(200, 100%, 68%);" title="Electric Blue">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="emerald-green" style="background: hsl(145, 100%, 68%);" title="Emerald Green">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="solar-orange" style="background: hsl(15, 100%, 68%);" title="Solar Orange">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="rose-quartz" style="background: hsl(330, 100%, 68%);" title="Rose Quartz">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="peach-blossom" style="background: hsl(20, 100%, 68%);" title="Peach Blossom">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="lavender-dream" style="background: hsl(270, 100%, 68%);" title="Lavender Dream">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="bubblegum" style="background: hsl(320, 100%, 68%);" title="Bubblegum">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="sky-blue" style="background: hsl(190, 100%, 68%);" title="Sky Blue">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="coral-sunset" style="background: hsl(10, 100%, 68%);" title="Coral Sunset">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="lemon-zest" style="background: hsl(45, 100%, 68%);" title="Lemon Zest">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="amethyst-glow" style="background: hsl(280, 100%, 68%);" title="Amethyst Glow">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="golden-hour" style="background: hsl(35, 100%, 68%);" title="Golden Hour">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                                <button class="accent-color-option" data-accent="orchid-mystic" style="background: hsl(300, 100%, 68%);" title="Orchid Mystic">
-                                    <span class="accent-check">✓</span>
-                                </button>
-                            </div>
-                        </div>
 
-                        <div class="setting-row" id="oled-mode-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Darkest Black</div>
-                                <div class="setting-desc">Saves battery on OLED screens</div>
+                            <div class="setting-row" id="oled-mode-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Darkest Black</div>
+                                    <div class="setting-desc">Saves battery on OLED screens</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="oled-mode-toggle">
+                                    <span class="slider"></span>
+                                </label>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="oled-mode-toggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
 
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Performance Mode</div>
-                                <div class="setting-desc">Makes the app faster on older PCs</div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Performance Mode</div>
+                                    <div class="setting-desc">Makes the app faster on older PCs</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="performance-mode-toggle">
+                                    <span class="slider round"></span>
+                                </label>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="performance-mode-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
 
 
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Close App Shortcut</div>
-                                <div class="setting-desc">Add a close button to your menu</div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Close App Shortcut</div>
+                                    <div class="setting-desc">Add a close button to your menu</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="menu-exit-toggle">
+                                    <span class="slider round"></span>
+                                </label>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="menu-exit-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
 
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Allow Resizing</div>
-                                <div class="setting-desc">Let you resize the app window</div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Allow Resizing</div>
+                                    <div class="setting-desc">Let you resize the app window</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="window-resizable-toggle">
+                                    <span class="slider round"></span>
+                                </label>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="window-resizable-toggle">
-                                <span class="slider round"></span>
-                            </label>
                         </div>
                     </div>
-                </div>
- 
-                <!-- 3. System Integration Card -->
-                <div class="account-card bento-card">
-                    <div class="bento-header">
-                        <div class="bento-icon">
-                            <i class="fa-solid fa-desktop" style="color: var(--accent-primary);"></i>
-                        </div>
-                        <div class="bento-title-vessel">
-                            <h3 class="bento-title">System Integration</h3>
-                            <div class="bento-subtitle">DESKTOP POWER FEATURES</div>
-                        </div>
-                    </div>
-                    <div class="bento-content">
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Launch on Startup</div>
-                                <div class="setting-desc">Open Keyra when Windows starts</div>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="launch-on-startup-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Minimize to Tray</div>
-                                <div class="setting-desc">Keep app running in background</div>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="minimize-to-tray-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Global Shortcut</div>
-                                <div class="setting-desc">Alt + Shift + K to toggle app</div>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="global-hotkey-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- 4. Software Update Card -->
-                <div class="account-card bento-card">
-                    <div class="bento-header">
-                        <div class="bento-icon">
-                            <i class="fa-solid fa-arrows-rotate" style="color: var(--accent-primary);"></i>
+                    <!-- 3. System Integration Card -->
+                    <div class="account-card bento-card">
+                        <div class="bento-header">
+                            <div class="bento-icon">
+                                <i class="fa-solid fa-desktop" style="color: var(--accent-primary);"></i>
+                            </div>
+                            <div class="bento-title-vessel">
+                                <h3 class="bento-title">System Integration</h3>
+                                <div class="bento-subtitle">DESKTOP POWER FEATURES</div>
+                            </div>
                         </div>
-                        <div class="bento-title-vessel">
-                            <h3 class="bento-title">Software Update</h3>
-                            <div class="bento-subtitle">KEEP KEYRA CURRENT</div>
+                        <div class="bento-content">
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Launch on Startup</div>
+                                    <div class="setting-desc">Open Keyra when Windows starts</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="launch-on-startup-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Minimize to Tray</div>
+                                    <div class="setting-desc">Keep app running in background</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="minimize-to-tray-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Global Shortcut</div>
+                                    <div class="setting-desc">Alt + Shift + K to toggle app</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="global-hotkey-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                    <div class="bento-content">
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Auto check Updates</div>
-                                <div class="setting-desc">Check for new versions on startup</div>
+
+                    <!-- 4. Software Update Card -->
+                    <div class="account-card bento-card">
+                        <div class="bento-header">
+                            <div class="bento-icon">
+                                <i class="fa-solid fa-arrows-rotate" style="color: var(--accent-primary);"></i>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="auto-update-toggle" checked>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">App Version</div>
-                                <div id="current-version-text" class="setting-desc">Version 1.0.0</div>
+                            <div class="bento-title-vessel">
+                                <h3 class="bento-title">Software Update</h3>
+                                <div class="bento-subtitle">KEEP KEYRA CURRENT</div>
                             </div>
-                            <div id="update-status-badge" class="badge hidden" style="background: var(--accent-primary); color: white; display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; margin-top: 8px;">NEW</div>
                         </div>
-                        
-                        <div id="update-info-container" style="margin-top: 16px;">
-                            <div id="nm-update-loader" class="nm-update-loader-vessel hidden">
-                                <div class="nm-loader-outer">
-                                    <div class="nm-loader-aura"></div>
-                                    <div class="nm-loader-ring"></div>
-                                    <div class="nm-loader-inner">
-                                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <div class="bento-content">
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Auto check Updates</div>
+                                    <div class="setting-desc">Check for new versions on startup</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="auto-update-toggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">App Version</div>
+                                    <div id="current-version-text" class="setting-desc">Version 1.0.0</div>
+                                </div>
+                                <div id="update-status-badge" class="badge hidden"
+                                    style="background: var(--accent-primary); color: white; display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; margin-top: 8px;">
+                                    NEW</div>
+                            </div>
+
+                            <div id="update-info-container" style="margin-top: 16px;">
+                                <div id="nm-update-loader" class="nm-update-loader-vessel hidden">
+                                    <div class="nm-loader-outer">
+                                        <div class="nm-loader-aura"></div>
+                                        <div class="nm-loader-ring"></div>
+                                        <div class="nm-loader-inner">
+                                            <i class="fa-solid fa-arrows-rotate"></i>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <p id="update-message" style="font-size: 13px; opacity: 0.8; font-weight: 600; margin-bottom: 20px;">Checking for updates...</p>
-                            
-                            <div id="download-progress-container" class="hidden" style="margin-bottom: 20px;">
-                                <div class="progress-track" style="height: 10px; background: var(--nm-shadow-dark); border-radius: 6px; overflow: hidden; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.3);">
-                                    <div id="download-progress-bar" style="width: 0%; height: 100%; background: var(--accent-primary); box-shadow: 0 0 12px var(--accent-primary); transition: width 0.3s ease;"></div>
+                                <p id="update-message"
+                                    style="font-size: 13px; opacity: 0.8; font-weight: 600; margin-bottom: 20px;">
+                                    Checking for updates...</p>
+
+                                <div id="download-progress-container" class="hidden" style="margin-bottom: 20px;">
+                                    <div class="progress-track"
+                                        style="height: 10px; background: var(--nm-shadow-dark); border-radius: 6px; overflow: hidden; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.3);">
+                                        <div id="download-progress-bar"
+                                            style="width: 0%; height: 100%; background: var(--accent-primary); box-shadow: 0 0 12px var(--accent-primary); transition: width 0.3s ease;">
+                                        </div>
+                                    </div>
+                                    <div id="download-percent-text"
+                                        style="font-size: 11px; font-weight: 850; text-align: right; margin-top: 6px; color: var(--accent-primary);">
+                                        0%</div>
                                 </div>
-                                <div id="download-percent-text" style="font-size: 11px; font-weight: 850; text-align: right; margin-top: 6px; color: var(--accent-primary);">0%</div>
-                            </div>
 
-                            <button class="btn-primary" id="btn-check-updates" style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                                <span style="font-weight: 800;">Check for Updates</span>
+                                <button class="btn-primary" id="btn-check-updates"
+                                    style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <span style="font-weight: 800;">Check for Updates</span>
+                                </button>
+                                <button class="btn-primary hidden" id="btn-download-update"
+                                    style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span style="font-weight: 800;">Download v1.1.0</span>
+                                </button>
+                                <button class="btn-primary hidden" id="btn-install-update"
+                                    style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span style="font-weight: 800;">Restart & Install</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Cloud Synchronization Card -->
+                    <div class="account-card bento-card" id="sync-settings-card">
+                        <div class="bento-header">
+                            <div class="bento-icon">
+                                <i class="fa-solid fa-cloud" style="color: var(--accent-primary);"></i>
+                            </div>
+                            <div class="bento-title-vessel">
+                                <h3 class="bento-title" id="sync-settings-title">Cloud Sync</h3>
+                                <div class="bento-subtitle" id="sync-settings-subtitle">Keep your Vault safe on GitHub
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bento-content">
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Auto-Sync</div>
+                                    <div class="setting-desc">Save changes to GitHub instantly</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="cloud-sync-toggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-name">Status</div>
+                                    <div class="setting-desc" id="sync-status-desc">All set!</div>
+                                    <div class="setting-desc-small" id="sync-last-time">Never synced</div>
+                                </div>
+                                <div
+                                    style="display: flex; align-items: center; gap: 8px; color: #28a745; font-size: 13px; font-weight: 800;">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    ACTIVE
+                                </div>
+                            </div>
+                            <button class="btn-sync-premium" id="btn-sync-now">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                                <span>Sync Now</span>
                             </button>
-                            <button class="btn-primary hidden" id="btn-download-update" style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        </div>
+                        <!-- Disabled Overlay for Local Accounts -->
+                        <div id="sync-disabled-overlay" class="disabled-card-overlay hidden">
+                            <i class="fa-solid fa-cloud-slash"></i>
+                            <span>Sync Disabled (Local Account)</span>
+                            <button class="btn-nm-setup" id="btn-open-private-sync">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>Enable Private Sync</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Vault Maintenance Card -->
+                    <div class="account-card bento-card">
+                        <div class="bento-header">
+                            <div class="bento-icon">
+                                <i class="fa-solid fa-shield" style="color: var(--accent-primary);"></i>
+                            </div>
+                            <div class="bento-title-vessel">
+                                <h3 class="bento-title">Maintenance</h3>
+                                <div class="bento-subtitle">Backup and Restore</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                            <button class="btn-primary btn-maintenance" id="btn-export-vault">
                                 <i class="fa-solid fa-download"></i>
-                                <span style="font-weight: 800;">Download v1.1.0</span>
+                                <span>Backup Vault</span>
                             </button>
-                            <button class="btn-primary hidden" id="btn-install-update" style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <i class="fa-solid fa-bolt"></i>
-                                <span style="font-weight: 800;">Restart & Install</span>
+                            <button class="btn-primary btn-maintenance" id="btn-import-vault">
+                                <i class="fa-solid fa-upload"></i>
+                                <span>Restore Vault</span>
                             </button>
                         </div>
-                    </div>
-                </div>
-
-                <!-- 4. Cloud Synchronization Card -->
-                <div class="account-card bento-card" id="sync-settings-card">
-                    <div class="bento-header">
-                        <div class="bento-icon">
-                            <i class="fa-solid fa-cloud" style="color: var(--accent-primary);"></i>
-                        </div>
-                        <div class="bento-title-vessel">
-                            <h3 class="bento-title" id="sync-settings-title">Cloud Sync</h3>
-                            <div class="bento-subtitle" id="sync-settings-subtitle">Keep your Vault safe on GitHub</div>
+                        <div
+                            style="margin-top: 12px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5;">
+                            <i class="fa-solid fa-circle-exclamation footer-info-icon"></i>
+                            Backups are protected by your master password.
                         </div>
                     </div>
-                    <div class="bento-content">
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Auto-Sync</div>
-                                <div class="setting-desc">Save changes to GitHub instantly</div>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="cloud-sync-toggle" checked>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="setting-row">
-                            <div class="setting-info">
-                                <div class="setting-name">Status</div>
-                                <div class="setting-desc" id="sync-status-desc">All set!</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; color: #28a745; font-size: 13px; font-weight: 800;">
-                                <i class="fa-solid fa-circle-check"></i>
-                                ACTIVE
-                            </div>
-                        </div>
-                        <button class="btn-sync-premium" id="btn-sync-now">
-                            <i class="fa-solid fa-arrows-rotate"></i>
-                            <span>Sync Now</span>
-                        </button>
-                    </div>
-                    <!-- Disabled Overlay for Local Accounts -->
-                    <div id="sync-disabled-overlay" class="disabled-card-overlay hidden">
-                        <i class="fa-solid fa-cloud-slash"></i>
-                        <span>Sync Disabled (Local Account)</span>
-                        <button class="btn-nm-setup" id="btn-open-private-sync">
-                            <i class="fa-solid fa-shield-halved"></i>
-                            <span>Enable Private Sync</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 4. Vault Maintenance Card -->
-                <div class="account-card bento-card">
-                    <div class="bento-header">
-                        <div class="bento-icon">
-                            <i class="fa-solid fa-shield" style="color: var(--accent-primary);"></i>
-                        </div>
-                        <div class="bento-title-vessel">
-                            <h3 class="bento-title">Maintenance</h3>
-                            <div class="bento-subtitle">Backup and Restore</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
-                        <button class="btn-primary btn-maintenance" id="btn-export-vault">
-                            <i class="fa-solid fa-download"></i>
-                            <span>Backup Vault</span>
-                        </button>
-                        <button class="btn-primary btn-maintenance" id="btn-import-vault">
-                            <i class="fa-solid fa-upload"></i>
-                            <span>Restore Vault</span>
-                        </button>
-                    </div>
-                    <div style="margin-top: 12px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5;">
-                        <i class="fa-solid fa-circle-exclamation footer-info-icon"></i>
-                        Backups are protected by your master password.
-                    </div>
-                </div>
 
 
                 </div>
@@ -843,35 +960,47 @@
                 <div class="settings-grid">
                     <!-- Profile Area -->
                     <div class="account-card bento-card profile-card">
-                        <div class="profile-header" style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
+                        <div class="profile-header"
+                            style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
                             <div style="position: relative;">
-                                <div class="profile-avatar" id="acc-avatar" style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; color: var(--accent-primary); border: 2px solid var(--accent-primary); overflow: hidden;">
-                                    <img id="acc-avatar-img" class="hidden" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div class="profile-avatar" id="acc-avatar"
+                                    style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; color: var(--accent-primary); border: 2px solid var(--accent-primary); overflow: hidden;">
+                                    <img id="acc-avatar-img" class="hidden"
+                                        style="width: 100%; height: 100%; object-fit: cover;">
                                     <span id="acc-initials">--</span>
                                 </div>
-                                <button id="btn-change-avatar" style="position: absolute; bottom: -5px; right: -5px; width: 32px; height: 32px; border-radius: 50%; background: var(--nm-surface); box-shadow: var(--nm-shadow-out); border: none; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast);">
+                                <button id="btn-change-avatar"
+                                    style="position: absolute; bottom: -5px; right: -5px; width: 32px; height: 32px; border-radius: 50%; background: var(--nm-surface); box-shadow: var(--nm-shadow-out); border: none; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast);">
                                     <i class="fa-solid fa-camera"></i>
                                 </button>
                             </div>
                             <div class="profile-details">
-                                <h3 id="acc-display-username" style="font-size: 24px; font-weight: 850; margin-bottom: 4px;">Loading...</h3>
+                                <h3 id="acc-display-username"
+                                    style="font-size: 24px; font-weight: 850; margin-bottom: 4px;">Loading...</h3>
                                 <p id="acc-primary-email" style="opacity: 0.7; font-weight: 600;">Your Email</p>
-                                <div id="pending-email-badge" class="badge hidden" style="background: var(--accent-primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; margin-top: 8px; display: inline-block;">Email Change in Progress</div>
+                                <div id="pending-email-badge" class="badge hidden"
+                                    style="background: var(--accent-primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; margin-top: 8px; display: inline-block;">
+                                    Email Change in Progress</div>
                             </div>
                         </div>
 
                         <!-- Pending Email Action (If exists) -->
-                        <div id="pending-email-action-box" class="pending-sync-box hidden" style="background: var(--accent-soft); padding: 16px; border-radius: var(--radius-lg); border-left: 4px solid var(--accent-primary); margin-top: 16px;">
-                            <div class="sync-info" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div id="pending-email-action-box" class="pending-sync-box hidden"
+                            style="background: var(--accent-soft); padding: 16px; border-radius: var(--radius-lg); border-left: 4px solid var(--accent-primary); margin-top: 16px;">
+                            <div class="sync-info"
+                                style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                 <i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-primary);"></i>
                                 <div>
                                     <strong style="display: block; font-size: 14px;">Verify your Email</strong>
-                                    <p id="pending-email-text" style="font-size: 13px; opacity: 0.8;">Confirming your new email address.</p>
+                                    <p id="pending-email-text" style="font-size: 13px; opacity: 0.8;">Confirming your
+                                        new email address.</p>
                                 </div>
                             </div>
                             <div class="sync-actions" style="display: flex; gap: 8px;">
-                                <button class="user-button" id="btn-cancel-email-change" style="flex: 1; justify-content: center; font-size: 13px;">Cancel</button>
-                                <button class="btn-primary" id="btn-show-email-verify" style="flex: 1; height: 38px; font-size: 13px;">Verify Now</button>
+                                <button class="user-button" id="btn-cancel-email-change"
+                                    style="flex: 1; justify-content: center; font-size: 13px;">Cancel</button>
+                                <button class="btn-primary" id="btn-show-email-verify"
+                                    style="flex: 1; height: 38px; font-size: 13px;">Verify Now</button>
                             </div>
                         </div>
                     </div>
@@ -887,8 +1016,10 @@
                                 <div class="bento-subtitle">WHAT WE CALL YOU</div>
                             </div>
                         </div>
-                        <form id="form-change-username" class="settings-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-                            <input type="text" id="new-username" class="form-input" placeholder="New Display Name" required minlength="4">
+                        <form id="form-change-username" class="settings-form"
+                            style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                            <input type="text" id="new-username" class="form-input" placeholder="New Display Name"
+                                required minlength="4">
                             <button type="submit" class="btn-primary" style="height: 42px;">Update Name</button>
                         </form>
                     </div>
@@ -904,8 +1035,10 @@
                                 <div class="bento-subtitle">FOR NOTIFICATIONS & RECOVERY</div>
                             </div>
                         </div>
-                        <form id="form-request-email-change" class="settings-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-                            <input type="email" id="new-email" class="form-input" placeholder="New Email Address" required>
+                        <form id="form-request-email-change" class="settings-form"
+                            style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                            <input type="email" id="new-email" class="form-input" placeholder="New Email Address"
+                                required>
                             <button type="submit" class="btn-primary" style="height: 42px;">Change Email</button>
                         </form>
                     </div>
@@ -921,10 +1054,16 @@
                                 <div class="bento-subtitle">SECURITY ZONE</div>
                             </div>
                         </div>
-                        <p class="caution-text" style="font-size: 12px; opacity: 0.7; margin: 12px 0; line-height: 1.5;">Changing your master password will update your vault's security. Please make sure you don't forget your new password.</p>
-                        <form id="form-change-password" class="settings-form" style="display: flex; flex-direction: column; gap: 12px;">
-                            <input type="password" id="new-master-password" class="form-input" placeholder="New Master Password" required minlength="8">
-                            <input type="password" id="confirm-master-password" class="form-input" placeholder="Confirm New Password" required minlength="8">
+                        <p class="caution-text"
+                            style="font-size: 12px; opacity: 0.7; margin: 12px 0; line-height: 1.5;">Changing your
+                            master password will update your vault's security. Please make sure you don't forget your
+                            new password.</p>
+                        <form id="form-change-password" class="settings-form"
+                            style="display: flex; flex-direction: column; gap: 12px;">
+                            <input type="password" id="new-master-password" class="form-input"
+                                placeholder="New Master Password" required minlength="8">
+                            <input type="password" id="confirm-master-password" class="form-input"
+                                placeholder="Confirm New Password" required minlength="8">
                             <button type="submit" class="btn-danger" style="height: 42px;">Update Master Key</button>
                         </form>
                     </div>
@@ -942,44 +1081,63 @@
                         </div>
                         <div class="bento-content" style="margin-top: 16px;">
                             <!-- Neumorphic Inset Status Container -->
-                            <div id="phone-status-container" style="background: var(--bg-primary); padding: 16px 20px; border-radius: var(--radius-md); box-shadow: var(--nm-shadow-in); display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border: 1px solid rgba(128,128,128,0.05);">
+                            <div id="phone-status-container"
+                                style="background: var(--bg-primary); padding: 16px 20px; border-radius: var(--radius-md); box-shadow: var(--nm-shadow-in); display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border: 1px solid rgba(128,128,128,0.05);">
                                 <div class="setting-info" style="margin: 0;">
-                                    <div class="setting-name" id="current-phone-display" style="font-size: 14.5px; font-weight: 800; letter-spacing: -0.3px;">No Phone Set</div>
-                                    <div class="setting-desc" id="phone-status-text" style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-top: 4px; opacity: 0.6;">NOT VERIFIED</div>
+                                    <div class="setting-name" id="current-phone-display"
+                                        style="font-size: 14.5px; font-weight: 800; letter-spacing: -0.3px;">No Phone
+                                        Set</div>
+                                    <div class="setting-desc" id="phone-status-text"
+                                        style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-top: 4px; opacity: 0.6;">
+                                        NOT VERIFIED</div>
                                 </div>
-                                <div id="phone-status-badge" class="badge danger" style="background: rgba(255, 59, 48, 0.1); color: #ff3b30; border: 1px solid rgba(255, 59, 48, 0.2); border-radius: 20px; padding: 4px 12px; font-size: 10px; font-weight: 850;">UNPROTECTED</div>
+                                <div id="phone-status-badge" class="badge danger"
+                                    style="background: rgba(255, 59, 48, 0.1); color: #ff3b30; border: 1px solid rgba(255, 59, 48, 0.2); border-radius: 20px; padding: 4px 12px; font-size: 10px; font-weight: 850;">
+                                    UNPROTECTED</div>
                             </div>
 
                             <!-- Flex Row Verification Form -->
-                            <form id="form-request-phone-verification" class="settings-form" style="display: flex; gap: 12px; align-items: stretch; margin-bottom: 8px;">
+                            <form id="form-request-phone-verification" class="settings-form"
+                                style="display: flex; gap: 12px; align-items: stretch; margin-bottom: 8px;">
                                 <div class="phone-input-group" style="position: relative; flex: 1;">
-                                    <input type="tel" id="new-phone" class="form-input" placeholder="+1 234 567 8900" required style="width: 100%; height: 44px; margin: 0;">
+                                    <input type="tel" id="new-phone" class="form-input" placeholder="+1 234 567 8900"
+                                        required style="width: 100%; height: 44px; margin: 0;">
                                 </div>
-                                <button type="submit" id="btn-request-phone" class="btn-primary" style="height: 44px; padding: 0 16px; white-space: nowrap; flex-shrink: 0;">
+                                <button type="submit" id="btn-request-phone" class="btn-primary"
+                                    style="height: 44px; padding: 0 16px; white-space: nowrap; flex-shrink: 0;">
                                     <i class="fa-solid fa-qrcode icon-left"></i>
                                     Verify
                                 </button>
                             </form>
 
                             <!-- Premium Floating Action Panel -->
-                            <div id="phone-verify-action-box" class="pending-sync-box hidden" style="background: var(--nm-surface); padding: 20px; border-radius: var(--radius-lg); box-shadow: var(--nm-shadow-out-sm); margin-top: 20px; border: 1px solid rgba(128,128,128,0.05);">
-                                <div class="sync-info" style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
-                                    <div style="width: 40px; height: 40px; background: rgba(var(--accent-rgb), 0.1); color: var(--accent-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);">
+                            <div id="phone-verify-action-box" class="pending-sync-box hidden"
+                                style="background: var(--nm-surface); padding: 20px; border-radius: var(--radius-lg); box-shadow: var(--nm-shadow-out-sm); margin-top: 20px; border: 1px solid rgba(128,128,128,0.05);">
+                                <div class="sync-info"
+                                    style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                                    <div
+                                        style="width: 40px; height: 40px; background: rgba(var(--accent-rgb), 0.1); color: var(--accent-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);">
                                         <i class="fa-solid fa-shield-halved"></i>
                                     </div>
                                     <div>
-                                        <strong style="display: block; font-size: 14px; font-weight: 850; color: var(--text-primary); margin-bottom: 2px;">Finish Verification</strong>
-                                        <p style="font-size: 12.5px; opacity: 0.75; font-weight: 600; line-height: 1.4;">Scan the QR code to verify security match.</p>
+                                        <strong
+                                            style="display: block; font-size: 14px; font-weight: 850; color: var(--text-primary); margin-bottom: 2px;">Finish
+                                            Verification</strong>
+                                        <p
+                                            style="font-size: 12.5px; opacity: 0.75; font-weight: 600; line-height: 1.4;">
+                                            Scan the QR code to verify security match.</p>
                                     </div>
                                 </div>
-                                <button class="btn-primary" id="btn-verify-now" style="width: 100%; height: 44px; font-size: 13.5px; justify-content: center;">
+                                <button class="btn-primary" id="btn-verify-now"
+                                    style="width: 100%; height: 44px; font-size: 13.5px; justify-content: center;">
                                     <i class="fa-solid fa-qrcode icon-left"></i>
                                     Show QR Code
                                 </button>
                             </div>
-                            
+
                             <!-- Refined Remove Ghost Button -->
-                            <button class="user-button hidden" id="btn-remove-phone" style="width: 100%; margin-top: 12px; justify-content: center; height: 42px; font-size: 12.5px; color: #ff3b30; font-weight: 700; background: transparent; border: none; box-shadow: none;">
+                            <button class="user-button hidden" id="btn-remove-phone"
+                                style="width: 100%; margin-top: 12px; justify-content: center; height: 42px; font-size: 12.5px; color: #ff3b30; font-weight: 700; background: transparent; border: none; box-shadow: none;">
                                 <i class="fa-solid fa-trash-can icon-left" style="opacity: 0.8;"></i>
                                 Remove Number
                             </button>
@@ -1022,14 +1180,16 @@
                                 <span class="entity-label">Active Session</span>
                             </div>
                         </div>
-                        <p class="modal-help-text">Signing out will lock your vault. You'll need your password to get back in.</p>
+                        <p class="modal-help-text">Signing out will lock your vault. You'll need your password to get
+                            back in.</p>
                     </div>
                     <div class="modal-footer">
                         <button class="btn-danger" id="btn-confirm-logout">
                             <i class="fa-solid fa-right-from-bracket"></i>
                             Sign Out
                         </button>
-                        <button class="user-button" id="btn-cancel-logout" style="justify-content: center;">Stay Signed In</button>
+                        <button class="user-button" id="btn-cancel-logout" style="justify-content: center;">Stay Signed
+                            In</button>
                     </div>
                 </div>
             </div>
@@ -1050,22 +1210,31 @@
                     </div>
                     <div class="modal-body">
                         <div class="verify-inputs" style="justify-content: center; margin: 20px 0;">
-                            <input type="text" maxlength="1" class="email-verify-digit form-input" style="width: 45px; text-align: center;">
-                            <input type="text" maxlength="1" class="email-verify-digit form-input" style="width: 45px; text-align: center;">
-                            <input type="text" maxlength="1" class="email-verify-digit form-input" style="width: 45px; text-align: center;">
-                            <input type="text" maxlength="1" class="email-verify-digit form-input" style="width: 45px; text-align: center;">
-                            <input type="text" maxlength="1" class="email-verify-digit form-input" style="width: 45px; text-align: center;">
-                            <input type="text" maxlength="1" class="email-verify-digit form-input" style="width: 45px; text-align: center;">
+                            <input type="text" maxlength="1" class="email-verify-digit form-input"
+                                style="width: 45px; text-align: center;">
+                            <input type="text" maxlength="1" class="email-verify-digit form-input"
+                                style="width: 45px; text-align: center;">
+                            <input type="text" maxlength="1" class="email-verify-digit form-input"
+                                style="width: 45px; text-align: center;">
+                            <input type="text" maxlength="1" class="email-verify-digit form-input"
+                                style="width: 45px; text-align: center;">
+                            <input type="text" maxlength="1" class="email-verify-digit form-input"
+                                style="width: 45px; text-align: center;">
+                            <input type="text" maxlength="1" class="email-verify-digit form-input"
+                                style="width: 45px; text-align: center;">
                         </div>
                         <div id="email-verify-error" class="auth-error opacity-0"></div>
                         <div style="text-align: center; font-size: 13px; margin-top: 16px;">
                             <span>Didn't get the code?</span>
-                            <button id="btn-resend-email-code" class="auth-resend-btn">Send again <span id="email-resend-timer"></span></button>
+                            <button id="btn-resend-email-code" class="auth-resend-btn">Send again <span
+                                    id="email-resend-timer"></span></button>
                         </div>
                     </div>
                     <div class="modal-footer" style="padding-top: 0;">
-                        <button class="btn-primary" id="btn-confirm-email-change" style="width: 100%;">Verify & Update</button>
-                        <button class="user-button" id="btn-cancel-email-modal" style="width: 100%; justify-content: center; margin-top: 8px;">Cancel</button>
+                        <button class="btn-primary" id="btn-confirm-email-change" style="width: 100%;">Verify &
+                            Update</button>
+                        <button class="user-button" id="btn-cancel-email-modal"
+                            style="width: 100%; justify-content: center; margin-top: 8px;">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -1077,58 +1246,83 @@
         <div id="modal-phone-qr" class="modal-overlay hidden">
             <div class="modal animate-fade-in" style="max-width: 440px; border-radius: 24px; padding: 24px;">
                 <div class="modal-content" style="padding: 0;">
-                    <div class="modal-header" style="text-align: center; display: block; padding: 0 0 16px 0; border-bottom: none;">
-                        <div class="modal-icon-vessel" style="background: var(--nm-surface); color: var(--accent-primary); box-shadow: var(--nm-shadow-out-sm); margin: 0 auto 16px;">
+                    <div class="modal-header"
+                        style="text-align: center; display: block; padding: 0 0 16px 0; border-bottom: none;">
+                        <div class="modal-icon-vessel"
+                            style="background: var(--nm-surface); color: var(--accent-primary); box-shadow: var(--nm-shadow-out-sm); margin: 0 auto 16px;">
                             <i class="fa-solid fa-shield-halved"></i>
                         </div>
-                        <h2 id="phone-qr-title" style="font-size: 24px; letter-spacing: -0.5px; font-weight: 850;">Secure Verification</h2>
-                        <p id="phone-qr-subtitle" style="font-size: 13.5px; opacity: 0.7; font-weight: 600; margin-top: 4px;">Connect your WhatsApp to confirm your identity</p>
+                        <h2 id="phone-qr-title" style="font-size: 24px; letter-spacing: -0.5px; font-weight: 850;">
+                            Secure Verification</h2>
+                        <p id="phone-qr-subtitle"
+                            style="font-size: 13.5px; opacity: 0.7; font-weight: 600; margin-top: 4px;">Connect your
+                            WhatsApp to confirm your identity</p>
                     </div>
 
-                    <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; padding: 8px 0;">
+                    <div class="modal-body"
+                        style="display: flex; flex-direction: column; align-items: center; padding: 8px 0;">
                         <!-- Modern Neumorphic QR Vessel -->
-                        <div id="modal-wa-qr-vessel" style="background: var(--nm-surface); border-radius: 20px; padding: 16px; box-shadow: var(--nm-shadow-in); display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 20px; width: fit-content; margin-left: auto; margin-right: auto; overflow: hidden;">
-                            <div id="modal-wa-loader" style="width: 220px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 12px;">
+                        <div id="modal-wa-qr-vessel"
+                            style="background: var(--nm-surface); border-radius: 20px; padding: 16px; box-shadow: var(--nm-shadow-in); display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 20px; width: fit-content; margin-left: auto; margin-right: auto; overflow: hidden;">
+                            <div id="modal-wa-loader"
+                                style="width: 220px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 12px;">
                                 <div class="loader-vessel" style="margin-bottom: 16px;">
-                                    <div class="loader-ring" style="width: 44px; height: 44px; border-width: 3px;"></div>
+                                    <div class="loader-ring" style="width: 44px; height: 44px; border-width: 3px;">
+                                    </div>
                                 </div>
-                                <span id="modal-wa-status" style="font-size: 11px; font-weight: 850; letter-spacing: 1.5px; color: var(--accent-primary);">INITIALIZING...</span>
+                                <span id="modal-wa-status"
+                                    style="font-size: 11px; font-weight: 850; letter-spacing: 1.5px; color: var(--accent-primary);">INITIALIZING...</span>
                             </div>
-                            <img id="modal-wa-qr-image" class="hidden" style="width: 220px; height: 220px; border-radius: 8px; display: block; filter: contrast(1.1); margin: 0 auto;">
-                            
+                            <img id="modal-wa-qr-image" class="hidden"
+                                style="width: 220px; height: 220px; border-radius: 8px; display: block; filter: contrast(1.1); margin: 0 auto;">
+
                             <!-- Blurred Overlay during Verifying state -->
                             <!-- Uses a dark backdrop-filter to ensure perfect contrast against the glaring white QR image -->
-                            <div id="wa-qr-overlay" class="hidden" style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;">
+                            <div id="wa-qr-overlay" class="hidden"
+                                style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;">
                                 <div class="loader-vessel" style="margin-bottom: 16px;">
                                     <!-- Custom inline spinner to force pure white -->
-                                    <div style="width: 40px; height: 40px; border: 3px solid rgba(255, 255, 255, 0.2); border-top-color: #ffffff; border-radius: 50%; animation: loader-spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;"></div>
+                                    <div
+                                        style="width: 40px; height: 40px; border: 3px solid rgba(255, 255, 255, 0.2); border-top-color: #ffffff; border-radius: 50%; animation: loader-spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;">
+                                    </div>
                                 </div>
-                                <span style="font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">Verifying Identity...</span>
+                                <span
+                                    style="font-size: 14px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">Verifying
+                                    Identity...</span>
                             </div>
                         </div>
 
                         <!-- Inline Error Container with Smooth Scale -->
-                        <div id="wa-qr-error" class="hidden" style="width: 100%; margin-bottom: 16px; padding: 14px; background: rgba(255, 59, 48, 0.08); border: 1px solid rgba(255, 59, 48, 0.15); border-radius: var(--radius-md); text-align: center; display: flex; align-items: center; gap: 10px; justify-content: center;">
+                        <div id="wa-qr-error" class="hidden"
+                            style="width: 100%; margin-bottom: 16px; padding: 14px; background: rgba(255, 59, 48, 0.08); border: 1px solid rgba(255, 59, 48, 0.15); border-radius: var(--radius-md); text-align: center; display: flex; align-items: center; gap: 10px; justify-content: center;">
                             <i class="fa-solid fa-triangle-exclamation danger-text"></i>
-                            <span id="wa-qr-error-text" style="font-size: 12.5px; font-weight: 700; color: #ff3b30; line-height: 1.4;"></span>
+                            <span id="wa-qr-error-text"
+                                style="font-size: 12.5px; font-weight: 700; color: #ff3b30; line-height: 1.4;"></span>
                         </div>
 
                         <!-- Requirement Callout Container -->
-                        <div style="width: 100%; padding: 16px 20px; background: var(--bg-primary); border-radius: var(--radius-lg); box-shadow: var(--nm-shadow-in); text-align: left; display: flex; align-items: flex-start; gap: 14px; border: 1px solid rgba(128, 128, 128, 0.05);">
-                            <div style="width: 36px; height: 36px; background: rgba(37, 211, 102, 0.1); color: #25d366; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);">
+                        <div
+                            style="width: 100%; padding: 16px 20px; background: var(--bg-primary); border-radius: var(--radius-lg); box-shadow: var(--nm-shadow-in); text-align: left; display: flex; align-items: flex-start; gap: 14px; border: 1px solid rgba(128, 128, 128, 0.05);">
+                            <div
+                                style="width: 36px; height: 36px; background: rgba(37, 211, 102, 0.1); color: #25d366; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);">
                                 <i class="fa-solid fa-circle-info"></i>
                             </div>
                             <div>
-                                <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Important Requirement</div>
-                                <p style="font-size: 12.5px; color: var(--text-dim); line-height: 1.5; font-weight: 600; opacity: 0.85;">
-                                    Scan this QR code using the WhatsApp account corresponding to <strong style="color: var(--text-primary);">the number you just entered</strong>.
+                                <div
+                                    style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+                                    Important Requirement</div>
+                                <p
+                                    style="font-size: 12.5px; color: var(--text-dim); line-height: 1.5; font-weight: 600; opacity: 0.85;">
+                                    Scan this QR code using the WhatsApp account corresponding to <strong
+                                        style="color: var(--text-primary);">the number you just entered</strong>.
                                 </p>
                             </div>
-                    </div>
-                </div> <!-- Closes modal-body -->
-                    
+                        </div>
+                    </div> <!-- Closes modal-body -->
+
                     <div class="modal-footer" style="padding: 16px 0 0 0; border-top: none;">
-                        <button class="user-button secondary" id="btn-cancel-phone-qr" style="width: 100%; justify-content: center; height: 48px; font-size: 13px; font-weight: 800;">
+                        <button class="user-button secondary" id="btn-cancel-phone-qr"
+                            style="width: 100%; justify-content: center; height: 48px; font-size: 13px; font-weight: 800;">
                             Cancel Verification
                         </button>
                     </div>
@@ -1139,7 +1333,7 @@
 
 
         <!-- Notification Feed (Moved to bottom of body) -->
-        
+
         <!-- Premium Syncing Indicator (Floating Pill) -->
         <div id="cloud-sync-indicator" class="cloud-sync-pill hidden">
             <i class="fa-solid fa-arrows-rotate sync-icon"></i>
@@ -1158,8 +1352,10 @@
             <div class="pin-brand">
                 <div class="pin-avatar-ring">
                     <div class="pin-avatar-inner" id="pin-avatar">
-                        <img id="pin-avatar-img" class="hidden" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                        <img id="pin-avatar-fallback" src="assets/logo.png" class="app-logo-medium nm-logo" style="width: 60%; height: auto;">
+                        <img id="pin-avatar-img" class="hidden"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        <img id="pin-avatar-fallback" src="assets/logo.png" class="app-logo-medium nm-logo"
+                            style="width: 60%; height: auto;">
                     </div>
                 </div>
             </div>
@@ -1179,10 +1375,10 @@
                         <div class="pin-dot" data-digit="4"></div>
                     </div>
                 </div>
-                
+
                 <div class="pin-helper">Secure 4-Digit Master Code</div>
             </form>
-            
+
             <div class="pin-footer-actions">
                 <button type="button" id="btn-forgot-pin" class="forgot-pin-link">
                     <i class="fa-solid fa-key"></i>
@@ -1198,7 +1394,7 @@
             <button id="cancel-forgot-pin-btn" class="auth-close-btn modal-top-left" title="Back to PIN Entry">
                 <i class="fa-solid fa-arrow-left"></i>
             </button>
-            
+
             <!-- View 1: Main Options -->
             <div id="forgot-pin-main-view" class="modal-content">
                 <div class="modal-header">
@@ -1221,12 +1417,14 @@
                             <span class="entity-label">Requires Verification</span>
                         </div>
                     </div>
-                    <p class="modal-help-text spaced-top">Choose how you want to verify your identity to reset your PIN.</p>
-                    
+                    <p class="modal-help-text spaced-top">Choose how you want to verify your identity to reset your PIN.
+                    </p>
+
                     <!-- Master Password Option -->
                     <form id="form-forgot-pin" class="settings-form hidden recovery-form">
                         <div class="form-label recovery-label">Master Password</div>
-                        <input type="password" id="forgot-pin-password" class="form-input" placeholder="Enter your master password" autocomplete="current-password" required>
+                        <input type="password" id="forgot-pin-password" class="form-input"
+                            placeholder="Enter your master password" autocomplete="current-password" required>
                         <p id="forgot-pin-error" class="hidden recovery-error"></p>
                     </form>
                 </div>
@@ -1235,7 +1433,7 @@
                         <i class="fa-solid fa-trash-can"></i>
                         Reset PIN & Sign Out
                     </button>
-                    
+
                     <!-- WhatsApp Option (shown only if phone verified) -->
                     <div id="forgot-pin-wa-divider" class="hidden recovery-divider">
                         <div class="recovery-divider-line"></div>
@@ -1248,7 +1446,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- View 2: WhatsApp QR Code -->
             <div id="forgot-pin-wa-view" class="modal-content hidden">
                 <div class="modal-header">
@@ -1268,22 +1466,22 @@
                             <div class="wa-loading-spinner"></div>
                         </div>
                         <img id="forgot-pin-wa-qr" class="hidden qr-image">
-                        
+
                         <!-- Overlay during verification -->
                         <div id="forgot-pin-wa-overlay" class="hidden qr-overlay">
                             <div class="qr-spinner"></div>
                             <span class="qr-overlay-text">Verifying...</span>
                         </div>
                     </div>
-                    
+
                     <span id="forgot-pin-wa-status" class="wa-status-text">INITIALIZING...</span>
-                    
+
                     <!-- Error Container -->
                     <div id="forgot-pin-wa-error" class="hidden recovery-error-banner">
                         <i class="fa-solid fa-triangle-exclamation danger-text"></i>
                         <span id="forgot-pin-wa-error-text" class="error-banner-text"></span>
                     </div>
-                    
+
                     <!-- Instruction -->
                     <div class="recovery-instruction-box">
                         <div class="instruction-icon-wa">
@@ -1291,7 +1489,8 @@
                         </div>
                         <div>
                             <div class="instruction-title">Scan with WhatsApp</div>
-                            <p id="forgot-pin-wa-phone-hint" class="instruction-text">Use the WhatsApp account linked to your verified phone number.</p>
+                            <p id="forgot-pin-wa-phone-hint" class="instruction-text">Use the WhatsApp account linked to
+                                your verified phone number.</p>
                         </div>
                     </div>
                 </div>
@@ -1299,7 +1498,7 @@
                     <!-- redundant back button removed -->
                 </div>
             </div>
-            
+
             <!-- View 3: PIN Sent Confirmation -->
             <div id="forgot-pin-code-view" class="modal-content hidden">
                 <div class="modal-header">
@@ -1322,16 +1521,18 @@
                             <span class="entity-label" id="forgot-pin-code-phone">+XX XXX XXX XXXX</span>
                         </div>
                     </div>
-                    
-                    <p class="modal-help-text">Your PIN has been sent to your WhatsApp. Check your messages and use it to unlock the vault.</p>
-                    
+
+                    <p class="modal-help-text">Your PIN has been sent to your WhatsApp. Check your messages and use it
+                        to unlock the vault.</p>
+
                     <div class="recovery-success-box">
                         <div class="instruction-icon-wa">
                             <i class="fa-solid fa-shield-halved"></i>
                         </div>
                         <div>
                             <div class="instruction-title">Security Note</div>
-                            <p class="instruction-text">For your security, please delete the message after reading your PIN.</p>
+                            <p class="instruction-text">For your security, please delete the message after reading your
+                                PIN.</p>
                         </div>
                     </div>
                 </div>
@@ -1364,9 +1565,59 @@
     <script type="module" src="js/app.js"></script>
     <!-- Dynamic Grain Layer (CSS Optimized) -->
     <div class="grain-overlay"></div>
+    <!-- Sync Conflict Resolution Modal -->
+    <div id="modal-sync-conflict" class="modal-overlay hidden">
+        <div class="modal animate-fade-in">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel danger">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2 class="danger-text">Sync Conflict</h2>
+                        <p>DATA VERSION MISMATCH DETECTED</p>
+                    </div>
+                </div>
+                <div class="modal-divider"></div>
+                <div class="modal-body">
+                    <p class="modal-help-text">Another device has updated your vault on GitHub. Overwriting it might lead to data loss on that device.</p>
+                    
+                    <div class="conflict-options" style="margin-top: 24px; display: grid; gap: 16px;">
+                        <div class="conflict-option-card" id="option-force-push">
+                            <div class="option-icon-box">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <div class="option-details">
+                                <div class="option-title">Force Push (Overwrite)</div>
+                                <div class="option-desc">Keep your <strong>local</strong> changes and overwrite the version on GitHub.</div>
+                            </div>
+                        </div>
+
+                        <div class="conflict-option-card" id="option-pull-remote">
+                            <div class="option-icon-box accent">
+                                <i class="fa-solid fa-cloud-arrow-down"></i>
+                            </div>
+                            <div class="option-details">
+                                <div class="option-title">Pull Remote (Overwrite Local)</div>
+                                <div class="option-desc">Discard <strong>local</strong> changes and download the latest version from GitHub.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer footer-grid" style="padding-top: 0;">
+                    <button class="user-button secondary" id="btn-close-sync-conflict">Review Later</button>
+                    <button class="user-button highlight btn-full disabled" id="btn-resolve-sync-conflict" disabled>
+                        <i class="fa-solid fa-check"></i>
+                        <span>Resolve Conflict</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Private Sync Setup Modal -->
     <div id="modal-private-sync" class="modal-overlay hidden">
-        <div class="modal animate-fade-in" style="max-width: 480px;">
+        <div class="modal animate-fade-in">
             <div class="modal-content">
                 <div class="modal-header">
                     <div class="modal-icon-vessel highlight">
@@ -1379,24 +1630,35 @@
                 </div>
                 <div class="modal-divider"></div>
                 <div class="modal-body">
-                    <p class="modal-help-text">Synchronize your local vault to your own private GitHub repository. Your data stays 100% yours.</p>
-                    
+                    <p class="modal-help-text">Synchronize your local vault to your own private GitHub repository. Your
+                        data stays 100% yours.</p>
+
                     <div class="settings-form" style="margin-top: 20px;">
                         <div class="form-group" style="margin-bottom: 16px;">
-                            <label class="form-label" style="display: block; margin-bottom: 8px;">GitHub Personal Access Token (PAT)</label>
-                            <input type="password" id="sync-github-pat" class="form-input" placeholder="ghp_xxxxxxxxxxxx" style="width: 100%;">
-                            <span class="form-help" style="font-size: 11px; opacity: 0.7; margin-top: 4px; display: block;">Requires 'repo' or 'Contents: Read & Write' scope.</span>
-                        </div>
-                        
-                        <div class="form-group" style="margin-bottom: 16px;">
-                            <label class="form-label" style="display: block; margin-bottom: 8px;">Repository Owner (Username)</label>
-                            <input type="text" id="sync-github-owner" class="form-input" placeholder="Your GitHub Username" style="width: 100%;">
+                            <label class="form-label" style="display: block; margin-bottom: 8px;">GitHub Personal Access
+                                Token (PAT)</label>
+                            <input type="password" id="sync-github-pat" class="form-input"
+                                placeholder="ghp_xxxxxxxxxxxx" style="width: 100%;">
+                            <span class="form-help"
+                                style="font-size: 11px; opacity: 0.7; margin-top: 4px; display: block;">Requires 'repo'
+                                or 'Contents: Read & Write' scope.</span>
                         </div>
 
                         <div class="form-group" style="margin-bottom: 16px;">
-                            <label class="form-label" style="display: block; margin-bottom: 8px;">Repository Name</label>
-                            <input type="text" id="sync-github-repo" class="form-input" placeholder="my-keyra-vault" style="width: 100%;">
-                            <span class="form-help" style="font-size: 11px; opacity: 0.7; margin-top: 4px; display: block;">Existing or new repository name.</span>
+                            <label class="form-label" style="display: block; margin-bottom: 8px;">Repository Owner
+                                (Username)</label>
+                            <input type="text" id="sync-github-owner" class="form-input"
+                                placeholder="Your GitHub Username" style="width: 100%;">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label class="form-label" style="display: block; margin-bottom: 8px;">Repository
+                                Name</label>
+                            <input type="text" id="sync-github-repo" class="form-input" placeholder="my-keyra-vault"
+                                style="width: 100%;">
+                            <span class="form-help"
+                                style="font-size: 11px; opacity: 0.7; margin-top: 4px; display: block;">Existing or new
+                                repository name.</span>
                         </div>
                     </div>
                 </div>
@@ -1418,4 +1680,5 @@
     <!-- Global Notification Container (Portal) -->
     <div id="toast-container"></div>
 </body>
+
 </html>

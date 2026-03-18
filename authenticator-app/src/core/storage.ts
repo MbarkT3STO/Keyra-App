@@ -110,14 +110,22 @@ async function githubRequest(filePath: string, method: string = 'GET', body: any
     }
 
     if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {};
+        try { errorData = await response.json(); } catch (e) {}
+        
+        if (response.status === 409) {
+            const err: any = new Error(`Conflict: Remote version changed.`);
+            err.status = 409;
+            throw err;
+        }
+
         throw new Error(`GitHub API Error: ${response.status} ${JSON.stringify(errorData)}`);
     }
 
     return response.json();
 }
 
-async function callSync(action: 'get' | 'put', filePath: string, data?: any, customCreds?: PrivateSyncConfig) {
+async function callSync(action: 'get' | 'put', filePath: string, data?: any, customCreds?: PrivateSyncConfig, expectedSha?: string) {
     try {
         if (action === 'get') {
             const fileData: any = await githubRequest(filePath, 'GET', null, customCreds);
@@ -127,16 +135,28 @@ async function callSync(action: 'get' | 'put', filePath: string, data?: any, cus
         }
 
         if (action === 'put') {
-            const existingFile: any = await githubRequest(filePath, 'GET', null, customCreds);
-            const sha = existingFile ? existingFile.sha : undefined;
+            // Optimistic Lock: Only fetch SHA if not provided
+            let sha = expectedSha;
+            if (!sha) {
+                const existingFile: any = await githubRequest(filePath, 'GET', null, customCreds);
+                sha = existingFile ? existingFile.sha : undefined;
+            }
+
             const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
             
-            const result = await githubRequest(filePath, 'PUT', {
-                message: `Sync ${filePath} from Desktop`,
-                content,
-                sha
-            }, customCreds);
-            return { success: true, sha: result.content.sha };
+            try {
+                const result = await githubRequest(filePath, 'PUT', {
+                    message: `Sync ${filePath} from Desktop`,
+                    content,
+                    sha
+                }, customCreds);
+                return { success: true, sha: result.content.sha };
+            } catch (e: any) {
+                if (e.status === 409) {
+                    return { success: false, conflict: true, message: "Remote version changed." };
+                }
+                throw e;
+            }
         }
     } catch (e: any) {
         console.error("Cloud action failed:", e);
@@ -207,24 +227,29 @@ export async function saveUsers(users: UserRecord[]): Promise<void> {
     }
 }
 
-export async function syncUserData(username: string, data: Partial<UserRecord>): Promise<void> {
+export async function syncUserData(username: string, data: Partial<UserRecord>, force: boolean = false): Promise<{ success: boolean, conflict?: boolean, message?: string }> {
+    const expectedSha = force ? undefined : lastUserDataSHAs[username];
+
     if (data.isLocal) {
-        // Handle Private Sync for local accounts
         if (data.privateSync?.enabled && data.privateSync.pat) {
-            const filePath = `vault/vault.json`; // Local accounts sync to a flat filename in their own repo
-            const res: any = await callSync('put', filePath, data, data.privateSync);
+            const filePath = `vault/vault.json`;
+            const res: any = await callSync('put', filePath, data, data.privateSync, expectedSha);
             if (res.success) {
                 lastUserDataSHAs[username] = (res as any).sha;
+                return { success: true };
             }
+            return { success: false, conflict: res.conflict, message: res.message };
         }
-        return;
+        return { success: true };
     }
     
     const filePath = `users/${username}/data.json`;
-    const res: any = await callSync('put', filePath, data);
+    const res: any = await callSync('put', filePath, data, undefined, expectedSha);
     if (res.success) {
         lastUserDataSHAs[username] = (res as any).sha;
+        return { success: true };
     }
+    return { success: false, conflict: res.conflict, message: res.message };
 }
 
 export async function getUserData(username: string): Promise<any | null> {
@@ -232,6 +257,14 @@ export async function getUserData(username: string): Promise<any | null> {
     const result: any = await callSync('get', filePath);
     if (result.success && result.data) {
         lastUserDataSHAs[username] = result.sha;
+        return result.data;
+    }
+    return null;
+}
+
+export async function getUserDataDirect(filePath: string, config: PrivateSyncConfig): Promise<any | null> {
+    const result: any = await callSync('get', filePath, null, config);
+    if (result.success && result.data) {
         return result.data;
     }
     return null;

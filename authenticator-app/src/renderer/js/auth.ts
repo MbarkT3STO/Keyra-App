@@ -11,6 +11,8 @@ export async function setupAuthUI() {
     const boxLogin = document.getElementById('auth-login-box')!;
     const boxSignup = document.getElementById('auth-signup-box')!;
     const boxVerify = document.getElementById('auth-verify-box')!;
+    const boxResume = document.getElementById('auth-resume-box')!;
+    const boxEntry = document.getElementById('auth-entry-box')!;
 
     // 0. Auto-Login Sequence
     try {
@@ -131,13 +133,46 @@ export async function setupAuthUI() {
 
     btnBack?.addEventListener('click', () => {
         if (!boxSignup.classList.contains('hidden')) {
-            switchState(boxSignup, boxLogin);
+            switchState(boxSignup, boxEntry);
             btnBack.classList.add('hidden');
-            setLocalMode(false); // Reset to online by default
+            setLocalMode(false); 
+        } else if (!boxLogin.classList.contains('hidden')) {
+            switchState(boxLogin, boxEntry);
+            btnBack.classList.add('hidden');
         } else if (!boxVerify.classList.contains('hidden')) {
             switchState(boxVerify, boxLogin);
+            // Don't hide back btn here as it should go to login
+        } else if (!boxResume.classList.contains('hidden')) {
+            switchState(boxResume, boxEntry);
             btnBack.classList.add('hidden');
         }
+    });
+
+    document.getElementById('btn-entry-login')?.addEventListener('click', () => {
+        switchState(boxEntry, boxLogin);
+        btnBack?.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-entry-signup')?.addEventListener('click', () => {
+        switchState(boxEntry, boxSignup);
+        btnBack?.classList.remove('hidden');
+        setLocalMode(false);
+    });
+
+    document.getElementById('btn-entry-local')?.addEventListener('click', () => {
+        switchState(boxEntry, boxSignup);
+        btnBack?.classList.remove('hidden');
+        setLocalMode(true);
+    });
+
+    document.getElementById('btn-show-resume')?.addEventListener('click', () => {
+        switchState(boxEntry, boxResume);
+        btnBack?.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-show-login-resume')?.addEventListener('click', () => {
+        switchState(boxResume, boxEntry);
+        btnBack?.classList.add('hidden');
     });
 
     // Login Form
@@ -250,6 +285,45 @@ export async function setupAuthUI() {
             }
         } catch (error: any) {
             err.textContent = isLocal ? "Local setup failed." : "Registration failed.";
+            err.style.opacity = '1';
+            err.classList.add('animate-shake');
+        } finally {
+            setAuthLoading(false);
+        }
+    });
+
+    // Resume Form
+    document.getElementById('form-resume')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const pat = (document.getElementById('resume-pat') as HTMLInputElement).value.trim();
+        const owner = (document.getElementById('resume-owner') as HTMLInputElement).value.trim();
+        const repo = (document.getElementById('resume-repo') as HTMLInputElement).value.trim();
+        const err = document.getElementById('resume-error')!;
+
+        err.classList.remove('animate-shake');
+        err.style.opacity = '0';
+
+        setAuthLoading(true, "Restoring Vault from GitHub...");
+        try {
+            const result = await (window as any).api.resumeFromGitHub(pat, owner, repo);
+            if (result.success) {
+                // Success: Pre-fill username and switch to login
+                switchState(boxResume, boxLogin);
+                (document.getElementById('login-username') as HTMLInputElement).value = result.username || "";
+                
+                const loginErr = document.getElementById('login-error')!;
+                loginErr.textContent = result.message;
+                loginErr.style.color = "var(--accent-primary)";
+                loginErr.style.opacity = '1';
+                btnBack?.classList.add('hidden');
+            } else {
+                err.textContent = result.message;
+                err.style.opacity = '1';
+                void (err as HTMLElement).offsetWidth; 
+                err.classList.add('animate-shake');
+            }
+        } catch (error: any) {
+            err.textContent = "Restoration failed. Check credentials.";
             err.style.opacity = '1';
             err.classList.add('animate-shake');
         } finally {
