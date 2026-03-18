@@ -139,7 +139,8 @@ body.dark-theme {
     transition: all var(--transition-fast);
 }
 
-.nm-button:active, .nm-button.active {
+.nm-button:active,
+.nm-button.active {
     box-shadow: var(--nm-pressed);
     transform: scale(0.98);
 }

@@ -232,12 +232,14 @@ export class UIManager {
     private updateLockVaultVisibility() {
         const lockBtn = document.getElementById('lock-vault-btn');
         const setupBtn = document.getElementById('setup-pin-btn');
+        const changeBtn = document.getElementById('change-pin-btn');
         const removeBtn = document.getElementById('remove-pin-btn');
 
         const hasPin = !!localStorage.getItem(`${this.userId}_vault_pin`);
 
         if (lockBtn) lockBtn.classList.toggle('hidden', !hasPin);
         if (setupBtn) setupBtn.style.display = hasPin ? 'none' : 'flex';
+        if (changeBtn) changeBtn.style.display = hasPin ? 'flex' : 'none';
         if (removeBtn) removeBtn.style.display = hasPin ? 'flex' : 'none';
         if (removeBtn) removeBtn.title = "Remove Security Policy";
     }
@@ -382,6 +384,7 @@ export class UIManager {
 
         // Settings PIN
         document.getElementById('setup-pin-btn')?.addEventListener('click', () => this.showPinSetup());
+        document.getElementById('change-pin-btn')?.addEventListener('click', () => this.showPinSetup()); // Reuse showPinSetup
         document.getElementById('remove-pin-btn')?.addEventListener('click', () => this.showPinRemoval());
 
         // Privacy Mode Toggle
@@ -1541,7 +1544,7 @@ export class UIManager {
     private validateAndAutoUnlock(pinValue: string) {
         const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
         const saved = localStorage.getItem(this.getStorageKey('vault_pin'));
-        const progressDots = document.querySelectorAll('.pin-vessel .pin-dot');
+        const progressDots = document.querySelectorAll('.pin-input-vessel .pin-dot');
 
         // Update progress dots based on input length
         progressDots.forEach((dot, index) => {
@@ -1574,7 +1577,7 @@ export class UIManager {
                 this.showToast("Identity Verified", "success");
             } else {
                 // Error feedback
-                const vessel = document.querySelector('.pin-vessel');
+                const vessel = document.querySelector('.pin-input-vessel');
                 vessel?.classList.add('animate-shake');
                 progressDots.forEach(dot => {
                     dot.classList.remove('filled');
@@ -1931,13 +1934,13 @@ export class UIManager {
 
                     <div class="pin-input-container">
                         <div class="pin-input-vessel">
-                            <input type="password" id="pin-step1" maxlength="4" class="pin-field" autocomplete="off" placeholder="••••">
                             <div class="pin-indicators">
-                                <div class="pin-dot-setup" data-digit="1"></div>
-                                <div class="pin-dot-setup" data-digit="2"></div>
-                                <div class="pin-dot-setup" data-digit="3"></div>
-                                <div class="pin-dot-setup" data-digit="4"></div>
+                                <div class="pin-dot" data-digit="1"></div>
+                                <div class="pin-dot" data-digit="2"></div>
+                                <div class="pin-dot" data-digit="3"></div>
+                                <div class="pin-dot" data-digit="4"></div>
                             </div>
+                            <input type="password" id="pin-step1" maxlength="4" class="pin-input-hidden" autocomplete="off">
                         </div>
                         <div class="pin-helper">Choose New PIN</div>
                     </div>
@@ -1987,13 +1990,13 @@ export class UIManager {
 
                     <div class="pin-input-container">
                         <div class="pin-input-vessel">
-                            <input type="password" id="pin-step2" maxlength="4" class="pin-field" autocomplete="off" placeholder="••••">
                             <div class="pin-indicators">
-                                <div class="pin-dot-setup" data-digit="1"></div>
-                                <div class="pin-dot-setup" data-digit="2"></div>
-                                <div class="pin-dot-setup" data-digit="3"></div>
-                                <div class="pin-dot-setup" data-digit="4"></div>
+                                <div class="pin-dot" data-digit="1"></div>
+                                <div class="pin-dot" data-digit="2"></div>
+                                <div class="pin-dot" data-digit="3"></div>
+                                <div class="pin-dot" data-digit="4"></div>
                             </div>
+                            <input type="password" id="pin-step2" maxlength="4" class="pin-input-hidden" autocomplete="off">
                         </div>
                         <div class="pin-helper">Confirm New PIN</div>
                     </div>
@@ -2021,7 +2024,7 @@ export class UIManager {
     private setupPinStep1Events() {
         const pinField = document.getElementById('pin-step1') as HTMLInputElement;
         const continueBtn = document.getElementById('pin-step1-continue');
-        const setupDots = document.querySelectorAll('.pin-dot-setup');
+        const setupDots = document.querySelectorAll('.pin-input-vessel .pin-dot');
 
         pinField?.addEventListener('input', (e) => {
             const val = (e.target as HTMLInputElement).value;
@@ -2050,7 +2053,7 @@ export class UIManager {
     private setupPinStep2Events() {
         const pinField = document.getElementById('pin-step2') as HTMLInputElement;
         const continueBtn = document.getElementById('pin-step2-continue');
-        const setupDots = document.querySelectorAll('.pin-dot-setup');
+        const setupDots = document.querySelectorAll('.pin-input-vessel .pin-dot');
 
         pinField?.addEventListener('input', (e) => {
             const val = (e.target as HTMLInputElement).value;
