@@ -37,35 +37,43 @@ export interface UserRecord {
 
 const USERS_KEY = 'keyra_users';
 
-const syncQueues: Record<string, { timer: any, data: any }> = {};
+const syncQueues: Record<string, { timer: any, data: any, resolvers: ((val: any) => void)[] }> = {};
 
 async function callSync(action: 'get' | 'put' | 'move', path: string, data?: any) {
     // For 'put' actions, we debounce per-path to avoid race conditions
     if (action === 'put') {
         return new Promise((resolve) => {
-            if (syncQueues[path]) {
-                clearTimeout(syncQueues[path].timer);
+            if (!syncQueues[path]) {
+                syncQueues[path] = { timer: null, data: null, resolvers: [] };
             }
 
-            syncQueues[path] = {
-                data,
-                timer: setTimeout(async () => {
-                    const latestData = syncQueues[path].data;
-                    delete syncQueues[path];
-                    
-                    try {
-                        const response = await fetch('/.netlify/functions/github-sync', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action, path, data: latestData })
-                        });
-                        resolve(await response.json());
-                    } catch (e) {
-                        console.error("Cloud sync failed:", e);
-                        resolve({ success: false, message: "Network error during cloud sync." });
-                    }
-                }, 500) // 500ms debounce
-            };
+            const queue = syncQueues[path]!;
+            queue.data = data;
+            queue.resolvers.push(resolve);
+
+            if (queue.timer) {
+                clearTimeout(queue.timer);
+            }
+
+            queue.timer = setTimeout(async () => {
+                const latestData = queue.data;
+                const activeResolvers = [...queue.resolvers];
+                delete syncQueues[path];
+                
+                try {
+                    const response = await fetch('/.netlify/functions/github-sync', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action, path, data: latestData })
+                    });
+                    const result = await response.json();
+                    activeResolvers.forEach(res => res(result));
+                } catch (e) {
+                    console.error("Cloud sync failed:", e);
+                    const errorRes = { success: false, message: "Network error during cloud sync." };
+                    activeResolvers.forEach(res => res(errorRes));
+                }
+            }, 500); // 500ms debounce
         });
     }
 

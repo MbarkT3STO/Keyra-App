@@ -77,10 +77,15 @@ export class UIManager {
             this.setSyncing(true);
             const settings = this.getSettingsObject();
             console.log('Pushing settings to cloud:', settings);
-            await (window as any).api.updateUserSettings(settings);
+            const res = await (window as any).api.updateUserSettings(settings);
+            if (res && res.success === false) {
+                console.warn('Cloud sync reported failure:', res.message);
+                this.showToast("Cloud sync failed: " + (res.message || "Unknown error"), "error");
+            }
             console.log('Settings pushed successfully');
         } catch (error) {
             console.error('Failed to push settings:', error);
+            this.showToast("Sync Error: Please check your connection", "error");
             throw error;
         } finally {
             this.setSyncing(false);
@@ -91,12 +96,17 @@ export class UIManager {
         try {
             this.setSyncing(true);
             const webSettings = this.getWebSettingsObject();
-            const settingsPayload = webSettings;
-            console.log('Pushing web settings to cloud:', settingsPayload);
-            await (window as any).api.updateUserSettings(settingsPayload);
+            console.log('Pushing web settings to cloud:', webSettings);
+            const res = await (window as any).api.updateUserSettings(webSettings);
+            if (res && res.success === false) {
+                 console.warn('Cloud web sync reported failure:', res.message);
+                 // We don't always show toast here to avoid spamming if it's a background sync,
+                 // but for manual actions it's handled in the caller.
+            }
             console.log('Web settings pushed successfully');
         } catch (error) {
             console.error('Failed to push web settings:', error);
+            // Same here, avoiding spam but keeping log
             throw error;
         } finally {
             this.setSyncing(false);
@@ -451,13 +461,10 @@ export class UIManager {
             if (icon) icon.classList.add('sync-spin');
 
             try {
-                // First push current settings and webSettings to cloud
+                // Push all settings (includes Web Settings and root autolock) to cloud
                 await this.pushSettings();
-                await this.pushWebSettings();
 
-                // Then trigger a full vault sync
-                // Note: window.api.syncVault() or similar if available, 
-                // but since we usually sync on change, let's just refresh data
+                // Then trigger a full vault sync to ensure local state is fresh
                 await this.loadInitialData();
 
                 this.showToast("Vault backed up!", "success");
