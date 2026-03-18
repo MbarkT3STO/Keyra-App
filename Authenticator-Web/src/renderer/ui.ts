@@ -487,6 +487,11 @@ export class UIManager {
             this.handleUnlock();
         });
 
+        // Forgot PIN button
+        document.getElementById('btn-forgot-pin')?.addEventListener('click', () => {
+            this.showToast("Please sign out and use your Master Password to sign in again", "info");
+        });
+
         // Auto-unlock on PIN input
         const pinInput = document.getElementById('unlock-pin') as HTMLInputElement;
         pinInput?.addEventListener('input', (e) => {
@@ -1499,9 +1504,31 @@ export class UIManager {
         // Security: Clear all OTP codes immediately when vault is locked
         this.clearAllOTPCodes();
 
+        // Set user avatar on PIN lock screen
+        this.updatePinAvatar();
+
         this.refreshLucide(vessel);
         const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
         if (pinIn) { pinIn.value = ''; pinIn.focus(); }
+    }
+
+    private async updatePinAvatar() {
+        const user = await (window as any).api.getCurrentUser();
+        if (!user) return;
+
+        const pinAvatarImg = document.getElementById('pin-avatar-img') as HTMLImageElement;
+        const pinAvatarFallback = document.getElementById('pin-avatar-fallback') as HTMLImageElement;
+
+        if (pinAvatarImg && pinAvatarFallback) {
+            if (user.profilePicture) {
+                pinAvatarImg.src = user.profilePicture;
+                pinAvatarImg.classList.remove('hidden');
+                pinAvatarFallback.classList.add('hidden');
+            } else {
+                pinAvatarImg.classList.add('hidden');
+                pinAvatarFallback.classList.remove('hidden');
+            }
+        }
     }
 
     private handleUnlock() {

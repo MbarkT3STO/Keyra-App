@@ -792,24 +792,29 @@
             </div>
         </div>
 
-        <!-- Lock Screen PIN (Premium Glassmorphic Redesign) -->
+        <!-- Lock Screen PIN (Premium Neumorphic Redesign) -->
         <div id="lock-vessel" class="modal-overlay pin-overlay">
             <div class="pin-vessel animate-fade-in">
+                <!-- User Identity Section -->
                 <div class="pin-brand">
-                    <div class="pin-lock-icon">
-                        <i class="fa-solid fa-lock"></i>
-                        <div class="lock-glow"></div>
+                    <div class="pin-avatar-ring">
+                        <div class="pin-avatar-inner" id="pin-avatar">
+                            <img id="pin-avatar-img" class="hidden"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            <img id="pin-avatar-fallback" src="/logo.png" class="app-logo-medium nm-logo"
+                                style="width: 60%; height: auto;">
+                        </div>
                     </div>
                 </div>
 
                 <div class="pin-header">
-                    <h2 class="pin-title">Vault Locked</h2>
-                    <p class="pin-subtitle">Identity verification required</p>
+                    <h2 class="pin-title" id="pin-greeting">Vault Locked</h2>
+                    <p class="pin-subtitle">Enter your PIN to resume session</p>
                 </div>
 
                 <form id="form-unlock">
                     <div class="pin-input-vessel">
-                        <input type="password" id="unlock-pin" maxlength="4" class="pin-field" autocomplete="off">
+                        <input type="password" id="unlock-pin" maxlength="4" class="pin-field" autocomplete="off" autofocus>
                         <div class="pin-indicators">
                             <div class="pin-dot" data-digit="1"></div>
                             <div class="pin-dot" data-digit="2"></div>
@@ -819,12 +824,14 @@
                     </div>
 
                     <div class="pin-helper">Secure 4-Digit Master Code</div>
-
-                    <button type="submit" class="btn-primary pin-submit-btn">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        Confirm Identity
-                    </button>
                 </form>
+
+                <div class="pin-footer-actions">
+                    <button type="button" id="btn-forgot-pin" class="forgot-pin-link">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Forgot PIN? Use Master Password</span>
+                    </button>
+                </div>
             </div>
         </div>
 
