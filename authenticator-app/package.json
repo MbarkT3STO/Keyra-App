@@ -1,7 +1,7 @@
 {
   "name": "keyra-authenticator",
   "productName": "Keyra Authenticator",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "A secure Desktop Authenticator Application",
   "homepage": "https://keyraauth.netlify.app/",
   "author": "MBVRK <me@MBVRK.onmicrosoft.com>",
