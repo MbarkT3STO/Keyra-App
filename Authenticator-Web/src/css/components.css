@@ -2533,7 +2533,9 @@ input:checked+.slider:before {
 .pin-overlay {
     position: fixed;
     inset: 0;
-    background: var(--bg-primary);
+    background: hsla(var(--h), 20%, 5%, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     /* Sync with theme surface */
     display: flex;
     align-items: center;
@@ -2605,7 +2607,9 @@ body.vault-is-locked .main-app-content,
 .privacy-blur-overlay {
     position: fixed;
     inset: 0;
-    background: var(--bg-primary);
+    background: hsla(var(--h), 20%, 5%, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     z-index: 10000;
     display: flex;
     align-items: center;
@@ -3262,8 +3266,9 @@ body.vault-is-locked .main-app-content,
 #loading-overlay {
     position: fixed;
     inset: 0;
-    background: var(--bg-primary);
-    backdrop-filter: blur(10px);
+    background: hsla(var(--h), 20%, 5%, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     display: flex;
     align-items: center;
     justify-content: center;
