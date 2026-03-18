@@ -288,8 +288,8 @@ ipcMain.handle('import-vault', async () => {
     return { success: false };
 });
 
-ipcMain.handle('perform-vault-import', async (event, salt, encryptedVaultData, password, autolock, desktopSettings, webSettings) => {
-    return importVaultData(salt, encryptedVaultData, password, autolock, desktopSettings, webSettings);
+ipcMain.handle('perform-vault-import', async (event, salt, encryptedVaultData, password, encryptedSettings, autolock, desktopSettings, webSettings) => {
+    return importVaultData(salt, encryptedVaultData, password, encryptedSettings, autolock, desktopSettings, webSettings);
 });
 
 ipcMain.handle('set-content-protection', (event, enabled) => {

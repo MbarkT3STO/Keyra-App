@@ -64,8 +64,8 @@ contextBridge.exposeInMainWorld('api', {
     getRemainingSeconds: () => ipcRenderer.invoke('get-remaining-seconds'),
     getBatchOTPs: (secrets: string[]) => ipcRenderer.invoke('get-batch-otps', secrets),
     parseURI: (uri: string) => ipcRenderer.invoke('parse-uri', uri),
-    performVaultImport: (salt: string, encryptedVaultData: string, pass: string, autolock: string, desktopSettings: any, webSettings: any) => 
-        ipcRenderer.invoke('perform-vault-import', salt, encryptedVaultData, pass, autolock, desktopSettings, webSettings),
+    performVaultImport: (salt: string, encryptedVaultData: string, pass: string, encryptedSettings?: string, autolock?: string, desktopSettings?: any, webSettings?: any) => 
+        ipcRenderer.invoke('perform-vault-import', salt, encryptedVaultData, pass, encryptedSettings, autolock, desktopSettings, webSettings),
     exportVault: () => ipcRenderer.invoke('export-vault'),
     importVault: () => ipcRenderer.invoke('import-vault'),
     encryptPIN: (pin: string) => ipcRenderer.invoke('encrypt-pin', pin),

@@ -329,12 +329,20 @@ export function logout(): void {
 export async function getActiveAccounts(): Promise<AuthenticatorAccount[]> {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
     try {
+        console.log("getActiveAccounts called for user:", currentUser.username);
+        
         const users = await getUsers();
         const freshUser = users.find(u => u.id === currentUser!.id);
         if (!freshUser) throw new Error("User missing from disk");
 
+        console.log("Fresh user encryptedVaultData length:", freshUser.encryptedVaultData.length);
+        console.log("CurrentUser encryptedVaultData length:", currentUser.encryptedVaultData.length);
+        
         const jsonStr = decryptVault(freshUser.encryptedVaultData, currentKey);
-        return JSON.parse(jsonStr) as AuthenticatorAccount[];
+        const accounts = JSON.parse(jsonStr) as AuthenticatorAccount[];
+        
+        console.log("getActiveAccounts returning", accounts.length, "accounts");
+        return accounts;
     } catch (err) {
         console.error("getActiveAccounts failed:", err);
         return [];
@@ -344,17 +352,28 @@ export async function getActiveAccounts(): Promise<AuthenticatorAccount[]> {
 export async function saveActiveAccounts(accounts: AuthenticatorAccount[], force: boolean = false): Promise<SyncResult> {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
 
+    console.log("saveActiveAccounts called with", accounts.length, "accounts");
+
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
     if (userIndex === -1) throw new Error("User missing from disk.");
 
     const newEncryptedVault = encryptVault(JSON.stringify(accounts), currentKey);
+    console.log("Encrypted vault data length:", newEncryptedVault.length);
+    
     users[userIndex].encryptedVaultData = newEncryptedVault;
+    
+    // Update the in-memory session
+    currentUser.encryptedVaultData = newEncryptedVault;
+    console.log("Updated currentUser.encryptedVaultData");
 
     await saveUsers(users);
+    console.log("Saved users to disk");
 
     // Sync specifically this user's data folder
     const res = await syncUserData(currentUser.username, users[userIndex], force);
+    console.log("Sync result:", res);
+    
     return {
         ...res,
         message: res.success ? "Vault saved successfully." : (res.message || "Sync failed")
@@ -442,17 +461,24 @@ export async function resumeFromGitHub(pat: string, owner: string, repo: string)
 export function getBackupData(): { 
     salt: string, 
     encryptedVaultData: string, 
-    autolock?: string, 
-    "Desktop Settings"?: any, 
-    "Web Settings"?: any 
+    encryptedSettings?: string
 } {
-    if (!currentUser) throw new Error("No active user session.");
-    return {
-        salt: currentUser.salt,
-        encryptedVaultData: currentUser.encryptedVaultData,
+    if (!currentUser || !currentKey) throw new Error("No active user session.");
+    
+    // Prepare settings object
+    const settings = {
         autolock: currentUser.autolock,
         "Desktop Settings": currentUser["Desktop Settings"],
         "Web Settings": currentUser["Web Settings"]
+    };
+    
+    // Encrypt the settings using the current key
+    const encryptedSettings = encryptVault(JSON.stringify(settings), currentKey);
+    
+    return {
+        salt: currentUser.salt,
+        encryptedVaultData: currentUser.encryptedVaultData,
+        encryptedSettings
     };
 }
 
@@ -470,6 +496,8 @@ export async function importVaultData(
     salt: string, 
     encryptedVaultData: string, 
     password: string, 
+    encryptedSettings?: string,
+    // Legacy support for old backup format
     autolock?: string, 
     desktopSettings?: any, 
     webSettings?: any
@@ -477,18 +505,72 @@ export async function importVaultData(
     if (!currentUser || !currentKey) throw new Error("No active user session.");
 
     try {
+        console.log("=== Starting Vault Import ===");
+        console.log("Current user:", currentUser.username);
+        console.log("Backup salt:", salt);
+        console.log("Backup encryptedVaultData length:", encryptedVaultData.length);
+        console.log("Has encryptedSettings:", !!encryptedSettings);
+        console.log("Has legacy autolock:", autolock);
+        console.log("Has legacy desktopSettings:", !!desktopSettings);
+        console.log("Has legacy webSettings:", !!webSettings);
+        
         const key = deriveKey(password, salt);
+        console.log("Derived key from backup password");
+        
         const decryptedJson = decryptVault(encryptedVaultData, key);
+        console.log("Decrypted vault JSON:", decryptedJson);
+        
         const accounts = JSON.parse(decryptedJson) as AuthenticatorAccount[];
 
-        // 1. Restore Vault Data
-        await saveActiveAccounts(accounts);
+        console.log("Decrypted accounts from backup:", accounts.length);
+        console.log("Account details:", accounts.map(a => ({ issuer: a.issuer, account: a.account })));
 
-        // 2. Restore Settings if present in backup
-        if (autolock !== undefined || desktopSettings || webSettings) {
-            const users = await getUsers();
-            const userIndex = users.findIndex(u => u.id === currentUser!.id);
-            if (userIndex !== -1) {
+        // 1. Restore Vault Data - this will re-encrypt with current user's key
+        console.log("Saving accounts with current user's key...");
+        const saveResult = await saveActiveAccounts(accounts, true);
+        console.log("Save result:", saveResult);
+        
+        if (!saveResult.success) {
+            console.error("Failed to save accounts:", saveResult.message);
+            return { success: false, message: "Failed to restore vault data." };
+        }
+
+        // Verify the save worked by reading back
+        console.log("Verifying saved data...");
+        const verifyAccounts = await getActiveAccounts();
+        console.log("Verified accounts count:", verifyAccounts.length);
+        console.log("Verified account details:", verifyAccounts.map(a => ({ issuer: a.issuer, account: a.account })));
+
+        // 2. Restore Settings
+        const users = await getUsers();
+        const userIndex = users.findIndex(u => u.id === currentUser!.id);
+        if (userIndex !== -1) {
+            // New format: encrypted settings
+            if (encryptedSettings) {
+                try {
+                    const decryptedSettings = decryptVault(encryptedSettings, key);
+                    const settings = JSON.parse(decryptedSettings);
+                    
+                    if (settings.autolock !== undefined) {
+                        users[userIndex].autolock = settings.autolock;
+                        currentUser.autolock = settings.autolock;
+                    }
+                    if (settings["Desktop Settings"]) {
+                        users[userIndex]["Desktop Settings"] = settings["Desktop Settings"];
+                        currentUser["Desktop Settings"] = settings["Desktop Settings"];
+                    }
+                    if (settings["Web Settings"]) {
+                        users[userIndex]["Web Settings"] = settings["Web Settings"];
+                        currentUser["Web Settings"] = settings["Web Settings"];
+                    }
+                } catch (err) {
+                    console.error("Failed to decrypt settings:", err);
+                    return { success: false, message: "Failed to decrypt backup settings." };
+                }
+            }
+            // Legacy format: plaintext settings (for backward compatibility)
+            else if (autolock !== undefined || desktopSettings || webSettings) {
+                console.log("Restoring legacy format settings");
                 if (autolock !== undefined) {
                     users[userIndex].autolock = autolock;
                     currentUser.autolock = autolock;
@@ -501,11 +583,16 @@ export async function importVaultData(
                     users[userIndex]["Web Settings"] = webSettings;
                     currentUser["Web Settings"] = webSettings;
                 }
+            }
+            
+            // Only save settings if they were updated
+            if (encryptedSettings || autolock !== undefined || desktopSettings || webSettings) {
                 await saveUsers(users);
                 await syncUserData(currentUser.username, users[userIndex]);
             }
         }
 
+        console.log("=== Vault Import Completed Successfully ===");
         return { success: true, message: "Vault and settings successfully restored." };
     } catch (err) {
         console.error("Vault Import Error:", err);

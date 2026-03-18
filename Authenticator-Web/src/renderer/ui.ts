@@ -2469,7 +2469,16 @@ export class UIManager {
     }
 
     private showImportPasswordModal(data: any) {
-        const { salt, encryptedVaultData, autolock, "Desktop Settings": desktopSettings, "Web Settings": webSettings } = data;
+        // Support both new encrypted format and legacy plaintext format
+        const { 
+            salt, 
+            encryptedVaultData, 
+            encryptedSettings,
+            autolock, 
+            "Desktop Settings": desktopSettings, 
+            "Web Settings": webSettings 
+        } = data;
+        
         const content = `
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
@@ -2516,7 +2525,15 @@ export class UIManager {
                 this.showToast("Password required", "error");
                 return;
             }
-            const res = await (window as any).api.performVaultImport(salt, encryptedVaultData, pass, autolock, desktopSettings, webSettings);
+            const res = await (window as any).api.performVaultImport(
+                salt, 
+                encryptedVaultData, 
+                pass, 
+                encryptedSettings,
+                autolock, 
+                desktopSettings, 
+                webSettings
+            );
             if (res.success) {
                 this.hideModal();
                 this.showToast("Vault successfully restored!", "success");

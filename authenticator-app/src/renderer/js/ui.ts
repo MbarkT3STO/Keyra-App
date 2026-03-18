@@ -3000,7 +3000,16 @@ export class UIManager {
     }
 
     private showImportPasswordModal(data: any) {
-        const { salt, encryptedVaultData, autolock, "Desktop Settings": desktopSettings, "Web Settings": webSettings } = data;
+        // Support both new encrypted format and legacy plaintext format
+        const { 
+            salt, 
+            encryptedVaultData, 
+            encryptedSettings,
+            autolock, 
+            "Desktop Settings": desktopSettings, 
+            "Web Settings": webSettings 
+        } = data;
+        
         const content = `
             <div class="modal-content">
                 <div class="modal-header">
@@ -3043,7 +3052,15 @@ export class UIManager {
             const pass = (document.getElementById('import-pass') as HTMLInputElement).value;
             this.setLoading(true, "Restoring Vault", "DECRYPTING BACKUP ARCHIVE");
             try {
-                const res = await (window as any).api.performVaultImport(salt, encryptedVaultData, pass, autolock, desktopSettings, webSettings);
+                const res = await (window as any).api.performVaultImport(
+                    salt, 
+                    encryptedVaultData, 
+                    pass, 
+                    encryptedSettings,
+                    autolock, 
+                    desktopSettings, 
+                    webSettings
+                );
                 if (res.success) {
                     this.hideModal();
                     this.showToast("Vault restored!", "success");
