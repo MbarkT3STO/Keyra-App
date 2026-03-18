@@ -1,32 +1,97 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   NEUMORPHIC CORE DESIGN SYSTEM (SOFT UI)
+   NEUMORPHIC CORE DESIGN SYSTEM
    ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
-    /* Neumorphic Shadow Tokens - Light Mode (Clean & Crisp) */
-    --nm-light-top: -6px -6px 12px rgba(255, 255, 255, 1);
-    --nm-light-bottom: 6px 6px 12px rgba(163, 177, 198, 0.5);
-    --nm-light-inner-top: inset -3px -3px 8px rgba(255, 255, 255, 1);
-    --nm-light-inner-bottom: inset 3px 3px 8px rgba(163, 177, 198, 0.5);
+    /* Neumorphic Shadow Tokens - Light Mode */
+    --nm-shadow-light: #ffffff;
+    --nm-shadow-dark: rgba(163, 177, 198, 0.65);
 
-    /* Neumorphic Shadow Tokens - Dark Mode (Deep Charcoal Harmony) */
-    --nm-dark-top: -6px -6px 14px rgba(255, 255, 255, 0.03); /* Subtle highlight */
-    --nm-dark-bottom: 6px 6px 14px rgba(0, 0, 0, 0.6);      /* Deep shadow */
-    --nm-dark-inner-top: inset -3px -3px 8px rgba(255, 255, 255, 0.03);
-    --nm-dark-inner-bottom: inset 3px 3px 8px rgba(0, 0, 0, 0.6);
+    --nm-shadow-out:
+        14px 14px 28px var(--nm-shadow-dark),
+        -14px -14px 28px var(--nm-shadow-light);
+    --nm-shadow-in:
+        inset 12px 12px 24px var(--nm-shadow-dark),
+        inset -12px -12px 24px var(--nm-shadow-light);
+    --nm-shadow-out-sm:
+        7px 7px 16px var(--nm-shadow-dark),
+        -7px -7px 16px var(--nm-shadow-light);
+    --nm-shadow-in-sm:
+        inset 7px 7px 14px var(--nm-shadow-dark),
+        inset -7px -7px 14px var(--nm-shadow-light);
 
-    /* Default (Reactive to Theme) */
-    --nm-raised: var(--nm-light-top), var(--nm-light-bottom);
-    --nm-pressed: var(--nm-light-inner-top), var(--nm-light-inner-bottom);
-    --nm-inner-top: var(--nm-light-inner-top);
-    --nm-inner-bottom: var(--nm-light-inner-bottom);
+    /* Backward-compat aliases */
+    --nm-raised: var(--nm-shadow-out);
+    --nm-pressed: var(--nm-shadow-in);
+    --nm-inner-top: inset -7px -7px 14px var(--nm-shadow-light);
+    --nm-inner-bottom: inset 7px 7px 14px var(--nm-shadow-dark);
 }
 
 [data-theme="dark"] {
-    --nm-raised: var(--nm-dark-top), var(--nm-dark-bottom);
-    --nm-pressed: var(--nm-dark-inner-top), var(--nm-dark-inner-bottom);
-    --nm-inner-top: var(--nm-dark-inner-top);
-    --nm-inner-bottom: var(--nm-dark-inner-bottom);
+    --nm-shadow-light: rgba(255, 255, 255, 0.03);
+    --nm-shadow-dark: rgba(0, 0, 0, 0.85);
+
+    --nm-shadow-out:
+        8px 8px 20px var(--nm-shadow-dark),
+        -8px -8px 20px var(--nm-shadow-light);
+    --nm-shadow-in:
+        inset 6px 6px 16px var(--nm-shadow-dark),
+        inset -6px -6px 16px var(--nm-shadow-light);
+    --nm-shadow-out-sm:
+        5px 5px 12px var(--nm-shadow-dark),
+        -5px -5px 12px var(--nm-shadow-light);
+    --nm-shadow-in-sm:
+        inset 5px 5px 10px var(--nm-shadow-dark),
+        inset -5px -5px 10px var(--nm-shadow-light);
+
+    --nm-raised: var(--nm-shadow-out);
+    --nm-pressed: var(--nm-shadow-in);
+    --nm-inner-top: inset -5px -5px 10px var(--nm-shadow-light);
+    --nm-inner-bottom: inset 5px 5px 10px var(--nm-shadow-dark);
+}
+
+/* Light theme override */
+body.light-theme {
+    --nm-shadow-light: #ffffff;
+    --nm-shadow-dark: rgba(203, 213, 225, 0.7);
+
+    --nm-shadow-out:
+        12px 12px 24px var(--nm-shadow-dark),
+        -12px -12px 24px var(--nm-shadow-light);
+    --nm-shadow-in:
+        inset 10px 10px 20px var(--nm-shadow-dark),
+        inset -10px -10px 20px var(--nm-shadow-light);
+    --nm-shadow-out-sm:
+        6px 6px 14px var(--nm-shadow-dark),
+        -6px -6px 14px var(--nm-shadow-light);
+    --nm-shadow-in-sm:
+        inset 6px 6px 12px var(--nm-shadow-dark),
+        inset -6px -6px 12px var(--nm-shadow-light);
+
+    --nm-raised: var(--nm-shadow-out);
+    --nm-pressed: var(--nm-shadow-in);
+}
+
+/* Dark theme override */
+body.dark-theme {
+    --nm-shadow-light: rgba(255, 255, 255, 0.05);
+    --nm-shadow-dark: rgba(0, 0, 0, 0.85);
+
+    --nm-shadow-out:
+        8px 8px 20px var(--nm-shadow-dark),
+        -8px -8px 20px var(--nm-shadow-light);
+    --nm-shadow-in:
+        inset 6px 6px 16px var(--nm-shadow-dark),
+        inset -6px -6px 16px var(--nm-shadow-light);
+    --nm-shadow-out-sm:
+        5px 5px 12px var(--nm-shadow-dark),
+        -5px -5px 12px var(--nm-shadow-light);
+    --nm-shadow-in-sm:
+        inset 5px 5px 10px var(--nm-shadow-dark),
+        inset -5px -5px 10px var(--nm-shadow-light);
+
+    --nm-raised: var(--nm-shadow-out);
+    --nm-pressed: var(--nm-shadow-in);
 }
 
 /* Base Utility Classes */
@@ -101,4 +166,29 @@
 
 .nm-input:focus {
     box-shadow: var(--nm-pressed), 0 0 0 2px var(--accent-soft);
+}
+
+.nm-divider {
+    height: 4px;
+    background: var(--bg-primary);
+    box-shadow: var(--nm-pressed);
+    margin: 12px 16px;
+    border-radius: var(--radius-full);
+}
+
+.nm-icon-large {
+    width: clamp(80px, 15vw, 120px) !important;
+    height: clamp(80px, 15vw, 120px) !important;
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nm-icon-large i {
+    width: 60% !important;
+    height: 60% !important;
+    color: var(--accent-primary);
 }

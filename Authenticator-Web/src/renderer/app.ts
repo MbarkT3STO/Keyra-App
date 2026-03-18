@@ -56,7 +56,6 @@ async function init() {
             // Only blur if we are not on the auth screen AND screenGuardian is enabled
             if (ui && ui.screenGuardian && authVessel && authVessel.classList.contains('hidden')) {
                 privacyOverlay?.classList.remove('hidden');
-                if ((window as any).lucide) (window as any).lucide.createIcons(privacyOverlay || undefined);
             }
         });
         window.addEventListener('focus', () => {

@@ -24,7 +24,7 @@
     /* Border & Glass Legacy Support */
     --border-color: rgba(0, 0, 0, 0.05);
     --glass-bg: rgba(255, 255, 255, 0.9);
-    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-border: none;
 
     /* Spacing System */
     --space-2xs: 4px;
@@ -48,12 +48,43 @@
     /* Transitions */
     --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-elastic: 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
 
     /* Button Sizes */
     --btn-h-lg: 56px;
     --btn-h-md: 46px;
     --btn-h-sm: 36px;
     --btn-px: 24px;
+
+    /* Typography */
+    --font-main: 'Inter', -apple-system, system-ui, sans-serif;
+    --font-heading: 'Outfit', system-ui, sans-serif;
+    --font-mono: 'Outfit', system-ui, sans-serif;
+
+    /* Font Weights */
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+    --weight-black: 900;
+
+    /* Letter Spacing */
+    --ls-tight: -0.02em;
+    --ls-normal: 0.015em;
+    --ls-wide: 0.05em;
+
+    /* Fluid Type Scale */
+    --font-size-2xs: clamp(0.65rem, 0.6rem + 0.2vw, 0.72rem);
+    --font-size-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.82rem);
+    --font-size-sm: clamp(0.88rem, 0.85rem + 0.2vw, 0.95rem);
+    --font-size-base: clamp(1rem, 0.98rem + 0.2vw, 1.05rem);
+    --font-size-md: clamp(1.15rem, 1.1rem + 0.4vw, 1.35rem);
+    --font-size-lg: clamp(1.4rem, 1.3rem + 0.6vw, 1.75rem);
+    --font-size-xl: clamp(1.8rem, 1.6rem + 1vw, 2.5rem);
+    --font-size-2xl: clamp(2.5rem, 2.2rem + 1.5vw, 3.5rem);
+    --font-size-3xl: clamp(3.5rem, 3rem + 3vw, 5.5rem);
+
+    /* Aura */
+    --aura-1: hsla(var(--h), var(--s), 55%, 0.35);
 }
 
 [data-theme="dark"] {
@@ -68,11 +99,65 @@
 
     --border-color: rgba(255, 255, 255, 0.03);
     --glass-bg: rgba(18, 18, 20, 0.95);
-    --glass-border: rgba(255, 255, 255, 0.05);
+    --glass-border: none;
 
     --accent-primary: hsl(var(--h), var(--s), 65%);
     --accent-hover: hsl(var(--h), var(--s), 75%);
     --accent-soft: hsla(var(--h), var(--s), 65%, 0.15);
+
+    --aura-1: hsla(var(--h), var(--s), 65%, 0.2);
+}
+
+/* ── Enhanced Light Theme (Arctic Palette) ── */
+body.light-theme {
+    --bg-primary: #f0f4f8;
+    --bg-secondary: #e6edf4;
+    --bg-tertiary: #dbe4ee;
+
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+
+    --accent-primary: hsl(var(--dynamic-accent-hue, 258), 85%, 58%);
+    --accent-secondary: hsl(calc(var(--dynamic-accent-hue, 258) + 20), 85%, 65%);
+    --accent-hover: hsl(var(--dynamic-accent-hue, 258), 85%, 52%);
+    --accent-soft: hsla(var(--dynamic-accent-hue, 258), 85%, 58%, 0.1);
+
+    --border-color: rgba(203, 213, 225, 0.4);
+    --aura-1: hsla(var(--dynamic-accent-hue, 258), 80%, 55%, 0.22);
+}
+
+/* ── Enhanced Dark Theme ── */
+body.dark-theme {
+    --bg-primary: #121214;
+    --bg-secondary: #18181b;
+    --bg-tertiary: #202023;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #475569;
+
+    --accent-primary: hsl(var(--dynamic-accent-hue, 258), 100%, 75%);
+    --accent-secondary: hsl(calc(var(--dynamic-accent-hue, 258) + 20), 100%, 80%);
+    --accent-hover: hsl(var(--dynamic-accent-hue, 258), 100%, 68%);
+    --accent-soft: hsla(var(--dynamic-accent-hue, 258), 100%, 75%, 0.16);
+
+    --border-color: hsla(var(--h), 100%, 90%, 0.08);
+    --aura-1: hsla(var(--dynamic-accent-hue, 258), 100%, 70%, 0.25);
+}
+
+/* ── Performance Mode ── */
+body.performance-mode {
+    --transition-fast: 0s !important;
+    --transition-medium: 0s !important;
+}
+
+body.performance-mode *,
+body.performance-mode *::before,
+body.performance-mode *::after {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
 }
 
 * {
@@ -83,14 +168,23 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-family: var(--font-main);
     background-color: var(--bg-primary);
     color: var(--text-primary);
     overflow: hidden;
     height: 100vh;
     width: 100vw;
     line-height: 1.5;
+    letter-spacing: var(--ls-normal);
     transition: background-color var(--transition-medium);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--ls-tight);
+    line-height: 1.25;
+    color: var(--text-primary);
 }
 
 button {
@@ -106,31 +200,27 @@ input {
     outline: none;
 }
 
+::selection {
+    background: var(--accent-primary);
+    color: white;
+}
+
 .hidden {
     display: none !important;
 }
 
 /* Global Animations */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }

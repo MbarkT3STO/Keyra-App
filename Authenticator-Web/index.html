@@ -6,14 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Keyra Authenticator</title>
     <link rel="icon" type="image/png" href="/logo.png">
-    <!-- Google Fonts: Inter and JetBrains Mono -->
+    <!-- Google Fonts: Inter, Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 
-    <!-- Lucide Icons moved to bottom for performance -->
+    <!-- Font Awesome 6 Free -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
 
     <!-- CSS Architecture -->
     <link rel="stylesheet" href="/src/css/themes.css">
@@ -29,10 +30,12 @@
         <div class="splash-content">
             <div class="splash-logo">
                 <img src="/logo.png" class="app-logo-large nm-logo">
-                <div class="splash-ring"></div>
             </div>
             <div class="splash-text">
                 <h1 class="splash-title">Keyra</h1>
+            </div>
+            <div class="splash-loader">
+                <div class="splash-progress"></div>
             </div>
         </div>
     </div>
@@ -173,11 +176,11 @@
                 <div class="navbar-section navbar-center">
                     <nav class="nav-tabs">
                         <button class="nav-tab active" data-tab="vault">
-                            <i data-lucide="archive" style="width: 20px; height: 20px;"></i>
+                            <i class="fa-solid fa-box-archive"></i>
                             <span>My Vault</span>
                         </button>
                         <button class="nav-tab" data-tab="settings">
-                            <i data-lucide="settings" style="width: 20px; height: 20px;"></i>
+                            <i class="fa-solid fa-gear"></i>
                             <span>Settings</span>
                         </button>
                     </nav>
@@ -188,26 +191,30 @@
                         <button class="user-button" id="user-dropdown-btn">
                             <div class="user-avatar" id="user-avatar">?</div>
                             <span class="user-name" id="user-name-display">User</span>
-                            <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
+                            <i class="fa-solid fa-chevron-down"></i>
                         </button>
 
                         <div class="dropdown-menu" id="user-dropdown">
+                            <div class="dropdown-header">
+                                <div class="dropdown-user-name" id="dropdown-user-name">User</div>
+                                <div class="dropdown-user-email" id="dropdown-user-email">user@keyra.app</div>
+                            </div>
                             <div class="dropdown-item" id="account-settings-btn">
-                                <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+                                <i class="fa-solid fa-user"></i>
                                 <span>Account</span>
                             </div>
                             <div class="nm-divider"></div>
                             <div class="dropdown-item" id="lock-vault-btn">
-                                <i data-lucide="lock" style="width: 18px; height: 18px;"></i>
+                                <i class="fa-solid fa-lock"></i>
                                 <span>Lock Vault</span>
                             </div>
                             <div class="dropdown-item" id="theme-toggle-btn">
-                                <i id="theme-icon-lucide" data-lucide="moon" style="width: 18px; height: 18px;"></i>
+                                <i id="theme-icon-lucide" class="fa-solid fa-moon"></i>
                                 <span id="theme-text">Dark Mode</span>
                             </div>
                             <div class="nm-divider"></div>
                             <div class="dropdown-item" id="btn-logout-trigger">
-                                <i data-lucide="log-out" style="width: 18px; height: 18px; color: #ff3b30;"></i>
+                                <i class="fa-solid fa-right-from-bracket" style="color: #ff3b30;"></i>
                                 <span style="color: #ff3b30; font-weight: 600;">Sign Out</span>
                             </div>
                         </div>
@@ -227,13 +234,13 @@
                     </div>
 
                     <div class="search-vessel">
-                        <i data-lucide="search" class="search-icon"></i>
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
                         <input type="text" id="vault-search" class="form-input search-input"
                             placeholder="Search your accounts...">
                     </div>
 
                     <button class="btn-primary" id="add-account-btn">
-                        <i data-lucide="plus"></i>
+                        <i class="fa-solid fa-plus"></i>
                         <span>Add Account</span>
                     </button>
                 </div>
@@ -246,9 +253,8 @@
                 <div id="empty-state" class="hidden">
                     <div class="empty-state-vessel">
                         <div class="nm-icon-large"
-                            style="margin: 0 auto 32px; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg-primary); box-shadow: var(--nm-out);">
-                            <i data-lucide="fingerprint"
-                                style="width: 60px; height: 60px; color: var(--accent-primary);"></i>
+                            style="margin: 0 auto 32px; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg-primary); box-shadow: var(--nm-raised);">
+                            <i class="fa-solid fa-fingerprint" style="font-size: 60px; color: var(--accent-primary);"></i>
                         </div>
                         <h2 style="font-weight: 900; font-size: 28px; margin-bottom: 12px;">Your Vault is Empty</h2>
                         <p
@@ -256,7 +262,7 @@
                             Add your first account to get started.</p>
                         <button class="btn-primary" id="empty-add-btn"
                             style="padding: 0 48px; min-width: 240px; height: var(--btn-h-lg);">
-                            <i data-lucide="plus" style="width: 24px; height: 24px;"></i>
+                            <i class="fa-solid fa-plus"></i>
                             <span>Add Account</span>
                         </button>
                     </div>
@@ -266,8 +272,8 @@
                 <div id="search-empty-state" class="hidden" style="padding: 40px 20px; text-align: center;">
                     <div class="empty-state-vessel" style="animation: fadeUp 0.6s ease-out;">
                         <div class="nm-icon-large"
-                            style="margin: 0 auto 32px; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; background: var(--bg-primary); box-shadow: var(--nm-out); color: var(--text-secondary); opacity: 0.6;">
-                            <i data-lucide="search-x" style="width: 48px; height: 48px;"></i>
+                            style="margin: 0 auto 32px; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; background: var(--bg-primary); box-shadow: var(--nm-raised); color: var(--text-secondary); opacity: 0.6;">
+                            <i class="fa-solid fa-magnifying-glass" style="font-size: 48px; color: var(--text-secondary);"></i>
                         </div>
                         <h2 style="font-weight: 900; font-size: 24px; color: var(--text-primary); margin-bottom: 8px;">
                             No Results Found</h2>
@@ -296,7 +302,7 @@
                     <div class="account-card bento-card">
                         <div class="bento-header">
                             <div class="bento-icon">
-                                <i data-lucide="palette"></i>
+                                <i class="fa-solid fa-palette"></i>
                             </div>
                             <div class="bento-title-vessel">
                                 <h3 class="bento-title">Look & Feel</h3>
@@ -314,7 +320,7 @@
                                         <div class="current-accent" id="current-accent"
                                             style="background: hsl(258, 100%, 68%);"></div>
                                         <span class="accent-label">Royal Purple</span>
-                                        <i data-lucide="chevron-down" class="accent-chevron"></i>
+                                        <i class="fa-solid fa-chevron-down accent-chevron"></i>
                                     </button>
                                     <div class="accent-dropdown" id="accent-dropdown">
                                         <div class="accent-grid-compact">
@@ -422,7 +428,7 @@
                     <div class="account-card bento-card">
                         <div class="bento-header">
                             <div class="bento-icon">
-                                <i data-lucide="shield-check"></i>
+                                <i class="fa-solid fa-shield-halved"></i>
                             </div>
                             <div class="bento-title-vessel">
                                 <h3 class="bento-title">Security</h3>
@@ -483,7 +489,7 @@
                     <div class="account-card bento-card">
                         <div class="bento-header">
                             <div class="bento-icon">
-                                <i data-lucide="database"></i>
+                                <i class="fa-solid fa-database"></i>
                             </div>
                             <div class="bento-title-vessel">
                                 <h3 class="bento-title">Maintenance</h3>
@@ -493,22 +499,28 @@
                         <div class="bento-content">
                             <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
                                 <button class="btn-primary btn-maintenance" id="btn-export-vault">
-                                    <i data-lucide="download"></i>
+                                    <div class="btn-maintenance-icon">
+                                        <i class="fa-solid fa-download"></i>
+                                    </div>
                                     <span>Backup Vault</span>
                                 </button>
                                 <button class="btn-primary btn-maintenance" id="btn-import-vault">
-                                    <i data-lucide="upload"></i>
+                                    <div class="btn-maintenance-icon">
+                                        <i class="fa-solid fa-upload"></i>
+                                    </div>
                                     <span>Restore Vault</span>
                                 </button>
                                 <button class="btn-primary btn-maintenance nm-button-sync" id="btn-manual-sync">
-                                    <i data-lucide="refresh-cw" id="sync-btn-icon"></i>
+                                    <div class="btn-maintenance-icon">
+                                        <i class="fa-solid fa-rotate" id="sync-btn-icon"></i>
+                                    </div>
                                     <span>Sync Now</span>
                                 </button>
                             </div>
                             <div
                                 style="margin-top: 16px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5;">
-                                <i data-lucide="alert-circle"
-                                    style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>
+                                <i class="fa-solid fa-circle-exclamation"
+                                    style="vertical-align: middle; margin-right: 4px;"></i>
                                 Backups are protected by your master password.
                             </div>
                         </div>
@@ -518,7 +530,7 @@
                     <div class="account-card bento-card">
                         <div class="bento-header">
                             <div class="bento-icon">
-                                <i data-lucide="info"></i>
+                                <i class="fa-solid fa-circle-info"></i>
                             </div>
                             <div class="bento-title-vessel">
                                 <h3 class="bento-title">About Keyra</h3>
@@ -542,7 +554,7 @@
                                 </div>
                                 <div
                                     style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; font-weight: 700;">
-                                    <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
+                                    <i class="fa-solid fa-clock"></i>
                                     <span id="last-activity-display">Never</span>
                                 </div>
                             </div>
@@ -553,7 +565,7 @@
                                 </div>
                                 <div
                                     style="display: flex; align-items: center; gap: 6px; color: var(--success); font-size: 13px; font-weight: 700;">
-                                    <i data-lucide="cloud" style="width: 16px; height: 16px;"></i>
+                                    <i class="fa-solid fa-cloud"></i>
                                     <span>Active</span>
                                 </div>
                             </div>
@@ -576,7 +588,7 @@
                     <div class="account-card bento-card">
                         <div class="bento-header">
                             <div class="bento-icon">
-                                <i data-lucide="user"></i>
+                                <i class="fa-solid fa-user"></i>
                             </div>
                             <div class="bento-title-vessel">
                                 <h3 class="bento-title">Vault Identity</h3>
@@ -597,13 +609,13 @@
                                 </div>
                             </div>
                             <div id="pending-email-container" class="hidden">
-                                <div class="setting-row"
-                                    style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--bg-secondary);">
+                                <div class="nm-divider" style="margin: 16px 0;"></div>
+                                <div class="setting-row" style="margin-top: 0;">
                                     <div class="setting-info">
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                             <div class="setting-name" style="margin-bottom: 0;">Pending Change</div>
-                                            <div class="badge"
-                                                style="background: hsla(20, 100%, 65%, 0.1); color: #ff9500; border: 1px solid hsla(20, 100%, 65%, 0.2); font-weight: 800; font-size: 9px; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">
+                                            <div class="badge nm-inset"
+                                                style="color: #ff9500; font-weight: 800; font-size: 9px; padding: 4px 10px; border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.5px;">
                                                 not confirmed yet</div>
                                         </div>
                                         <div class="setting-desc" id="acc-display-pending-email">new@domain.com</div>
@@ -611,13 +623,13 @@
                                     <div style="display: flex; gap: 8px;">
                                         <button class="btn-icon" id="btn-remove-pending-email" title="Cancel Change"
                                             style="width: 32px; height: 32px; color: var(--text-secondary);">
-                                            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                                            <i class="fa-solid fa-trash-can"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <button class="btn-primary" id="btn-verify-new-email"
                                     style="width: 100%; margin-top: 12px; height: 44px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
+                                    <i class="fa-solid fa-shield-halved"></i>
                                     Verify & Activate
                                 </button>
                             </div>
@@ -628,7 +640,7 @@
                     <div class="account-card bento-card">
                         <div class="bento-header">
                             <div class="bento-icon">
-                                <i data-lucide="user-cog"></i>
+                                <i class="fa-solid fa-user-gear"></i>
                             </div>
                             <div class="bento-title-vessel">
                                 <h3 class="bento-title">Display Name</h3>
@@ -653,7 +665,7 @@
                     <div class="account-card bento-card" id="card-change-email">
                         <div class="bento-header">
                             <div class="bento-icon">
-                                <i data-lucide="mail"></i>
+                                <i class="fa-solid fa-envelope"></i>
                             </div>
                             <div class="bento-title-vessel">
                                 <h3 class="bento-title">Change Email</h3>
@@ -678,7 +690,7 @@
                     <div class="account-card bento-card">
                         <div class="bento-header">
                             <div class="bento-icon">
-                                <i data-lucide="key-round"></i>
+                                <i class="fa-solid fa-key"></i>
                             </div>
                             <div class="bento-title-vessel">
                                 <h3 class="bento-title">Master Password</h3>
@@ -703,8 +715,8 @@
                             </form>
                             <div
                                 style="margin-top: 16px; font-size: 11.5px; opacity: 0.6; font-weight: 600; line-height: 1.5; color: #ff3b30;">
-                                <i data-lucide="alert-triangle"
-                                    style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>
+                                <i class="fa-solid fa-triangle-exclamation"
+                                    style="vertical-align: middle; margin-right: 4px;"></i>
                                 Changing your password will re-encrypt your entire vault.
                             </div>
                         </div>
@@ -722,7 +734,7 @@
         <div id="modal-logout" class="modal-overlay">
             <div class="modal animate-fade-in" style="padding: clamp(32px, 8vw, 48px); text-align: center;">
                 <div style="margin-bottom: 24px; color: #ff3b30;">
-                    <i data-lucide="log-out" style="width: 64px; height: 64px;"></i>
+                    <i class="fa-solid fa-right-from-bracket" style="font-size: 64px;"></i>
                 </div>
                 <h2 style="margin-bottom: 12px; font-weight: 850; font-size: 26px; color: var(--text-primary);">Sign
                     Out?</h2>
@@ -742,7 +754,7 @@
             <div class="pin-vessel animate-fade-in">
                 <div class="pin-brand">
                     <div class="pin-lock-icon">
-                        <i data-lucide="lock"></i>
+                        <i class="fa-solid fa-lock"></i>
                         <div class="lock-glow"></div>
                     </div>
                 </div>
@@ -766,7 +778,7 @@
                     <div class="pin-helper">Secure 4-Digit Master Code</div>
 
                     <button type="submit" class="btn-primary pin-submit-btn">
-                        <i data-lucide="shield-check"></i>
+                        <i class="fa-solid fa-shield-halved"></i>
                         Confirm Identity
                     </button>
                 </form>
@@ -774,22 +786,20 @@
         </div>
 
         <!-- Simulation Toast (Dynamic Backup) -->
-        <div id="simulation-toast" class="hidden nm-card"
-            style="position: fixed; top: 24px; right: 24px; z-index: 3000; animation: slideDown 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); max-width: calc(100% - 48px);">
-            <div
-                style="font-size: 14px; font-weight: 850; color: var(--accent-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="mail" style="width: 20px; height: 20px;"></i> SECURE INBOUND CODE
+        <div id="simulation-toast" class="hidden nm-card simulation-toast">
+            <div class="simulation-toast-header">
+                <i class="fa-solid fa-envelope"></i> SECURE INBOUND CODE
             </div>
             <div style="font-size: 16px; font-weight: 600;">Code: <strong id="sim-code"
-                    style="color: var(--accent-primary); letter-spacing: 4px; font-size: 26px; font-family: 'JetBrains Mono'; margin-left: 16px;">000000</strong>
+                    style="color: var(--accent-primary); letter-spacing: 4px; font-size: 26px; font-family: 'Outfit'; margin-left: 16px;">000000</strong>
             </div>
         </div>
 
         <!-- Privacy Guard Blur Overlay (Web Screen Guardian) -->
-        <div id="privacy-blur-overlay" class="modal-overlay privacy-overlay hidden">
-            <div class="privacy-content animate-fade-in">
+        <div id="privacy-blur-overlay" class="privacy-blur-overlay hidden">
+            <div class="privacy-blur-content animate-fade-in">
                 <div class="privacy-shield-icon">
-                    <i data-lucide="shield-off"></i>
+                    <i class="fa-solid fa-eye-slash"></i>
                 </div>
                 <h2>Vault Hidden</h2>
                 <p>We've hidden your data to keep it private.</p>
@@ -797,25 +807,17 @@
         </div>
 
         <!-- Notification Feed -->
-        <div id="toast-container"
-            style="position: fixed; bottom: clamp(20px, 8vw, 40px); left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; pointer-events: none;">
-        </div>
+        <div id="toast-container" class="toast-container"></div>
     </div>
 
     <!-- Cloud Sync Floating Pill -->
     <div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" title="Cloud Sync Active">
-        <i data-lucide="cloud-cog" class="sync-icon"></i>
+        <i class="fa-solid fa-cloud-arrow-up sync-icon"></i>
         <span>Syncing...</span>
     </div>
 
     <!-- Scripts -->
-    <script src="https://unpkg.com/lucide@latest" defer></script>
     <script type="module" src="/src/renderer/app.ts"></script>
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            if (window.lucide) window.lucide.createIcons();
-        });
-    </script>
 </body>
 
 </html>

@@ -255,20 +255,17 @@ export class UIManager {
         const themeText = document.getElementById('theme-text');
 
         if (themeIcon) {
-            themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+            themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
         }
         if (themeText) {
             themeText.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
         }
 
-        this.refreshLucide();
         if (!silent) this.pushWebSettings();
     }
 
-    private refreshLucide(root?: HTMLElement) {
-        if ((window as any).lucide) {
-            (window as any).lucide.createIcons(root ? { root } : undefined);
-        }
+    private refreshLucide(_root?: HTMLElement) {
+        // No-op: using Font Awesome 6, no initialization needed
     }
 
     private setupEventListeners() {
@@ -836,12 +833,20 @@ export class UIManager {
 
             const userNameDisplay = document.getElementById('user-name-display');
             const userAvatar = document.getElementById('user-avatar');
+            const dropdownName = document.getElementById('dropdown-user-name');
+            const dropdownEmail = document.getElementById('dropdown-user-email');
 
             if (userNameDisplay && user) {
                 userNameDisplay.textContent = user.username;
             }
             if (userAvatar && user) {
                 userAvatar.textContent = user.username.charAt(0).toUpperCase();
+            }
+            if (dropdownName && user) {
+                dropdownName.textContent = user.username;
+            }
+            if (dropdownEmail && user) {
+                dropdownEmail.textContent = user.email || '';
             }
 
             await this.refreshAccounts();
@@ -925,22 +930,32 @@ export class UIManager {
 
     private createAccountCard(account: any, index: number): HTMLElement {
         const card = document.createElement('div');
-        card.className = 'account-card animate-fade-in';
-        card.style.animationDelay = `${index * 0.05}s`;
+        card.className = 'account-card';
+        card.style.animationDelay = `${index * 0.06}s`;
 
         card.innerHTML = `
+            <div class="card-actions">
+                <button class="btn-card-more" title="More options">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <div class="card-dropdown">
+                    <div class="card-dropdown-item edit-btn">
+                        <i class="fa-solid fa-sliders"></i>
+                        Edit
+                    </div>
+                    <div class="card-dropdown-item danger delete-btn">
+                        <i class="fa-solid fa-trash-can"></i>
+                        Delete
+                    </div>
+                </div>
+            </div>
             <div class="account-header">
                 <div class="account-icon">
-                    <i data-lucide="${this.getIcon(account.issuer)}"></i>
+                    <i class="${this.getIcon(account.issuer)}"></i>
                 </div>
                 <div style="flex: 1; min-width: 0;">
                     <div class="service-name">${account.issuer}</div>
                     <div class="account-identity">${account.account}</div>
-                </div>
-                <div class="card-actions" style="display: flex; gap: 4px;">
-                     <button class="btn-icon danger delete-btn" title="Remove Token" style="width: 32px; height: 32px; padding: 0;">
-                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-                    </button>
                 </div>
             </div>
             
@@ -958,18 +973,35 @@ export class UIManager {
 
             <div style="display: flex; gap: 10px;">
                 <button class="btn-primary copy-btn" style="flex: 1; height: 44px; font-size: 14px;">
-                    <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+                    <i class="fa-solid fa-copy"></i>
                     <span class="btn-text">Secure Copy</span>
-                </button>
-                <button class="user-button edit-btn" title="Refine Metadata" style="width: 44px; height: 44px; justify-content: center; padding: 0;">
-                    <i data-lucide="settings-2" style="width: 18px; height: 18px;"></i>
                 </button>
             </div>
         `;
 
+        // 3-dot dropdown toggle
+        const moreBtn = card.querySelector('.btn-card-more') as HTMLElement;
+        const dropdown = card.querySelector('.card-dropdown') as HTMLElement;
+        moreBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.classList.contains('show');
+            // Close all other dropdowns
+            document.querySelectorAll('.card-dropdown.show').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.btn-card-more.active').forEach(b => b.classList.remove('active'));
+            if (!isOpen) {
+                dropdown.classList.add('show');
+                moreBtn.classList.add('active');
+            }
+        });
+
+        // Close dropdown on outside click
+        document.addEventListener('click', () => {
+            dropdown.classList.remove('show');
+            moreBtn.classList.remove('active');
+        }, { once: true });
+
         const codeElement = card.querySelector('.otp-code') as HTMLElement;
         codeElement.addEventListener('click', async () => {
-            // Security: Prevent OTP access if vault is locked
             if (document.body.classList.contains('vault-is-locked')) {
                 this.showToast("Vault Locked - Enter PIN to Access", "error");
                 return;
@@ -980,7 +1012,6 @@ export class UIManager {
 
         const copyBtn = card.querySelector('.copy-btn') as HTMLElement;
         copyBtn.onclick = async () => {
-            // Security: Prevent OTP access if vault is locked
             if (document.body.classList.contains('vault-is-locked')) {
                 this.showToast("Vault Locked - Enter PIN to Access", "error");
                 return;
@@ -992,7 +1023,6 @@ export class UIManager {
 
         card.querySelector('.edit-btn')?.addEventListener('click', (e) => {
             e.stopPropagation();
-            // Security: Prevent editing if vault is locked
             if (document.body.classList.contains('vault-is-locked')) {
                 this.showToast("Vault Locked - Enter PIN to Access", "error");
                 return;
@@ -1002,7 +1032,6 @@ export class UIManager {
 
         card.querySelector('.delete-btn')?.addEventListener('click', (e) => {
             e.stopPropagation();
-            // Security: Prevent deletion if vault is locked
             if (document.body.classList.contains('vault-is-locked')) {
                 this.showToast("Vault Locked - Enter PIN to Access", "error");
                 return;
@@ -1010,7 +1039,7 @@ export class UIManager {
             this.showDeleteConfirm(account);
         });
 
-        this.updateCardOTP(card, account.secret, 30); // Use a default for first render
+        this.updateCardOTP(card, account.secret, 30);
         return card;
     }
 
@@ -1137,68 +1166,92 @@ export class UIManager {
     private getIcon(issuer: string): string {
         const name = issuer.toLowerCase();
 
-        // 1. Precise Brand Mapping (Top Tier)
+        // 1. Precise Brand Mapping — FA brands where available, solid fallbacks
         const icons: { [key: string]: string } = {
-            'google': 'search', 'github': 'github', 'microsoft': 'cloud', 'apple': 'apple',
-            'amazon': 'shopping-cart', 'facebook': 'facebook', 'twitter': 'twitter', 'discord': 'message-square',
-            'binance': 'coins', 'coinbase': 'wallet', 'stripe': 'credit-card', 'paypal': 'dollar-sign',
-            'slack': 'slack', 'instagram': 'instagram', 'linkedin': 'linkedin', 'twitch': 'twitch',
-            'spotify': 'music', 'netflix': 'tv', 'steam': 'gamepad-2', 'epic': 'gamepad',
-            'dropbox': 'box', 'figma': 'figma', 'canva': 'layout-template', 'adobe': 'pen-tool',
-            'shopify': 'shopping-bag', 'reddit': 'message-circle', 'bitbucket': 'bitbucket',
-            'gitlab': 'gitlab', 'heroku': 'server', 'digitalocean': 'clouds', 'cloudflare': 'shield-check',
-            'vercel': 'triangle', 'netlify': 'globe', 'firebase': 'flame', 'wordpress': 'globe-2',
-            'medium': 'book-open', 'patreon': 'heart', 'discordapp': 'message-square',
-            'protonmail': 'mail', 'nordvpn': 'shield', 'expressvpn': 'shield-alert',
-            'bitwarden': 'lock', '1password': 'key', 'lastpass': 'key-round',
-            'uber': 'car', 'lyft': 'car-front', 'airbnb': 'home', 'notion': 'file-text',
-            'zoom': 'video', 'trello': 'columns', 'asana': 'check-square', 'clickup': 'layers'
+            'google': 'fa-brands fa-google',
+            'github': 'fa-brands fa-github',
+            'microsoft': 'fa-brands fa-microsoft',
+            'apple': 'fa-brands fa-apple',
+            'amazon': 'fa-brands fa-amazon',
+            'facebook': 'fa-brands fa-facebook',
+            'twitter': 'fa-brands fa-x-twitter',
+            'discord': 'fa-brands fa-discord',
+            'slack': 'fa-brands fa-slack',
+            'instagram': 'fa-brands fa-instagram',
+            'linkedin': 'fa-brands fa-linkedin',
+            'twitch': 'fa-brands fa-twitch',
+            'spotify': 'fa-brands fa-spotify',
+            'steam': 'fa-brands fa-steam',
+            'dropbox': 'fa-brands fa-dropbox',
+            'reddit': 'fa-brands fa-reddit',
+            'bitbucket': 'fa-brands fa-bitbucket',
+            'gitlab': 'fa-brands fa-gitlab',
+            'wordpress': 'fa-brands fa-wordpress',
+            'paypal': 'fa-brands fa-paypal',
+            'stripe': 'fa-brands fa-stripe',
+            'shopify': 'fa-brands fa-shopify',
+            'netflix': 'fa-solid fa-tv',
+            'binance': 'fa-solid fa-coins',
+            'coinbase': 'fa-solid fa-wallet',
+            'heroku': 'fa-solid fa-server',
+            'digitalocean': 'fa-brands fa-digital-ocean',
+            'cloudflare': 'fa-solid fa-shield-halved',
+            'vercel': 'fa-solid fa-globe',
+            'netlify': 'fa-solid fa-globe',
+            'firebase': 'fa-solid fa-fire',
+            'medium': 'fa-brands fa-medium',
+            'patreon': 'fa-brands fa-patreon',
+            'protonmail': 'fa-solid fa-envelope',
+            'nordvpn': 'fa-solid fa-shield-halved',
+            'expressvpn': 'fa-solid fa-shield-halved',
+            'bitwarden': 'fa-solid fa-lock',
+            '1password': 'fa-solid fa-key',
+            'lastpass': 'fa-solid fa-key',
+            'uber': 'fa-brands fa-uber',
+            'airbnb': 'fa-brands fa-airbnb',
+            'notion': 'fa-solid fa-file-lines',
+            'zoom': 'fa-solid fa-video',
+            'trello': 'fa-brands fa-trello',
+            'figma': 'fa-brands fa-figma',
+            'adobe': 'fa-brands fa-adobe',
+            'epic': 'fa-solid fa-gamepad',
+            'canva': 'fa-solid fa-pen-ruler',
+            'asana': 'fa-solid fa-check-square',
+            'clickup': 'fa-solid fa-layer-group',
+            'lyft': 'fa-brands fa-lyft',
         };
 
         if (icons[name]) return icons[name];
 
-        // 2. Keyword-based Fuzzy Matching (Intelligent Heuristics)
-        const keywords: [string | RegExp, string][] = [
-            // Cloud & Infrastructure
-            [/aws|amazon|cloud/i, 'cloud'],
-            [/azure|microsoft/i, 'cloud'],
-            [/server|host|vps|deploy/i, 'server'],
-            [/db|database|mongo|sql|redis/i, 'database'],
-
-            // Communication & Social
-            [/mail|email|outlook|gmail/i, 'mail'],
-            [/chat|message|messenger|slack|discord/i, 'message-square'],
-            [/social|network|brand/i, 'share-2'],
-
-            // Finance
-            [/bank|finance|money|wallet|pay/i, 'wallet'],
-            [/crypto|coin|token|eth|btc/i, 'coins'],
-            [/card|credit|debit/i, 'credit-card'],
-
-            // Security & Dev
-            [/auth|security|protect|shield|vault/i, 'shield-check'],
-            [/key|password|pass|login|access/i, 'key'],
-            [/code|dev|git|build|repo/i, 'code-2'],
-            [/api|endpoint|webhook/i, 'webhook'],
-
-            // Media & Entertainment
-            [/video|movie|tv|stream|netflix|yt|youtube/i, 'video'],
-            [/music|audio|song|sound/i, 'music'],
-            [/game|play|epic|xbox|psn/i, 'gamepad-2'],
-
-            // Business & Identity
-            [/shop|store|cart|ebay|buy/i, 'shopping-cart'],
-            [/user|account|profile|id/i, 'user'],
-            [/work|corp|company|office/i, 'briefcase']
+        // 2. Keyword-based Fuzzy Matching
+        const keywords: [RegExp, string][] = [
+            [/aws|amazon|cloud/i, 'fa-solid fa-cloud'],
+            [/azure|microsoft/i, 'fa-solid fa-cloud'],
+            [/server|host|vps|deploy/i, 'fa-solid fa-server'],
+            [/db|database|mongo|sql|redis/i, 'fa-solid fa-database'],
+            [/mail|email|outlook|gmail/i, 'fa-solid fa-envelope'],
+            [/chat|message|messenger/i, 'fa-solid fa-comment'],
+            [/social|network/i, 'fa-solid fa-share-nodes'],
+            [/bank|finance|money|wallet|pay/i, 'fa-solid fa-wallet'],
+            [/crypto|coin|token|eth|btc/i, 'fa-solid fa-coins'],
+            [/card|credit|debit/i, 'fa-solid fa-credit-card'],
+            [/auth|security|protect|shield|vault/i, 'fa-solid fa-shield-halved'],
+            [/key|password|pass|login|access/i, 'fa-solid fa-key'],
+            [/code|dev|git|build|repo/i, 'fa-solid fa-code'],
+            [/video|movie|tv|stream|youtube/i, 'fa-solid fa-video'],
+            [/music|audio|song|sound/i, 'fa-solid fa-music'],
+            [/game|play|xbox|psn/i, 'fa-solid fa-gamepad'],
+            [/shop|store|cart|ebay|buy/i, 'fa-solid fa-cart-shopping'],
+            [/user|account|profile|id/i, 'fa-solid fa-user'],
+            [/work|corp|company|office/i, 'fa-solid fa-briefcase'],
         ];
 
         for (const [pattern, icon] of keywords) {
-            if (typeof pattern === 'string' && name.includes(pattern)) return icon;
-            if (pattern instanceof RegExp && pattern.test(name)) return icon;
+            if (pattern.test(name)) return icon;
         }
 
-        // 3. Last Resort Fallback
-        return 'shield';
+        // 3. Fallback
+        return 'fa-solid fa-shield';
     }
 
     private showModal(content: string) {
@@ -1206,7 +1259,6 @@ export class UIManager {
         if (!overlay) return;
         overlay.innerHTML = `<div class="modal animate-fade-in">${content}</div>`;
         overlay.classList.add('show');
-        this.refreshLucide(overlay);
     }
 
     public hideModal() {
@@ -1221,7 +1273,7 @@ export class UIManager {
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
                 <div class="account-icon nm-icon-large" style="width: 64px; height: 64px;">
-                        <i data-lucide="plus-circle"></i>
+                        <i class="fa-solid fa-circle-plus"></i>
                     </div>
                     <div>
                         <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 28px); color: var(--text-primary); letter-spacing: -1px;">Add Token</h2>
@@ -1245,7 +1297,7 @@ export class UIManager {
                 
                 <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl);">
                     <button class="btn-primary" id="save-new-account" style="flex: 2; height: var(--btn-h-lg); font-size: 17px;">
-                        <i data-lucide="shield-plus"></i>
+                        <i class="fa-solid fa-shield-halved"></i>
                         Save Token
                     </button>
                     <button class="user-button" id="cancel-add-btn" style="flex: 1; justify-content: center; height: var(--btn-h-lg); font-weight: 800;">Cancel</button>
@@ -1274,7 +1326,7 @@ export class UIManager {
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
                     <div class="account-icon nm-icon-large" style="width: 64px; height: 64px;">
-                        <i data-lucide="settings-2"></i>
+                        <i class="fa-solid fa-sliders"></i>
                     </div>
                     <div>
                         <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 28px); color: var(--text-primary); letter-spacing: -1px;">Edit Identity</h2>
@@ -1284,7 +1336,7 @@ export class UIManager {
                 
                 <div class="modal-entity-badge" style="margin-bottom: 20px;">
                     <div class="entity-icon">
-                        <i data-lucide="shield"></i>
+                        <i class="fa-solid fa-shield"></i>
                     </div>
                     <div class="entity-info">
                         <span class="entity-name">${account.issuer}</span>
@@ -1303,7 +1355,7 @@ export class UIManager {
                 
                 <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl);">
                     <button class="btn-primary" id="update-account" style="flex: 2; height: var(--btn-h-lg); font-size: 17px;">
-                        <i data-lucide="check"></i>
+                        <i class="fa-solid fa-check"></i>
                         Save Changes
                     </button>
                     <button class="user-button" id="cancel-edit-btn" style="flex: 1; justify-content: center; height: var(--btn-h-lg); font-weight: 800;">Cancel</button>
@@ -1331,9 +1383,9 @@ export class UIManager {
         const toast = document.createElement('div');
         toast.className = `neumorphic-toast toast-${type} animate-fade-in`;
 
-        const iconName = type === 'error' ? 'alert-circle' : type === 'success' ? 'check-circle' : 'info';
+        const iconName = type === 'error' ? 'fa-circle-exclamation' : type === 'success' ? 'fa-circle-check' : 'fa-circle-info';
         toast.innerHTML = `
-            <i data-lucide="${iconName}" class="toast-icon"></i>
+            <i class="fa-solid ${iconName} toast-icon"></i>
             <span class="toast-message">${message}</span>
         `;
 
@@ -1433,6 +1485,12 @@ export class UIManager {
     private async loadAccountInfo() {
         const user = await (window as any).api.getCurrentUser();
         if (!user) return;
+
+        // Populate dropdown header
+        const dropdownName = document.getElementById('dropdown-user-name');
+        const dropdownEmail = document.getElementById('dropdown-user-email');
+        if (dropdownName) dropdownName.textContent = user.username;
+        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
 
         const nameDisplay = document.getElementById('acc-display-username');
         const emailDisplay = document.getElementById('acc-display-email');
@@ -1555,7 +1613,7 @@ export class UIManager {
                 <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--accent-soft); filter: blur(60px); opacity: 0.3; border-radius: 50%; pointer-events: none;"></div>
                 
                 <div class="nm-icon-large" style="margin: 0 auto 32px; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; background: var(--bg-primary); box-shadow: var(--nm-raised);">
-                    <i data-lucide="mail-check" style="width: 48px; height: 48px; color: var(--accent-primary);"></i>
+                    <i class="fa-solid fa-envelope-circle-check" style="font-size: 48px; color: var(--accent-primary);"></i>
                 </div>
                 
                 <h2 style="font-weight: 900; font-size: 32px; color: var(--text-primary); margin-bottom: 12px; letter-spacing: -1.2px;">Check your Email</h2>
@@ -1567,7 +1625,7 @@ export class UIManager {
                 <div class="form-group" style="margin-bottom: 40px;">
                     <div style="position: relative;">
                         <input type="text" id="email-verify-code" class="form-input" placeholder="000000" maxlength="6" 
-                               style="text-align: center; font-size: 36px; letter-spacing: 12px; font-family: 'JetBrains Mono'; height: 84px; border-radius: var(--radius-lg); box-shadow: var(--nm-pressed); border: none; width: 100%; color: var(--accent-primary); font-weight: 900;">
+                               style="text-align: center; font-size: 36px; letter-spacing: 12px; font-family: 'Outfit'; height: 84px; border-radius: var(--radius-lg); box-shadow: var(--nm-pressed); border: none; width: 100%; color: var(--accent-primary); font-weight: 900;">
                         <div style="position: absolute; bottom: -20px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 40px; pointer-events: none; opacity: 0.2;">
                             <span></span><span></span><span></span><span></span><span></span><span></span>
                         </div>
@@ -1688,7 +1746,7 @@ export class UIManager {
                 <div class="pin-step-content">
                     <div class="pin-header">
                         <div class="pin-brand-icon">
-                            <i data-lucide="shield-check"></i>
+                            <i class="fa-solid fa-shield-halved"></i>
                         </div>
                         <h2 class="pin-title">Set Master PIN</h2>
                         <p class="pin-subtitle">ESTABLISH 4-DIGIT VAULT KEY</p>
@@ -1709,7 +1767,7 @@ export class UIManager {
 
                     <div class="pin-actions">
                         <button class="btn-primary pin-continue-btn" id="pin-step1-continue" disabled>
-                            <i data-lucide="arrow-right"></i>
+                            <i class="fa-solid fa-arrow-right"></i>
                             Next Phase
                         </button>
                         <button class="user-button pin-cancel-btn" id="pin-step1-cancel">
@@ -1731,7 +1789,7 @@ export class UIManager {
             <div class="pin-steps-modal">
                 <div class="pin-progress-container">
                     <div class="pin-step completed" data-step="1">
-                        <div class="pin-step-number"><i data-lucide="check"></i></div>
+                        <div class="pin-step-number"><i class="fa-solid fa-check"></i></div>
                         <div class="pin-step-label">Create PIN</div>
                     </div>
                     <div class="pin-step-line active"></div>
@@ -1744,7 +1802,7 @@ export class UIManager {
                 <div class="pin-step-content">
                     <div class="pin-header">
                         <div class="pin-brand-icon">
-                            <i data-lucide="check-circle"></i>
+                            <i class="fa-solid fa-circle-check"></i>
                         </div>
                         <h2 class="pin-title">Verify PIN</h2>
                         <p class="pin-subtitle">RE-ENTER KEY TO CONFIRM</p>
@@ -1765,11 +1823,11 @@ export class UIManager {
 
                     <div class="pin-actions">
                         <button class="btn-primary pin-continue-btn" id="pin-step2-continue" disabled>
-                            <i data-lucide="shield-check"></i>
+                            <i class="fa-solid fa-shield-halved"></i>
                             Activate Vault
                         </button>
                         <button class="user-button pin-back-btn" id="pin-step2-back">
-                            <i data-lucide="arrow-left"></i>
+                            <i class="fa-solid fa-arrow-left"></i>
                             Back
                         </button>
                     </div>
@@ -1858,7 +1916,7 @@ export class UIManager {
             <div class="pin-removal-modal">
                 <div class="pin-header">
                     <div class="pin-brand-icon danger">
-                        <i data-lucide="shield-off"></i>
+                        <i class="fa-solid fa-shield"></i>
                     </div>
                     <h2 class="pin-title danger">Deactivate Security?</h2>
                     <p class="pin-subtitle">VAULT WILL BE UNPROTECTED</p>
@@ -1866,7 +1924,7 @@ export class UIManager {
 
                 <div class="modal-entity-badge" style="margin: 20px 0;">
                     <div class="entity-icon">
-                        <i data-lucide="lock"></i>
+                        <i class="fa-solid fa-lock"></i>
                     </div>
                     <div class="entity-info">
                         <span class="entity-name">Master PIN Policy</span>
@@ -1876,7 +1934,7 @@ export class UIManager {
 
                 <div class="pin-warning-container">
                     <div class="pin-warning-icon">
-                        <i data-lucide="alert-triangle"></i>
+                        <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
                     <div class="pin-warning-text">
                         Removing the PIN means anyone with access to this device can view your identities. This action is immediate.
@@ -1885,7 +1943,7 @@ export class UIManager {
 
                 <div class="pin-actions">
                     <button class="btn-primary danger" id="confirm-remove-pin">
-                        <i data-lucide="trash-2"></i>
+                        <i class="fa-solid fa-trash-can"></i>
                         Remove Security
                     </button>
                     <button class="user-button" id="cancel-remove-pin">
@@ -1914,14 +1972,14 @@ export class UIManager {
         const content = `
             <div style="padding: clamp(32px, 8vw, 48px); text-align: center;">
                 <div style="color: #ff3b30; margin-bottom: 24px;">
-                    <i data-lucide="trash-2" style="width: 64px; height: 64px;"></i>
+                    <i class="fa-solid fa-trash-can" style="font-size: 64px;"></i>
                 </div>
                 <h2 style="font-weight: 850; font-size: 24px; margin-bottom: 4px; color: var(--text-primary);" class="danger">Delete Token?</h2>
                 <div class="modal-help-text" style="font-weight: 800; opacity: 0.8; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; margin-bottom: 24px;">PERMANENT ACTION</div>
                 
                 <div class="modal-entity-badge" style="margin-bottom: 32px;">
                     <div class="entity-icon">
-                        <i data-lucide="shield"></i>
+                        <i class="fa-solid fa-shield"></i>
                     </div>
                     <div class="entity-info">
                         <span class="entity-name">${account.issuer}</span>
@@ -1935,7 +1993,7 @@ export class UIManager {
                 
                 <div style="display: flex; gap: 16px;">
                     <button class="btn-primary danger" id="confirm-delete" style="flex: 1; height: var(--btn-h-lg);">
-                        <i data-lucide="trash-2"></i>
+                        <i class="fa-solid fa-trash-can"></i>
                         Delete Token
                     </button>
                     <button class="user-button" id="cancel-delete-btn" style="flex: 1; justify-content: center; height: var(--btn-h-lg);">Keep Token</button>
@@ -1958,7 +2016,7 @@ export class UIManager {
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
                     <div class="account-icon nm-icon-large" style="width: 64px; height: 64px;">
-                        <i data-lucide="upload"></i>
+                        <i class="fa-solid fa-upload"></i>
                     </div>
                     <div>
                         <h2 style="font-weight: 900; font-size: 24px; color: var(--text-primary);">Restore Vault</h2>
@@ -1968,7 +2026,7 @@ export class UIManager {
                 
                 <div class="modal-entity-badge" style="margin-bottom: 20px;">
                     <div class="entity-icon">
-                        <i data-lucide="hard-drive"></i>
+                        <i class="fa-solid fa-hard-drive"></i>
                     </div>
                     <div class="entity-info">
                         <span class="entity-name">Encrypted Backup</span>
@@ -1984,7 +2042,7 @@ export class UIManager {
                 
                 <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl);">
                     <button class="btn-primary" id="confirm-import" style="flex: 2; height: var(--btn-h-lg);">
-                        <i data-lucide="shield-check"></i>
+                        <i class="fa-solid fa-shield-halved"></i>
                         Restore Vault
                     </button>
                     <button class="user-button" id="cancel-import" style="flex: 1; justify-content: center; height: var(--btn-h-lg); font-weight: 800;">Cancel</button>

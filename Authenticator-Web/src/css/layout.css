@@ -42,16 +42,14 @@ body {
    ───────────────────────────────────────────────────────────────────────────── */
 
 .navbar {
-    height: clamp(72px, 12vh, 100px);
-    /* Increased from 64-88px */
+    height: clamp(64px, 10vh, 88px);
     background: var(--bg-primary);
-    box-shadow: var(--nm-raised);
+    box-shadow: var(--nm-shadow-out-sm);
     z-index: 100;
     position: sticky;
     top: 0;
     width: 100%;
     user-select: none;
-    -webkit-app-region: drag;
     transition: all var(--transition-medium);
 }
 
@@ -95,41 +93,36 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: clamp(var(--space-lg), 4vw, var(--space-2xl)) clamp(var(--space-sm), 4vw, var(--space-xl));
-    /* Reduced from space-xl/8vw/space-4xl */
     width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
 }
 
 /* Premium Custom Scrollbar for Vault View */
 .main-content::-webkit-scrollbar {
-    width: 12px;
+    width: 6px;
 }
 
 .main-content::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
-    border-radius: 6px;
-    margin: 8px 0;
+    background: transparent;
 }
 
 .main-content::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+    background: var(--border-color);
     border-radius: 6px;
-    border: 2px solid var(--bg-secondary);
-    transition: all 0.3s ease;
 }
 
 .main-content::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, var(--accent-hover), var(--accent-primary));
-    transform: scale(1.1);
-}
-
-.main-content::-webkit-scrollbar-thumb:active {
-    transform: scale(0.95);
+    background: var(--accent-primary);
+    opacity: 0.6;
 }
 
 /* Scrollbar for Firefox */
 .main-content {
     scrollbar-width: thin;
-    scrollbar-color: var(--accent-primary) var(--bg-secondary);
+    scrollbar-color: var(--border-color) transparent;
 }
 
 /* Hide main content scrollbar when settings are visible */
@@ -151,24 +144,45 @@ body:has(.settings-container:not(.hidden)) .main-content {
 .header-main {
     flex: 1;
     min-width: 200px;
+    border-left: 4px solid var(--accent-primary);
+    padding-left: 20px;
+    position: relative;
 }
 
 .section-title {
+    font-family: var(--font-heading);
     font-size: clamp(28px, 5vw, 42px);
-    font-weight: 850;
-    letter-spacing: -1.2px;
+    font-weight: 950;
+    letter-spacing: -2px;
     line-height: 1.1;
-    margin: 0;
+    margin: 0 0 6px;
+    background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .section-subtitle {
-    color: var(--text-secondary);
-    font-size: clamp(14px, 1.6vw, 16px);
-    font-weight: 600;
-    opacity: 0.6;
-    margin-top: 10px;
-    /* Spacing between title and description */
-    display: block;
+    font-family: var(--font-main);
+    font-size: 11px;
+    font-weight: 850;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0;
+}
+
+.section-subtitle::before {
+    content: '';
+    width: 12px;
+    height: 1.5px;
+    background: var(--accent-primary);
+    opacity: 0.5;
+    flex-shrink: 0;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -182,8 +196,6 @@ body:has(.settings-container:not(.hidden)) .main-content {
     right: 0;
     bottom: 0;
     background: hsla(var(--h), 20%, 5%, 0.65);
-    /* Darker for separation without blur */
-    /* backdrop-filter removed */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -268,12 +280,13 @@ body:has(.settings-container:not(.hidden)) .main-content {
 
 .modal {
     background: var(--bg-primary);
-    box-shadow: var(--nm-raised);
+    box-shadow: var(--nm-shadow-out);
     border-radius: var(--radius-xl);
     width: 100%;
     max-width: 540px;
-    transform: perspective(1200px) rotateX(8deg) translateY(40px);
-    transition: all var(--transition-medium);
+    transform: translateY(24px) scale(0.97);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
     position: relative;
     max-height: 92vh;
     overflow-y: auto;
@@ -286,7 +299,8 @@ body:has(.settings-container:not(.hidden)) .main-content {
 }
 
 .modal-overlay.show .modal {
-    transform: perspective(1200px) rotateX(0deg) translateY(0);
+    transform: translateY(0) scale(1);
+    opacity: 1;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -398,7 +412,7 @@ body:has(.settings-container:not(.hidden)) .main-content {
     .nav-tabs {
         background: var(--bg-primary);
         padding: 4px;
-        box-shadow: var(--nm-pressed);
+        box-shadow: var(--nm-shadow-in-sm);
         border: none;
         border-radius: var(--radius-full);
     }
@@ -556,7 +570,7 @@ body:has(.settings-container:not(.hidden)) .main-content {
     }
 
     .user-name,
-    .user-button i[data-lucide="chevron-down"] {
+    .user-button i.fa-chevron-down {
         display: none !important;
     }
 
