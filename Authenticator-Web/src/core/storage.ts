@@ -39,6 +39,38 @@ const USERS_KEY = 'keyra_users';
 
 const syncQueues: Record<string, { timer: any, data: any, resolvers: ((val: any) => void)[] }> = {};
 
+/**
+ * Retry helper for network requests
+ */
+async function retryFetch(url: string, options: RequestInit, maxRetries: number = 3): Promise<Response> {
+    let lastError: any;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+            
+            // If response is ok or client error (4xx), don't retry
+            if (response.ok || (response.status >= 400 && response.status < 500)) {
+                return response;
+            }
+            
+            // Server error (5xx) - retry
+            lastError = new Error(`Server error: ${response.status}`);
+        } catch (error) {
+            lastError = error;
+            console.warn(`Sync attempt ${attempt}/${maxRetries} failed:`, error);
+        }
+        
+        // Wait before retry (exponential backoff)
+        if (attempt < maxRetries) {
+            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    
+    throw lastError;
+}
+
 async function callSync(action: 'get' | 'put' | 'move', path: string, data?: any) {
     // For 'put' actions, we debounce per-path to avoid race conditions
     if (action === 'put') {
@@ -61,7 +93,7 @@ async function callSync(action: 'get' | 'put' | 'move', path: string, data?: any
                 delete syncQueues[path];
                 
                 try {
-                    const response = await fetch('/.netlify/functions/github-sync', {
+                    const response = await retryFetch('/.netlify/functions/github-sync', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action, path, data: latestData })
@@ -69,7 +101,7 @@ async function callSync(action: 'get' | 'put' | 'move', path: string, data?: any
                     const result = await response.json();
                     activeResolvers.forEach(res => res(result));
                 } catch (e) {
-                    console.error("Cloud sync failed:", e);
+                    console.error("Cloud sync failed after retries:", e);
                     const errorRes = { success: false, message: "Network error during cloud sync." };
                     activeResolvers.forEach(res => res(errorRes));
                 }
@@ -77,16 +109,16 @@ async function callSync(action: 'get' | 'put' | 'move', path: string, data?: any
         });
     }
 
-    // Default 'get', 'move' or immediate action
+    // Default 'get', 'move' or immediate action with retry
     try {
-        const response = await fetch('/.netlify/functions/github-sync', {
+        const response = await retryFetch('/.netlify/functions/github-sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, path, data })
         });
         return await response.json();
     } catch (e) {
-        console.error("Cloud action failed:", e);
+        console.error("Cloud action failed after retries:", e);
         return { success: false, message: "Network error." };
     }
 }

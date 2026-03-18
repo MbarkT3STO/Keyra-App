@@ -1,6 +1,7 @@
 import './ui-bridge';
 import { UIManager } from './ui';
 import { setupAuthUI, setAppInitCallback } from './auth';
+import { errorHandler } from '../core/errorHandler';
 
 let inactivityTimer: any = null;
 
@@ -25,6 +26,9 @@ function initAutoLock() {
 }
 
 async function init() {
+    // Initialize global error handler
+    errorHandler.init();
+    
     setupAuthUI();
 
     setAppInitCallback(async (resumed: boolean) => {

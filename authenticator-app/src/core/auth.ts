@@ -460,9 +460,13 @@ export async function resumeFromGitHub(pat: string, owner: string, repo: string)
 }
 
 export function getBackupData(): { 
-    salt: string, 
-    encryptedVaultData: string, 
-    encryptedSettings?: string
+    version: string;
+    timestamp: number;
+    accountCount: number;
+    salt: string;
+    encryptedVaultData: string;
+    encryptedSettings?: string;
+    checksum: string;
 } {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
     
@@ -476,11 +480,105 @@ export function getBackupData(): {
     // Encrypt the settings using the current key
     const encryptedSettings = encryptVault(JSON.stringify(settings), currentKey);
     
-    return {
+    // Get account count by decrypting vault
+    let accountCount = 0;
+    try {
+        const decrypted = decryptVault(currentUser.encryptedVaultData, currentKey);
+        const accounts = JSON.parse(decrypted);
+        accountCount = Array.isArray(accounts) ? accounts.length : 0;
+    } catch (err) {
+        console.error("Failed to count accounts:", err);
+    }
+    
+    // Create backup object
+    const backup = {
+        version: "1.2.0",
+        timestamp: Date.now(),
+        accountCount,
         salt: currentUser.salt,
         encryptedVaultData: currentUser.encryptedVaultData,
         encryptedSettings
     };
+    
+    // Generate checksum (SHA-256 hash of critical data)
+    const checksumData = backup.salt + backup.encryptedVaultData + backup.encryptedSettings;
+    const checksum = generateChecksum(checksumData);
+    
+    return {
+        ...backup,
+        checksum
+    };
+}
+
+/**
+ * Generate SHA-256 checksum for backup verification
+ */
+function generateChecksum(data: string): string {
+    // Simple hash function for checksum (not cryptographic, just for integrity)
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+        const char = data.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(16).padStart(8, '0');
+}
+
+/**
+ * Verify backup file integrity and extract metadata
+ */
+export function verifyBackupFile(backupData: any): {
+    valid: boolean;
+    version?: string;
+    timestamp?: number;
+    accountCount?: number;
+    encrypted: boolean;
+    hasChecksum: boolean;
+    checksumValid?: boolean;
+    error?: string;
+} {
+    try {
+        // Check required fields
+        if (!backupData.salt || !backupData.encryptedVaultData) {
+            return {
+                valid: false,
+                encrypted: false,
+                hasChecksum: false,
+                error: "Invalid backup format: missing required fields"
+            };
+        }
+        
+        // Check if encrypted (new format has encryptedSettings)
+        const encrypted = !!backupData.encryptedSettings;
+        
+        // Check if has checksum
+        const hasChecksum = !!backupData.checksum;
+        
+        // Verify checksum if present
+        let checksumValid = false;
+        if (hasChecksum) {
+            const checksumData = backupData.salt + backupData.encryptedVaultData + (backupData.encryptedSettings || '');
+            const calculatedChecksum = generateChecksum(checksumData);
+            checksumValid = calculatedChecksum === backupData.checksum;
+        }
+        
+        return {
+            valid: true,
+            version: backupData.version || "1.0.0",
+            timestamp: backupData.timestamp,
+            accountCount: backupData.accountCount,
+            encrypted,
+            hasChecksum,
+            checksumValid: hasChecksum ? checksumValid : undefined
+        };
+    } catch (err) {
+        return {
+            valid: false,
+            encrypted: false,
+            hasChecksum: false,
+            error: "Failed to parse backup file"
+        };
+    }
 }
 
 export function encryptPIN(pin: string): string {

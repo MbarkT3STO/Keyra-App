@@ -292,6 +292,22 @@ ipcMain.handle('perform-vault-import', async (event, salt, encryptedVaultData, p
     return importVaultData(salt, encryptedVaultData, password, encryptedSettings, autolock, desktopSettings, webSettings);
 });
 
+ipcMain.handle('verify-backup-file', (event, backupData) => {
+    console.log('verify-backup-file called with data:', {
+        hasSalt: !!backupData?.salt,
+        hasEncryptedVaultData: !!backupData?.encryptedVaultData,
+        hasEncryptedSettings: !!backupData?.encryptedSettings,
+        hasChecksum: !!backupData?.checksum,
+        version: backupData?.version,
+        timestamp: backupData?.timestamp,
+        accountCount: backupData?.accountCount
+    });
+    const { verifyBackupFile } = require('../core/auth');
+    const result = verifyBackupFile(backupData);
+    console.log('verify-backup-file result:', result);
+    return result;
+});
+
 ipcMain.handle('set-content-protection', (event, enabled) => {
     mainWindow?.setContentProtection(enabled);
     return true;

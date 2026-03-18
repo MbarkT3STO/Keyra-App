@@ -1,6 +1,7 @@
 import * as auth from '../core/auth';
 import * as totp from '../core/totp';
 import { parseOTPAuthURI } from '../core/otpauth';
+import { handleError, withErrorHandling } from '../core/errorHandler';
 
 const syncWrapper = async <T>(fn: () => Promise<T>, title: string = "Processing", subtitle: string = "VAULT SECURITY SYNCHRONIZATION"): Promise<T> => {
     const ui = (window as any).ui;
@@ -10,6 +11,18 @@ const syncWrapper = async <T>(fn: () => Promise<T>, title: string = "Processing"
     }
     try {
         return await fn();
+    } catch (error: any) {
+        // Log error and show user-friendly message
+        const userMessage = handleError(error, {
+            operation: title,
+            timestamp: Date.now()
+        });
+        
+        if (ui) {
+            ui.showToast(userMessage, 'error');
+        }
+        
+        throw error;
     } finally {
         if (ui) {
             setTimeout(() => {
@@ -47,38 +60,65 @@ export const bridge = {
 
     // Operations
     getAccounts: async () => {
-        try { return await syncWrapper(() => auth.getActiveAccounts(), "Loading Vault", "SYNCHRONIZING SECURE DATA"); }
-        catch (err) { return []; }
+        return await withErrorHandling(
+            async () => {
+                const accounts = await syncWrapper(() => auth.getActiveAccounts(), "Loading Vault", "SYNCHRONIZING SECURE DATA");
+                return accounts || [];
+            },
+            { operation: 'getAccounts', timestamp: Date.now() },
+            (error) => {
+                console.error("Failed to load accounts:", error);
+                const ui = (window as any).ui;
+                if (ui) {
+                    ui.showToast('Failed to load accounts. Please try again.', 'error');
+                }
+            }
+        ) || [];
     },
     saveAccount: async (account: any) => {
-        try {
-            return await syncWrapper(async () => {
-                const accounts = await auth.getActiveAccounts();
-                const existingIndex = accounts.findIndex((a: any) => a.id === account.id);
-                if (existingIndex >= 0) {
-                    accounts[existingIndex] = account;
-                } else {
-                    accounts.push(account);
+        return await withErrorHandling(
+            async () => {
+                return await syncWrapper(async () => {
+                    const accounts = await auth.getActiveAccounts();
+                    const existingIndex = accounts.findIndex((a: any) => a.id === account.id);
+                    if (existingIndex >= 0) {
+                        accounts[existingIndex] = account;
+                    } else {
+                        accounts.push(account);
+                    }
+                    await auth.saveActiveAccounts(accounts);
+                    return accounts;
+                }, "Syncing Vault", "SECURE CLOUD BACKUP");
+            },
+            { operation: 'saveAccount', details: { accountId: account.id }, timestamp: Date.now() },
+            (error) => {
+                console.error("Failed to save account:", error);
+                const ui = (window as any).ui;
+                if (ui) {
+                    ui.showToast('Failed to save account. Please try again.', 'error');
                 }
-                await auth.saveActiveAccounts(accounts);
-                return accounts;
-            }, "Syncing Vault", "SECURE CLOUD BACKUP");
-        } catch (err) {
-            console.error("Save Account Error:", err);
-            return [];
-        }
+            }
+        ) || [];
     },
     deleteAccount: async (id: string) => {
-        try {
-            return await syncWrapper(async () => {
-                let accounts = await auth.getActiveAccounts();
-                accounts = accounts.filter((a: any) => a.id !== id);
-                await auth.saveActiveAccounts(accounts);
-                return accounts;
-            }, "Updating Vault", "CLOUD SYNCHRONIZATION");
-        } catch (err) {
-            return [];
-        }
+        return await withErrorHandling(
+            async () => {
+                return await syncWrapper(async () => {
+                    let accounts = await auth.getActiveAccounts();
+                    accounts = accounts.filter((a: any) => a.id !== id);
+                    await auth.saveActiveAccounts(accounts);
+                    return accounts;
+                }, "Updating Vault", "CLOUD SYNCHRONIZATION");
+            },
+            { operation: 'deleteAccount', details: { accountId: id }, timestamp: Date.now() },
+            (error) => {
+                console.error("Failed to delete account:", error);
+                const ui = (window as any).ui;
+                if (ui) {
+                    ui.showToast('Failed to delete account. Please try again.', 'error');
+                }
+            }
+        ) || [];
     },
     generateTOTP: async (secret: string) => totp.generateTOTP(secret),
     getRemainingSeconds: async () => totp.getRemainingSeconds(),
@@ -129,6 +169,8 @@ export const bridge = {
     },
     performVaultImport: async (salt: string, encryptedVaultData: string, pass: string, encryptedSettings?: string, autolock?: string, desktopSettings?: any, webSettings?: any) => 
         syncWrapper(() => auth.importVaultData(salt, encryptedVaultData, pass, encryptedSettings, autolock, desktopSettings, webSettings), "Restoring Vault", "DECRYPTING SECURITY ARCHIVE"),
+    
+    verifyBackupFile: (backupData: any) => auth.verifyBackupFile(backupData),
     
     setContentProtection: async (enabled: boolean) => {
         console.log("Content protection requested:", enabled);

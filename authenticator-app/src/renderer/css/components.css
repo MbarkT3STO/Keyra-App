@@ -4253,3 +4253,68 @@ body.light-theme .cloud-sync-pill {
 .conflict-option-card .option-desc strong {
     color: var(--accent-primary);
 }
+
+
+/* Skeleton Loader Cards */
+.skeleton-card {
+    background: var(--bg-primary);
+    box-shadow: var(--nm-shadow-out);
+    border-radius: var(--radius-lg);
+    padding: clamp(var(--space-md), 4vw, var(--space-lg));
+    position: relative;
+    overflow: hidden;
+    animation: cardEntrance 0.4s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+    opacity: 0;
+}
+
+.skeleton-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.skeleton-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    box-shadow: var(--nm-shadow-in-sm);
+}
+
+.skeleton-text-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.skeleton-text {
+    height: 16px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+}
+
+.skeleton-text.title {
+    width: 60%;
+    height: 18px;
+}
+
+.skeleton-text.subtitle {
+    width: 40%;
+    height: 14px;
+}
+
+.skeleton-otp {
+    height: 60px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    margin-bottom: var(--space-md);
+    box-shadow: var(--nm-shadow-in-sm);
+}
+
+.skeleton-button {
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}

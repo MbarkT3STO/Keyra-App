@@ -272,4 +272,40 @@
 @keyframes nm-pulse {
     0%, 100% { transform: scale(1); opacity: 0.1; }
     50% { transform: scale(1.2); opacity: 0.2; }
-}
+}
+
+
+
+/* Skeleton Loader Animations */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+@keyframes pulse-skeleton {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.skeleton-loader {
+    animation: pulse-skeleton 1.5s ease-in-out infinite;
+}
+
+.skeleton-shimmer {
+    background: linear-gradient(
+        90deg,
+        var(--bg-primary) 0%,
+        var(--bg-secondary) 50%,
+        var(--bg-primary) 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+}

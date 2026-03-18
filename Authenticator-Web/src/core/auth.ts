@@ -16,8 +16,6 @@ async function deliverActivationCode(email: string, code: string) {
         code: code
     });
     
-    // Always store the last code for simulation fallback UI
-    (window as any).lastSimulatedCode = code;
     return result;
 }
 
@@ -179,9 +177,10 @@ export async function login(username: string, password: string): Promise<{ succe
         
         currentKey = key;
 
-        // Persist session for "Remember Me"
+        // Persist session for "Remember Me" with timestamp
         localStorage.setItem('active_session_user', currentUser.username);
         localStorage.setItem('active_session_key', key.toString('base64'));
+        localStorage.setItem('active_session_timestamp', Date.now().toString());
 
         return { success: true, message: "Login successful." };
     } catch (err) {
@@ -221,8 +220,21 @@ export function decryptPIN(encryptedPin: string): string {
 export async function checkSession(): Promise<{ success: boolean, message: string }> {
     const savedUser = localStorage.getItem('active_session_user');
     const savedKey = localStorage.getItem('active_session_key');
+    const sessionTimestamp = localStorage.getItem('active_session_timestamp');
 
     if (savedUser && savedKey) {
+        // Check session expiration (30 days)
+        if (sessionTimestamp) {
+            const sessionAge = Date.now() - parseInt(sessionTimestamp);
+            const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+            
+            if (sessionAge > thirtyDaysInMs) {
+                console.log("Session expired after 30 days");
+                logout();
+                return { success: false, message: "Session expired. Please login again." };
+            }
+        }
+
         try {
             const users = await getUsers();
             let user = users.find(u => u.username === savedUser);
@@ -254,6 +266,10 @@ export async function checkSession(): Promise<{ success: boolean, message: strin
                 }
                 
                 currentKey = Buffer.from(savedKey, 'base64');
+                
+                // Update session timestamp on successful resume
+                localStorage.setItem('active_session_timestamp', Date.now().toString());
+                
                 return { success: true, message: "Session resumed." };
             }
         } catch (e) {
@@ -268,6 +284,7 @@ export function logout(): void {
     currentKey = null;
     localStorage.removeItem('active_session_user');
     localStorage.removeItem('active_session_key');
+    localStorage.removeItem('active_session_timestamp');
 }
 
 export async function getActiveAccounts(): Promise<AuthenticatorAccount[]> {
@@ -328,9 +345,13 @@ export async function updateUserSettings(settings: any): Promise<void> {
 }
 
 export function getBackupData(): { 
-    salt: string, 
-    encryptedVaultData: string, 
-    encryptedSettings?: string
+    version: string;
+    timestamp: number;
+    accountCount: number;
+    salt: string;
+    encryptedVaultData: string;
+    encryptedSettings?: string;
+    checksum: string;
 } {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
     
@@ -344,11 +365,105 @@ export function getBackupData(): {
     // Encrypt the settings using the current key
     const encryptedSettings = encryptVault(JSON.stringify(settings), currentKey);
     
-    return {
+    // Get account count by decrypting vault
+    let accountCount = 0;
+    try {
+        const decrypted = decryptVault(currentUser.encryptedVaultData, currentKey);
+        const accounts = JSON.parse(decrypted);
+        accountCount = Array.isArray(accounts) ? accounts.length : 0;
+    } catch (err) {
+        console.error("Failed to count accounts:", err);
+    }
+    
+    // Create backup object
+    const backup = {
+        version: "1.2.0",
+        timestamp: Date.now(),
+        accountCount,
         salt: currentUser.salt,
         encryptedVaultData: currentUser.encryptedVaultData,
         encryptedSettings
     };
+    
+    // Generate checksum (SHA-256 hash of critical data)
+    const checksumData = backup.salt + backup.encryptedVaultData + backup.encryptedSettings;
+    const checksum = generateChecksum(checksumData);
+    
+    return {
+        ...backup,
+        checksum
+    };
+}
+
+/**
+ * Generate SHA-256 checksum for backup verification
+ */
+function generateChecksum(data: string): string {
+    // Simple hash function for checksum (not cryptographic, just for integrity)
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+        const char = data.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(16).padStart(8, '0');
+}
+
+/**
+ * Verify backup file integrity and extract metadata
+ */
+export function verifyBackupFile(backupData: any): {
+    valid: boolean;
+    version?: string;
+    timestamp?: number;
+    accountCount?: number;
+    encrypted: boolean;
+    hasChecksum: boolean;
+    checksumValid?: boolean;
+    error?: string;
+} {
+    try {
+        // Check required fields
+        if (!backupData.salt || !backupData.encryptedVaultData) {
+            return {
+                valid: false,
+                encrypted: false,
+                hasChecksum: false,
+                error: "Invalid backup format: missing required fields"
+            };
+        }
+        
+        // Check if encrypted (new format has encryptedSettings)
+        const encrypted = !!backupData.encryptedSettings;
+        
+        // Check if has checksum
+        const hasChecksum = !!backupData.checksum;
+        
+        // Verify checksum if present
+        let checksumValid = false;
+        if (hasChecksum) {
+            const checksumData = backupData.salt + backupData.encryptedVaultData + (backupData.encryptedSettings || '');
+            const calculatedChecksum = generateChecksum(checksumData);
+            checksumValid = calculatedChecksum === backupData.checksum;
+        }
+        
+        return {
+            valid: true,
+            version: backupData.version || "1.0.0",
+            timestamp: backupData.timestamp,
+            accountCount: backupData.accountCount,
+            encrypted,
+            hasChecksum,
+            checksumValid: hasChecksum ? checksumValid : undefined
+        };
+    } catch (err) {
+        return {
+            valid: false,
+            encrypted: false,
+            hasChecksum: false,
+            error: "Failed to parse backup file"
+        };
+    }
 }
 
 export async function importVaultData(

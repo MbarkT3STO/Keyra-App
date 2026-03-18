@@ -66,6 +66,7 @@ contextBridge.exposeInMainWorld('api', {
     parseURI: (uri: string) => ipcRenderer.invoke('parse-uri', uri),
     performVaultImport: (salt: string, encryptedVaultData: string, pass: string, encryptedSettings?: string, autolock?: string, desktopSettings?: any, webSettings?: any) => 
         ipcRenderer.invoke('perform-vault-import', salt, encryptedVaultData, pass, encryptedSettings, autolock, desktopSettings, webSettings),
+    verifyBackupFile: (backupData: any) => ipcRenderer.invoke('verify-backup-file', backupData),
     exportVault: () => ipcRenderer.invoke('export-vault'),
     importVault: () => ipcRenderer.invoke('import-vault'),
     encryptPIN: (pin: string) => ipcRenderer.invoke('encrypt-pin', pin),

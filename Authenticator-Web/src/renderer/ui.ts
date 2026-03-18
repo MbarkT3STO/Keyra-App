@@ -961,6 +961,9 @@ export class UIManager {
     }
 
     private async loadInitialData() {
+        // Show skeleton loaders immediately
+        this.showSkeletonLoaders();
+        
         try {
             const user = await (window as any).api.getCurrentUser();
 
@@ -1011,8 +1014,58 @@ export class UIManager {
     }
 
     public async refreshAccounts() {
+        // Show skeleton loaders
+        this.showSkeletonLoaders();
+        
+        // Fetch accounts
         this.accounts = await (window as any).api.getAccounts();
+        
+        // Small delay to ensure smooth transition (minimum 300ms for better UX)
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Render actual accounts
         this.renderAccounts();
+    }
+    
+    private showSkeletonLoaders(count: number = 6) {
+        const grid = document.getElementById('accounts-grid');
+        const emptyState = document.getElementById('empty-state');
+        const searchEmptyState = document.getElementById('search-empty-state');
+        
+        if (!grid) return;
+        
+        // Hide empty states
+        emptyState?.classList.add('hidden');
+        searchEmptyState?.classList.add('hidden');
+        
+        // Show grid and populate with skeletons
+        grid.classList.remove('hidden');
+        grid.innerHTML = '';
+        
+        for (let i = 0; i < count; i++) {
+            const skeleton = this.createSkeletonCard(i);
+            grid.appendChild(skeleton);
+        }
+    }
+    
+    private createSkeletonCard(index: number): HTMLElement {
+        const card = document.createElement('div');
+        card.className = 'skeleton-card';
+        card.style.animationDelay = `${index * 0.06}s`;
+        
+        card.innerHTML = `
+            <div class="skeleton-header">
+                <div class="skeleton-icon skeleton-shimmer"></div>
+                <div class="skeleton-text-group">
+                    <div class="skeleton-text title skeleton-shimmer"></div>
+                    <div class="skeleton-text subtitle skeleton-shimmer"></div>
+                </div>
+            </div>
+            <div class="skeleton-otp skeleton-shimmer"></div>
+            <div class="skeleton-button skeleton-shimmer"></div>
+        `;
+        
+        return card;
     }
 
     private switchTab(tab: 'vault' | 'settings' | 'account') {
@@ -2530,6 +2583,9 @@ export class UIManager {
     }
 
     private showImportPasswordModal(data: any) {
+        // Verify backup file first
+        const verification = (window as any).api.verifyBackupFile(data);
+        
         // Support both new encrypted format and legacy plaintext format
         const { 
             salt, 
@@ -2540,36 +2596,120 @@ export class UIManager {
             "Web Settings": webSettings 
         } = data;
         
+        // Format timestamp if available
+        let dateStr = "Unknown";
+        if (verification.timestamp) {
+            const date = new Date(verification.timestamp);
+            dateStr = date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // Encryption status badge
+        const encryptionBadge = verification.encrypted 
+            ? '<div class="badge" style="background: var(--success); color: white; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800;"><i class="fa-solid fa-lock"></i> FULLY ENCRYPTED</div>'
+            : '<div class="badge" style="background: #ff9500; color: white; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800;"><i class="fa-solid fa-triangle-exclamation"></i> LEGACY FORMAT</div>';
+        
+        // Checksum status
+        let checksumStatus = '';
+        if (verification.hasChecksum) {
+            if (verification.checksumValid) {
+                checksumStatus = '<div style="display: flex; align-items: center; gap: 8px; color: var(--success); font-size: 13px; font-weight: 700; margin-top: 12px;"><i class="fa-solid fa-circle-check"></i><span>Integrity Verified</span></div>';
+            } else {
+                checksumStatus = '<div style="display: flex; align-items: center; gap: 8px; color: #ff3b30; font-size: 13px; font-weight: 700; margin-top: 12px;"><i class="fa-solid fa-triangle-exclamation"></i><span>Checksum Mismatch - File may be corrupted</span></div>';
+            }
+        }
+        
+        // Warning if backup is invalid
+        const warningSection = !verification.valid 
+            ? `<div style="background: rgba(255, 59, 48, 0.1); border: 2px solid #ff3b30; border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md);">
+                <div style="display: flex; align-items: center; gap: 12px; color: #ff3b30;">
+                    <i class="fa-solid fa-circle-exclamation" style="font-size: 24px;"></i>
+                    <div>
+                        <div style="font-weight: 800; font-size: 14px; margin-bottom: 4px;">Invalid Backup File</div>
+                        <div style="font-size: 12px; opacity: 0.9;">${verification.error || 'This file cannot be restored'}</div>
+                    </div>
+                </div>
+            </div>`
+            : '';
+        
         const content = `
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
                     <div class="account-icon nm-icon-large" style="width: 64px; height: 64px;">
                         <i class="fa-solid fa-upload"></i>
                     </div>
-                    <div>
-                        <h2 style="font-weight: 900; font-size: 24px; color: var(--text-primary);">Restore Vault</h2>
-                        <div class="modal-help-text" style="text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">VERIFY MASTER KEY TO IMPORT</div>
+                    <div style="flex: 1;">
+                        <h2 style="font-weight: 900; font-size: 24px; color: var(--text-primary); margin-bottom: 8px;">Restore Vault</h2>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="modal-help-text" style="text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">VERIFY MASTER KEY TO IMPORT</div>
+                            ${encryptionBadge}
+                        </div>
                     </div>
                 </div>
                 
-                <div class="modal-entity-badge" style="margin-bottom: 20px;">
-                    <div class="entity-icon">
-                        <i class="fa-solid fa-hard-drive"></i>
+                ${warningSection}
+                
+                <div style="background: var(--bg-primary); border-radius: var(--radius-md); padding: var(--space-md); box-shadow: var(--nm-shadow-in-sm); margin-bottom: var(--space-lg);">
+                    <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">Backup Details</div>
+                    
+                    <div style="display: grid; gap: 12px;">
+                        <div class="setting-row" style="padding: 0; margin: 0;">
+                            <div class="setting-info">
+                                <div class="setting-name" style="font-size: 13px;">Version</div>
+                                <div class="setting-desc" style="font-size: 12px;">${verification.version || 'Unknown'}</div>
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 13px; font-weight: 700;">
+                                <i class="fa-solid fa-code-branch"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-row" style="padding: 0; margin: 0;">
+                            <div class="setting-info">
+                                <div class="setting-name" style="font-size: 13px;">Created</div>
+                                <div class="setting-desc" style="font-size: 12px;">${dateStr}</div>
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 13px; font-weight: 700;">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-row" style="padding: 0; margin: 0;">
+                            <div class="setting-info">
+                                <div class="setting-name" style="font-size: 13px;">Accounts</div>
+                                <div class="setting-desc" style="font-size: 12px;">${verification.accountCount !== undefined ? verification.accountCount + ' accounts' : 'Unknown'}</div>
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 13px; font-weight: 700;">
+                                <i class="fa-solid fa-key"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-row" style="padding: 0; margin: 0;">
+                            <div class="setting-info">
+                                <div class="setting-name" style="font-size: 13px;">Encryption</div>
+                                <div class="setting-desc" style="font-size: 12px;">${verification.encrypted ? 'AES-256-GCM' : 'Partial (Legacy)'}</div>
+                            </div>
+                            <div style="color: ${verification.encrypted ? 'var(--success)' : '#ff9500'}; font-size: 13px; font-weight: 700;">
+                                <i class="fa-solid fa-${verification.encrypted ? 'shield-halved' : 'shield'}"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="entity-info">
-                        <span class="entity-name">Encrypted Backup</span>
-                        <span class="entity-label">Awaiting decryption key</span>
-                    </div>
+                    
+                    ${checksumStatus}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Backup Master Password</label>
-                    <input type="password" id="import-pass" class="form-input" placeholder="••••••••">
+                    <input type="password" id="import-pass" class="form-input" placeholder="••••••••" ${!verification.valid ? 'disabled' : ''}>
                     <p class="modal-help-text" style="margin-top: 8px;">Enter the master password that was used when this backup was created.</p>
                 </div>
                 
                 <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl);">
-                    <button class="btn-primary" id="confirm-import" style="flex: 2; height: var(--btn-h-lg);">
+                    <button class="btn-primary" id="confirm-import" style="flex: 2; height: var(--btn-h-lg);" ${!verification.valid ? 'disabled' : ''}>
                         <i class="fa-solid fa-shield-halved"></i>
                         Restore Vault
                     </button>
@@ -2580,28 +2720,38 @@ export class UIManager {
         this.showModal(content);
 
         document.getElementById('cancel-import')?.addEventListener('click', () => this.hideModal());
-        document.getElementById('confirm-import')?.addEventListener('click', async () => {
-            const pass = (document.getElementById('import-pass') as HTMLInputElement).value;
-            if (!pass) {
-                this.showToast("Password required", "error");
-                return;
-            }
-            const res = await (window as any).api.performVaultImport(
-                salt, 
-                encryptedVaultData, 
-                pass, 
-                encryptedSettings,
-                autolock, 
-                desktopSettings, 
-                webSettings
-            );
-            if (res.success) {
-                this.hideModal();
-                this.showToast("Vault successfully restored!", "success");
-                await this.refreshAccounts();
-            } else {
-                this.showToast(res.message, "error");
-            }
-        });
+        
+        if (verification.valid) {
+            document.getElementById('confirm-import')?.addEventListener('click', async () => {
+                const pass = (document.getElementById('import-pass') as HTMLInputElement).value;
+                if (!pass) {
+                    this.showToast("Password required", "error");
+                    return;
+                }
+                
+                // Show warning if checksum is invalid
+                if (verification.hasChecksum && !verification.checksumValid) {
+                    const confirmed = confirm("Warning: Backup file integrity check failed. The file may be corrupted or tampered with. Continue anyway?");
+                    if (!confirmed) return;
+                }
+                
+                const res = await (window as any).api.performVaultImport(
+                    salt, 
+                    encryptedVaultData, 
+                    pass, 
+                    encryptedSettings,
+                    autolock, 
+                    desktopSettings, 
+                    webSettings
+                );
+                if (res.success) {
+                    this.hideModal();
+                    this.showToast("Vault successfully restored!", "success");
+                    await this.refreshAccounts();
+                } else {
+                    this.showToast(res.message, "error");
+                }
+            });
+        }
     }
 }
