@@ -94,7 +94,7 @@ body {
     overflow-y: auto;
     padding: clamp(var(--space-lg), 4vw, var(--space-2xl)) clamp(var(--space-sm), 4vw, var(--space-xl));
     width: 100%;
-    max-width: 1280px;
+    max-width: 100%;
     margin: 0 auto;
     scrollbar-gutter: stable;
     scroll-behavior: smooth;
@@ -309,13 +309,15 @@ body:has(.settings-container:not(.hidden)) .main-content {
 
 .accounts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
     width: 100%;
+    max-width: 100%;
 }
 
 .view-section {
     width: 100%;
+    max-width: 100%;
     animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
     position: relative;
 }
