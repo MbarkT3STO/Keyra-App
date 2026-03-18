@@ -320,45 +320,7 @@ body:has(.settings-container:not(.hidden)) .main-content {
     position: relative;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   EMPTY STATE SYMMETRY
-   ───────────────────────────────────────────────────────────────────────────── */
-
-.empty-state-vessel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: clamp(32px, 8vh, 64px) var(--space-md);
-    /* Reduced from 60px/15vh/120px */
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.empty-state-vessel i {
-    margin-bottom: var(--space-lg);
-    color: var(--accent-primary);
-    filter: drop-shadow(0 0 10px var(--aura-1));
-    /* Reduced for performance */
-}
-
-.empty-state-vessel h2 {
-    margin-bottom: var(--space-sm);
-    font-size: clamp(24px, 5vw, 32px);
-    font-weight: 900;
-    letter-spacing: -1.2px;
-}
-
-.empty-state-vessel p {
-    color: var(--text-secondary);
-    margin-bottom: 40px;
-    font-size: clamp(14px, 1.8vw, 17px);
-    line-height: 1.6;
-    font-weight: 500;
-}
+/* Empty state consolidated in components.css */
 
 /* ─────────────────────────────────────────────────────────────────────────────
    RESPONSIVE OVERRIDES

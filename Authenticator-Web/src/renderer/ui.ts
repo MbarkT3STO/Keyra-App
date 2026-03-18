@@ -1364,12 +1364,12 @@ export class UIManager {
         const content = `
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
-                <div class="account-icon nm-icon-large" style="width: 64px; height: 64px;">
-                        <i class="fa-solid fa-circle-plus"></i>
+                    <div class="modal-brand-icon" style="width: 140px !important; height: 140px !important; margin-bottom: 48px !important;">
+                        <i class="fa-solid fa-circle-plus" style="font-size: 72px !important;"></i>
                     </div>
                     <div>
-                        <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 28px); color: var(--text-primary); letter-spacing: -1px;">Add Token</h2>
-                        <div class="modal-help-text" style="font-weight: 600; opacity: 0.8; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">SAVE DIGITAL IDENTITY</div>
+                        <h2 style="font-weight: 950; font-size: clamp(28px, 5vw, 36px); color: var(--text-primary); letter-spacing: -1.5px; margin-bottom: 8px;">Add Token</h2>
+                        <div class="modal-help-text" style="font-weight: 750; opacity: 0.8; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">SAVE DIGITAL IDENTITY</div>
                     </div>
                 </div>
                 
@@ -1417,12 +1417,12 @@ export class UIManager {
         const content = `
             <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
                 <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
-                    <div class="account-icon nm-icon-large" style="width: 64px; height: 64px;">
-                        <i class="fa-solid fa-sliders"></i>
+                    <div class="modal-brand-icon" style="width: 140px !important; height: 140px !important; margin-bottom: 48px !important;">
+                        <i class="fa-solid fa-sliders" style="font-size: 72px !important;"></i>
                     </div>
                     <div>
-                        <h2 style="font-weight: 900; font-size: clamp(24px, 4vw, 28px); color: var(--text-primary); letter-spacing: -1px;">Edit Identity</h2>
-                        <div class="modal-help-text" style="font-weight: 600; opacity: 0.8; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">UPDATE SERVICE DETAILS</div>
+                        <h2 style="font-weight: 950; font-size: clamp(28px, 5vw, 36px); color: var(--text-primary); letter-spacing: -1.5px; margin-bottom: 8px;">Edit Identity</h2>
+                        <div class="modal-help-text" style="font-weight: 750; opacity: 0.8; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">UPDATE SERVICE DETAILS</div>
                     </div>
                 </div>
                 
@@ -1925,8 +1925,8 @@ export class UIManager {
 
                 <div class="pin-step-content">
                     <div class="pin-header">
-                        <div class="pin-brand-icon">
-                            <i class="fa-solid fa-shield-halved"></i>
+                        <div class="pin-brand-icon" style="width: 140px !important; height: 140px !important; margin-bottom: 48px !important;">
+                            <i class="fa-solid fa-shield-halved" style="font-size: 72px !important;"></i>
                         </div>
                         <h2 class="pin-title">Set Master PIN</h2>
                         <p class="pin-subtitle">ESTABLISH 4-DIGIT VAULT KEY</p>
@@ -1981,8 +1981,8 @@ export class UIManager {
 
                 <div class="pin-step-content">
                     <div class="pin-header">
-                        <div class="pin-brand-icon">
-                            <i class="fa-solid fa-circle-check"></i>
+                        <div class="pin-brand-icon" style="width: 140px !important; height: 140px !important; margin-bottom: 48px !important;">
+                            <i class="fa-solid fa-circle-check" style="font-size: 72px !important;"></i>
                         </div>
                         <h2 class="pin-title">Verify PIN</h2>
                         <p class="pin-subtitle">RE-ENTER KEY TO CONFIRM</p>
@@ -2095,8 +2095,8 @@ export class UIManager {
         const content = `
             <div class="pin-removal-modal">
                 <div class="pin-header">
-                    <div class="pin-brand-icon danger">
-                        <i class="fa-solid fa-shield"></i>
+                    <div class="pin-brand-icon danger" style="width: 140px !important; height: 140px !important; margin-bottom: 48px !important;">
+                        <i class="fa-solid fa-shield" style="font-size: 72px !important;"></i>
                     </div>
                     <h2 class="pin-title danger">Deactivate Security?</h2>
                     <p class="pin-subtitle">VAULT WILL BE UNPROTECTED</p>
@@ -2340,14 +2340,14 @@ export class UIManager {
         const offset = circumference - (remaining / 30) * circumference;
 
         const content = `
-            <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl)); text-align: center;">
-                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg); text-align: left;">
-                    <div class="account-icon nm-icon-large" style="width: 64px; height: 64px; flex-shrink: 0;">
-                        <i class="${this.getIcon(account.issuer)}"></i>
+            <div style="padding: clamp(var(--space-xl), 10vw, var(--space-2xl)); text-align: center;">
+                <div style="display: flex; align-items: center; gap: var(--space-xl); margin-bottom: 48px; text-align: left;">
+                    <div class="modal-brand-icon" style="width: 140px !important; height: 140px !important; flex-shrink: 0; margin: 0 !important;">
+                        <i class="${this.getIcon(account.issuer)}" style="font-size: 72px !important;"></i>
                     </div>
                     <div>
-                        <h2 style="font-weight: 900; font-size: clamp(20px, 4vw, 26px); color: var(--text-primary); letter-spacing: -0.5px;">${account.issuer}</h2>
-                        <div style="color: var(--text-secondary); font-size: 13px; font-weight: 600;">${account.account}</div>
+                        <h2 style="font-weight: 950; font-size: clamp(28px, 5vw, 36px); color: var(--text-primary); letter-spacing: -1.5px; margin-bottom: 8px;">${account.issuer}</h2>
+                        <div style="color: var(--text-secondary); font-size: 16px; font-weight: 750; letter-spacing: 0.5px; opacity: 0.8;">${account.account}</div>
                     </div>
                 </div>
 

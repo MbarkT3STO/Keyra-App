@@ -23,6 +23,7 @@
     /* Backward-compat aliases */
     --nm-raised: var(--nm-shadow-out);
     --nm-pressed: var(--nm-shadow-in);
+    --nm-raised-hover: 16px 16px 32px var(--nm-shadow-dark), -16px -16px 32px var(--nm-shadow-light);
     --nm-inner-top: inset -7px -7px 14px var(--nm-shadow-light);
     --nm-inner-bottom: inset 7px 7px 14px var(--nm-shadow-dark);
 }
@@ -46,6 +47,7 @@
 
     --nm-raised: var(--nm-shadow-out);
     --nm-pressed: var(--nm-shadow-in);
+    --nm-raised-hover: 10px 10px 24px var(--nm-shadow-dark), -10px -10px 24px var(--nm-shadow-light);
     --nm-inner-top: inset -5px -5px 10px var(--nm-shadow-light);
     --nm-inner-bottom: inset 5px 5px 10px var(--nm-shadow-dark);
 }
@@ -178,18 +180,19 @@ body.dark-theme {
 }
 
 .nm-icon-large {
-    width: clamp(80px, 15vw, 120px) !important;
-    height: clamp(80px, 15vw, 120px) !important;
+    width: 120px;
+    height: 120px;
     background: var(--bg-primary);
     box-shadow: var(--nm-raised);
     border-radius: var(--radius-xl);
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto;
 }
 
 .nm-icon-large i {
-    width: 60% !important;
-    height: 60% !important;
+    font-size: 56px;
+    line-height: 1;
     color: var(--accent-primary);
 }

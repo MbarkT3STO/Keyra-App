@@ -39,6 +39,26 @@
     flex-shrink: 0;
 }
 
+.modal-brand-icon {
+    width: 120px !important;
+    height: 120px !important;
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 40px !important;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-brand-icon i {
+    font-size: 60px !important;
+    line-height: 1;
+    color: var(--accent-primary);
+}
+
 .brand-text {
     font-weight: 850;
     font-size: clamp(20px, 2.5vw, 26px);
@@ -2152,15 +2172,15 @@ input:checked+.slider:before {
 }
 
 .pin-brand-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: var(--radius-md);
+    width: 120px !important;
+    height: 120px !important;
+    border-radius: var(--radius-xl);
     background: var(--bg-primary);
     box-shadow: var(--nm-raised);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 16px;
+    margin: 0 auto 40px !important;
     color: var(--accent-primary);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -2170,24 +2190,25 @@ input:checked+.slider:before {
 }
 
 .pin-brand-icon i {
-    font-size: 26px;
+    font-size: 60px !important;
     line-height: 1;
 }
 
 .pin-title {
-    font-size: clamp(22px, 4vw, 28px);
-    font-weight: 900;
+    font-size: clamp(28px, 5vw, 36px);
+    font-weight: 950;
     color: var(--text-primary);
-    margin: 0 0 8px;
-    letter-spacing: -1px;
+    margin: 0 0 12px;
+    letter-spacing: -1.5px;
 }
 
 .pin-subtitle {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--text-secondary);
-    font-weight: 600;
+    font-weight: 750;
     margin: 0;
     line-height: 1.4;
+    letter-spacing: 1px;
 }
 
 /* Input Container */
@@ -2351,14 +2372,16 @@ input:checked+.slider:before {
         width: 40px;
     }
 
-    .pin-brand-icon {
-        width: 56px;
-        height: 56px;
+    .pin-brand-icon, .modal-brand-icon {
+        width: 100px !important;
+        height: 100px !important;
+        margin-bottom: 32px !important;
     }
 
-    .pin-brand-icon i {
-        width: 24px;
-        height: 24px;
+    .pin-brand-icon i, .modal-brand-icon i {
+        font-size: 50px !important;
+        width: auto !important;
+        height: auto !important;
     }
 
     .pin-title {
@@ -2420,14 +2443,16 @@ input:checked+.slider:before {
         width: 30px;
     }
 
-    .pin-brand-icon {
-        width: 48px;
-        height: 48px;
+    .pin-brand-icon, .modal-brand-icon {
+        width: 80px !important;
+        height: 80px !important;
+        margin-bottom: 24px !important;
     }
 
-    .pin-brand-icon i {
-        width: 20px;
-        height: 20px;
+    .pin-brand-icon i, .modal-brand-icon i {
+        font-size: 40px !important;
+        width: auto !important;
+        height: auto !important;
     }
 
     .pin-title {
@@ -2582,7 +2607,7 @@ body.vault-is-locked .main-app-content,
 }
 
 .pin-header {
-    margin-bottom: var(--space-xl);
+    margin-bottom: 48px;
 }
 
 .pin-title {
@@ -2839,21 +2864,104 @@ body.vault-is-locked .main-app-content,
     border-radius: var(--radius-full);
 }
 
-.nm-icon-large {
-    width: clamp(80px, 15vw, 120px) !important;
-    height: clamp(80px, 15vw, 120px) !important;
-    background: var(--bg-primary);
-    box-shadow: var(--nm-raised);
-    border-radius: var(--radius-xl);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Empty State Specific Styles */
+.empty-state-vessel .nm-icon-large {
+    border-radius: 50%; /* Circle for fingerprint */
+    margin-bottom: 32px;
+}
+
+.empty-state-vessel .nm-icon-large i {
+    font-size: 64px;
 }
 
 .nm-icon-large i {
-    font-size: clamp(32px, 6vw, 52px) !important;
-    line-height: 1 !important;
+    font-size: clamp(32px, 6vw, 52px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0; /* Remove baseline space */
     color: var(--accent-primary);
+}
+
+.empty-state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 60vh; /* Optical vertical center in the main area */
+}
+
+.empty-state-vessel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    animation: fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.empty-state-vessel h2 {
+    font-weight: 900;
+    font-size: 32px;
+    color: var(--text-primary);
+    margin: 0 0 16px;
+    letter-spacing: -1.2px;
+}
+
+.empty-state-vessel p {
+    color: var(--text-secondary);
+    max-width: 400px;
+    margin: 0 auto 40px;
+    font-weight: 600;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+.empty-state-vessel .btn-primary {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px;
+    padding: 0 48px;
+    min-width: 240px;
+    height: 60px;
+    font-size: 17px;
+    font-weight: 900;
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
+    border-radius: var(--radius-full);
+    color: var(--accent-primary);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.search-empty-actions {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.search-empty-actions .user-button {
+    padding: 0 32px;
+    height: 48px;
+    font-weight: 700;
+}
+
+.empty-state-vessel .btn-primary:hover {
+    box-shadow: var(--nm-raised-hover);
+    transform: translateY(-2px);
+}
+
+.empty-state-vessel .btn-primary:active {
+    box-shadow: var(--nm-pressed);
+    transform: translateY(0) scale(0.98);
+}
+
+.empty-state-vessel .btn-primary i {
+    font-size: 20px;
+    line-height: 1;
 }
 
 .nm-button-sync {
