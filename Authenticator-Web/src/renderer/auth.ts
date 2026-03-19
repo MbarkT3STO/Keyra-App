@@ -1,4 +1,5 @@
 import { UIManager } from './ui';
+import { rateLimiter } from '../core/rateLimiter';
 
 let appInitCallback: ((resumed: boolean) => void | Promise<void>) | null = null;
 
@@ -110,18 +111,40 @@ export async function setupAuthUI() {
             return;
         }
 
+        // Rate limiting check
+        const rateLimitCheck = rateLimiter.isAllowed('login', user);
+        if (!rateLimitCheck.allowed) {
+            err.textContent = rateLimitCheck.message || "Too many attempts. Please try again later.";
+            err.style.opacity = '1';
+            void (err as HTMLElement).offsetWidth;
+            err.classList.add('animate-shake');
+            return;
+        }
+
         setAuthLoading(true, "Unlocking Vault...");
         try {
             const result = await window.api.login(user, pass);
             if (result.success) {
+                // Reset rate limit on successful login
+                rateLimiter.reset('login', user);
                 completeLogin();
             } else {
-                err.textContent = result.message;
+                // Record failed attempt
+                rateLimiter.recordAttempt('login', user);
+                const remaining = rateLimiter.getRemainingAttempts('login', user);
+                
+                let errorMsg = result.message;
+                if (remaining > 0 && remaining <= 3) {
+                    errorMsg += ` (${remaining} attempt${remaining > 1 ? 's' : ''} remaining)`;
+                }
+                
+                err.textContent = errorMsg;
                 err.style.opacity = '1';
                 void (err as HTMLElement).offsetWidth; // Trigger reflow
                 err.classList.add('animate-shake');
             }
         } catch (error: any) {
+            rateLimiter.recordAttempt('login', user);
             err.textContent = "Vault access denied.";
             err.style.opacity = '1';
             err.classList.add('animate-shake');
@@ -197,13 +220,35 @@ export async function setupAuthUI() {
         const err = document.getElementById('verify-error')!;
         
         err.classList.remove('animate-shake');
+        
+        // Rate limiting check
+        const rateLimitCheck = rateLimiter.isAllowed('verification', email);
+        if (!rateLimitCheck.allowed) {
+            err.textContent = rateLimitCheck.message || "Too many attempts. Please try again later.";
+            err.style.opacity = '1';
+            void (err as HTMLElement).offsetWidth;
+            err.classList.add('animate-shake');
+            digitInputs.forEach(i => i.value = '');
+            digitInputs[0].focus();
+            return;
+        }
+        
         setAuthLoading(true, "Verifying Identity...");
         try {
             const result = await window.api.verifyEmail(email, code);
             if (result.success) {
+                rateLimiter.reset('verification', email);
                 switchState(boxVerify, boxLogin);
             } else {
-                err.textContent = result.message;
+                rateLimiter.recordAttempt('verification', email);
+                const remaining = rateLimiter.getRemainingAttempts('verification', email);
+                
+                let errorMsg = result.message;
+                if (remaining > 0) {
+                    errorMsg += ` (${remaining} attempt${remaining > 1 ? 's' : ''} remaining)`;
+                }
+                
+                err.textContent = errorMsg;
                 err.style.opacity = '1';
                 void (err as HTMLElement).offsetWidth; // Trigger reflow
                 err.classList.add('animate-shake');
@@ -212,6 +257,7 @@ export async function setupAuthUI() {
                 digitInputs[0].focus();
             }
         } catch (e) {
+            rateLimiter.recordAttempt('verification', email);
             err.textContent = "Sync error.";
             err.style.opacity = '1';
             err.classList.add('animate-shake');

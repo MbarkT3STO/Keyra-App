@@ -1,4 +1,5 @@
 // import { syncVault } from './store';
+import { rateLimiter } from '../core/rateLimiter';
 
 export class UIManager {
     private currentTheme: 'light' | 'dark' = 'light';
@@ -114,16 +115,27 @@ export class UIManager {
     }
 
     public async pushSettings() {
+        // Rate limiting check
+        const rateLimitCheck = rateLimiter.isAllowed('sync', this.userId);
+        if (!rateLimitCheck.allowed) {
+            console.warn('Sync rate limited:', rateLimitCheck.message);
+            this.showToast(rateLimitCheck.message || "Too many sync operations. Please wait.", "error");
+            return;
+        }
+
         try {
             this.setSyncing(true);
+            rateLimiter.recordAttempt('sync', this.userId);
+            
             const settings = this.getSettingsObject();
             console.log('Pushing settings to cloud:', settings);
             const res = await (window as any).api.updateUserSettings(settings);
             if (res && res.success === false) {
                 console.warn('Cloud sync reported failure:', res.message);
                 this.showToast("Cloud sync failed: " + (res.message || "Unknown error"), "error");
+            } else {
+                console.log('Settings pushed successfully');
             }
-            console.log('Settings pushed successfully');
         } catch (error) {
             console.error('Failed to push settings:', error);
             this.showToast("Sync Error: Please check your connection", "error");
@@ -134,8 +146,17 @@ export class UIManager {
     }
 
     public async pushWebSettings() {
+        // Rate limiting check
+        const rateLimitCheck = rateLimiter.isAllowed('sync', this.userId);
+        if (!rateLimitCheck.allowed) {
+            console.warn('Sync rate limited:', rateLimitCheck.message);
+            return;
+        }
+
         try {
             this.setSyncing(true);
+            rateLimiter.recordAttempt('sync', this.userId);
+            
             const webSettings = this.getWebSettingsObject();
             console.log('Pushing web settings to cloud:', webSettings);
             const res = await (window as any).api.updateUserSettings(webSettings);
@@ -143,8 +164,9 @@ export class UIManager {
                  console.warn('Cloud web sync reported failure:', res.message);
                  // We don't always show toast here to avoid spamming if it's a background sync,
                  // but for manual actions it's handled in the caller.
+            } else {
+                console.log('Web settings pushed successfully');
             }
-            console.log('Web settings pushed successfully');
         } catch (error) {
             console.error('Failed to push web settings:', error);
             // Same here, avoiding spam but keeping log
