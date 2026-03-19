@@ -64,12 +64,10 @@ export class UIManager {
     private async migratePinToEncrypted() {
         const pin = localStorage.getItem(this.getStorageKey('vault_pin'));
         if (pin && pin.length === 4 && /^\d+$/.test(pin)) {
-            console.log("Migrating legacy plaintext PIN to encrypted storage...");
             try {
                 const encrypted = (window as any).api.encryptPIN(pin);
                 localStorage.setItem(this.getStorageKey('vault_pin'), encrypted);
                 await this.pushWebSettings();
-                console.log("PIN migration successful");
             } catch (err) {
                 console.error("PIN migration failed:", err);
             }
@@ -128,13 +126,10 @@ export class UIManager {
             rateLimiter.recordAttempt('sync', this.userId);
             
             const settings = this.getSettingsObject();
-            console.log('Pushing settings to cloud:', settings);
             const res = await (window as any).api.updateUserSettings(settings);
             if (res && res.success === false) {
                 console.warn('Cloud sync reported failure:', res.message);
                 this.showToast("Cloud sync failed: " + (res.message || "Unknown error"), "error");
-            } else {
-                console.log('Settings pushed successfully');
             }
         } catch (error) {
             console.error('Failed to push settings:', error);
@@ -158,14 +153,11 @@ export class UIManager {
             rateLimiter.recordAttempt('sync', this.userId);
             
             const webSettings = this.getWebSettingsObject();
-            console.log('Pushing web settings to cloud:', webSettings);
             const res = await (window as any).api.updateUserSettings(webSettings);
             if (res && res.success === false) {
                  console.warn('Cloud web sync reported failure:', res.message);
                  // We don't always show toast here to avoid spamming if it's a background sync,
                  // but for manual actions it's handled in the caller.
-            } else {
-                console.log('Web settings pushed successfully');
             }
         } catch (error) {
             console.error('Failed to push web settings:', error);
@@ -198,14 +190,9 @@ export class UIManager {
     public applySettings(settings: any, saveLocal: boolean = true) {
         if (!settings) return;
 
-        console.log('Applying settings:', settings);
-
         // Handle new structure with separate "Settings" and "Web Settings"
         const settingsToApply = settings.Settings || settings;
         const webSettingsToApply = settings["Web Settings"] || settings;
-
-        console.log('Settings to apply:', settingsToApply);
-        console.log('Web settings to apply:', webSettingsToApply);
 
         // Apply general settings to local variables & DOM
         if (settingsToApply.theme) this.setTheme(settingsToApply.theme, true);
@@ -248,7 +235,6 @@ export class UIManager {
 
         this.updateLockVaultVisibility();
         this.renderAccounts();
-        console.log('Settings applied successfully');
     }
 
     private initSegmentedStates() {

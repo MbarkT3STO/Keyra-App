@@ -229,7 +229,6 @@ export async function checkSession(): Promise<{ success: boolean, message: strin
             const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
             
             if (sessionAge > thirtyDaysInMs) {
-                console.log("Session expired after 30 days");
                 logout();
                 return { success: false, message: "Session expired. Please login again." };
             }
@@ -483,8 +482,6 @@ export async function importVaultData(
         const decryptedJson = decryptVault(encryptedVaultData, key);
         const accounts = JSON.parse(decryptedJson) as AuthenticatorAccount[];
 
-        console.log("Importing vault with", accounts.length, "accounts");
-
         // 1. Restore Vault Data - this will re-encrypt with current user's key
         await saveActiveAccounts(accounts);
 
@@ -541,7 +538,6 @@ export async function importVaultData(
             }
         }
 
-        console.log("Vault import completed successfully");
         return { success: true, message: "Vault and settings successfully restored." };
     } catch (err) {
         console.error("Vault Import Error:", err);

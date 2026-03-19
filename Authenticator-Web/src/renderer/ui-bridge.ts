@@ -173,7 +173,6 @@ export const bridge = {
     verifyBackupFile: (backupData: any) => auth.verifyBackupFile(backupData),
     
     setContentProtection: async (enabled: boolean) => {
-        console.log("Content protection requested:", enabled);
         return true;
     },
 

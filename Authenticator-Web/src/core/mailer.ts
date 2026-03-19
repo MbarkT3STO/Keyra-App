@@ -17,8 +17,7 @@ export async function sendActivationEmail(options: MailOptions): Promise<{ succe
 
         // If we get a 404, it means we are likely in 'npm run dev' without Netlify Functions
         if (response.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-            console.log(`[MAILER SIMULATION] Code for ${options.to}: ${options.code}`);
-            return { success: true, message: "Simulation mode (Localhost). Check console." };
+            return { success: true, message: "Simulation mode (Localhost)." };
         }
 
         const contentType = response.headers.get("content-type");
@@ -35,8 +34,7 @@ export async function sendActivationEmail(options: MailOptions): Promise<{ succe
     } catch (error: any) {
         // Network errors on localhost also trigger simulation
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.log(`[MAILER SIMULATION] Code for ${options.to}: ${options.code}`);
-            return { success: true, message: "Simulation mode (Localhost). Check console." };
+            return { success: true, message: "Simulation mode (Localhost)." };
         }
         console.error(`[MAILER] Error:`, error);
         return { success: false, message: error.message || "Network error." };
