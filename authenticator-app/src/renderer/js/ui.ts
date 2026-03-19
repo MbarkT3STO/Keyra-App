@@ -7,6 +7,7 @@ import { AuthManager } from './managers/AuthManager.js';
 import { ConnectivityManager } from './managers/ConnectivityManager.js';
 import { NavigationManager, TabName } from './managers/NavigationManager.js';
 import { PrivacyManager } from './managers/PrivacyManager.js';
+import { SystemManager } from './managers/SystemManager.js';
 
 export class UIManager {
     public theme: ThemeManager;
@@ -16,15 +17,12 @@ export class UIManager {
     public connectivity: ConnectivityManager;
     public nav: NavigationManager;
     public privacy: PrivacyManager;
+    public system: SystemManager;
     private timerInterval: any = null;
     private menuExitIntegration: boolean = false;
     private windowResizable: boolean = false;
     private wallpaperPreset: string = 'nebula';
     private searchQuery: string = '';
-    private launchOnStartup: boolean = false;
-    private minimizeToTray: boolean = false;
-    private globalHotkey: boolean = false;
-    private autoCheckUpdates: boolean = true;
     private vaultViewStyle: 'unified' | 'compact' | 'secure' = 'compact';
 
 
@@ -84,6 +82,12 @@ export class UIManager {
         this.privacy = new PrivacyManager({
             getStorageKey: (key) => this.getStorageKey(key),
         });
+        this.system = new SystemManager({
+            getStorageKey: (key) => this.getStorageKey(key),
+            pushSettings: () => this.pushSettings(),
+            showToast: (msg, type) => this.showToast(msg, type),
+            setLoading: (show, title, subtitle) => this.setLoading(show, title, subtitle),
+        });
         this.theme.init();
         this.privacy.initPrivacyMode();
         this.privacy.initScreenGuardian();
@@ -104,102 +108,14 @@ export class UIManager {
         document.addEventListener('sync:configSaved', () => this.loadInitialData());
         this.connectivity.init();
         this.updatePinStatus();
-        this.initUpdateSystem();
-        this.initSystemIntegration();
+        this.system.initUpdateSystem();
+        this.system.initSystemIntegration();
         this.initPhoneSecurity();
         this.migratePin();
     }
 
     private initUpdateSystem() {
-        const checkBtn = document.getElementById('btn-check-updates');
-        const downloadBtn = document.getElementById('btn-download-update');
-        const installBtn = document.getElementById('btn-install-update');
-        const message = document.getElementById('update-message');
-        const badge = document.getElementById('update-status-badge');
-        const progressContainer = document.getElementById('download-progress-container');
-        const progressBar = document.getElementById('download-progress-bar');
-        const percentText = document.getElementById('download-percent-text');
-        const versionText = document.getElementById('current-version-text');
-        const nmLoader = document.getElementById('nm-update-loader');
-
-        if (versionText) {
-            versionText.textContent = `Version 1.2.0`;
-        }
-
-        checkBtn?.addEventListener('click', () => {
-            this.setLoading(true, "Checking Updates", "CONTACTING KEYRA SERVERS");
-            if (message) message.textContent = 'Checking for updates...';
-            nmLoader?.classList.remove('hidden');
-            (window as any).api.checkForUpdates();
-        });
-
-        downloadBtn?.addEventListener('click', () => {
-            (window as any).api.startDownload();
-            downloadBtn.classList.add('hidden');
-            progressContainer?.classList.remove('hidden');
-        });
-
-        installBtn?.addEventListener('click', () => {
-            (window as any).api.installUpdate();
-        });
-
-        // Listen for events
-        (window as any).api.onUpdateChecking(() => {
-            if (message) message.textContent = 'Contacting update server...';
-        });
-
-        (window as any).api.onUpdateAvailable((info: any) => {
-            nmLoader?.classList.add('hidden');
-            if (message) message.textContent = `Update available: v${info.version}`;
-            badge?.classList.remove('hidden');
-            checkBtn?.classList.add('hidden');
-            if (downloadBtn) {
-                downloadBtn.classList.remove('hidden');
-                const span = downloadBtn.querySelector('span');
-                if (span) span.textContent = `Download v${info.version}`;
-            }
-        });
-
-        (window as any).api.onUpdateNotAvailable(() => {
-            this.setLoading(false);
-            nmLoader?.classList.add('hidden');
-            if (message) message.textContent = 'Your app is up to date.';
-            checkBtn?.classList.remove('hidden');
-        });
-
-        (window as any).api.onUpdateError((err: string) => {
-            this.setLoading(false);
-            nmLoader?.classList.add('hidden');
-            if (message) message.textContent = `Update check failed.`;
-            console.error("Update Error:", err);
-            checkBtn?.classList.remove('hidden');
-        });
-
-        (window as any).api.onDownloadProgress((percent: number) => {
-            if (progressBar) progressBar.style.width = `${percent}%`;
-            if (percentText) percentText.textContent = `${Math.round(percent)}%`;
-            if (message) message.textContent = 'Downloading update...';
-        });
-
-        (window as any).api.onUpdateDownloaded(() => {
-            if (message) message.textContent = 'Update ready to install.';
-            progressContainer?.classList.add('hidden');
-            installBtn?.classList.remove('hidden');
-            this.showToast("Update ready to install!", "success");
-        });
-        
-        const autoToggle = document.getElementById('auto-update-toggle') as HTMLInputElement;
-        autoToggle?.addEventListener('change', () => {
-            this.autoCheckUpdates = autoToggle.checked;
-            this.pushSettings();
-        });
-
-        // Initial silent check
-        setTimeout(() => {
-            if (this.autoCheckUpdates) {
-                (window as any).api.checkForUpdates();
-            }
-        }, 3000);
+        this.system.initUpdateSystem();
     }
 
     private initConnectivityStatus() {
@@ -211,44 +127,7 @@ export class UIManager {
     }
 
     private initSystemIntegration() {
-        const startupToggle = document.getElementById('launch-on-startup-toggle') as HTMLInputElement;
-        const trayToggle = document.getElementById('minimize-to-tray-toggle') as HTMLInputElement;
-        const hotkeyToggle = document.getElementById('global-hotkey-toggle') as HTMLInputElement;
-
-        startupToggle?.addEventListener('change', () => {
-            this.launchOnStartup = startupToggle.checked;
-            (window as any).api.setLaunchOnStartup(this.launchOnStartup);
-            localStorage.setItem(this.getStorageKey('launch_on_startup'), String(this.launchOnStartup));
-            this.pushSettings();
-        });
-
-        trayToggle?.addEventListener('change', () => {
-            this.minimizeToTray = trayToggle.checked;
-            (window as any).api.setMinimizeToTray(this.minimizeToTray);
-            localStorage.setItem(this.getStorageKey('minimize_to_tray'), String(this.minimizeToTray));
-            this.pushSettings();
-        });
-
-        hotkeyToggle?.addEventListener('change', () => {
-            this.globalHotkey = hotkeyToggle.checked;
-            (window as any).api.setGlobalHotkey(this.globalHotkey);
-            localStorage.setItem(this.getStorageKey('global_hotkey'), String(this.globalHotkey));
-            this.pushSettings();
-        });
-
-        // Load initial states
-        this.launchOnStartup = localStorage.getItem(this.getStorageKey('launch_on_startup')) === 'true';
-        this.minimizeToTray = localStorage.getItem(this.getStorageKey('minimize_to_tray')) === 'true';
-        this.globalHotkey = localStorage.getItem(this.getStorageKey('global_hotkey')) === 'true';
-
-        if (startupToggle) startupToggle.checked = this.launchOnStartup;
-        if (trayToggle) trayToggle.checked = this.minimizeToTray;
-        if (hotkeyToggle) hotkeyToggle.checked = this.globalHotkey;
-        
-        // Apply to main process on start
-        (window as any).api.setLaunchOnStartup(this.launchOnStartup);
-        (window as any).api.setMinimizeToTray(this.minimizeToTray);
-        (window as any).api.setGlobalHotkey(this.globalHotkey);
+        this.system.initSystemIntegration();
     }
 
     private getStorageKey(key: string): string {
@@ -313,10 +192,10 @@ export class UIManager {
                 menuExitIntegration: this.menuExitIntegration,
                 privacyBlur: this.privacy.privacyBlur,
                 windowResizable: this.windowResizable,
-                launchOnStartup: this.launchOnStartup,
-                minimizeToTray: this.minimizeToTray,
-                globalHotkey: this.globalHotkey,
-                autoCheckUpdates: this.autoCheckUpdates,
+                launchOnStartup: this.system.launchOnStartup,
+                minimizeToTray: this.system.minimizeToTray,
+                globalHotkey: this.system.globalHotkey,
+                autoCheckUpdates: this.system.autoCheckUpdates,
                 vaultViewStyle: this.vaultViewStyle,
                 vaultPin: localStorage.getItem(this.getStorageKey('vault_pin'))
             }
@@ -341,24 +220,15 @@ export class UIManager {
         }
 
         if (settings.launchOnStartup !== undefined) {
-            this.launchOnStartup = !!settings.launchOnStartup;
-            const t = document.getElementById('launch-on-startup-toggle') as HTMLInputElement;
-            if (t) t.checked = this.launchOnStartup;
-            (window as any).api.setLaunchOnStartup(this.launchOnStartup);
+            this.system.applyLaunchOnStartup(!!settings.launchOnStartup);
         }
 
         if (settings.minimizeToTray !== undefined) {
-            this.minimizeToTray = !!settings.minimizeToTray;
-            const t = document.getElementById('minimize-to-tray-toggle') as HTMLInputElement;
-            if (t) t.checked = this.minimizeToTray;
-            (window as any).api.setMinimizeToTray(this.minimizeToTray);
+            this.system.applyMinimizeToTray(!!settings.minimizeToTray);
         }
 
         if (settings.globalHotkey !== undefined) {
-            this.globalHotkey = !!settings.globalHotkey;
-            const t = document.getElementById('global-hotkey-toggle') as HTMLInputElement;
-            if (t) t.checked = this.globalHotkey;
-            (window as any).api.setGlobalHotkey(this.globalHotkey);
+            this.system.applyGlobalHotkey(!!settings.globalHotkey);
         }
 
         if (settings.vaultViewStyle !== undefined) {
@@ -398,9 +268,9 @@ export class UIManager {
         }
 
         if (settings.autoCheckUpdates !== undefined) {
-            this.autoCheckUpdates = !!settings.autoCheckUpdates;
+            this.system.autoCheckUpdates = !!settings.autoCheckUpdates;
             const autoToggle = document.getElementById('auto-update-toggle') as HTMLInputElement;
-            if (autoToggle) autoToggle.checked = this.autoCheckUpdates;
+            if (autoToggle) autoToggle.checked = this.system.autoCheckUpdates;
         }
         
         if (settings.windowResizable !== undefined) {
@@ -422,7 +292,7 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('menu_exit_integration'), String(this.menuExitIntegration));
             localStorage.setItem(this.getStorageKey('privacy_blur'), String(this.privacy.privacyBlur));
             localStorage.setItem(this.getStorageKey('window_resizable'), String(this.windowResizable));
-            localStorage.setItem(this.getStorageKey('auto_check_updates'), String(this.autoCheckUpdates));
+            localStorage.setItem(this.getStorageKey('auto_check_updates'), String(this.system.autoCheckUpdates));
             localStorage.setItem(this.getStorageKey('vault_view_style'), this.vaultViewStyle);
             if (settings.vaultPin !== undefined) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
         }
