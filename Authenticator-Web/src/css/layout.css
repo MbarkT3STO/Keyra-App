@@ -282,7 +282,7 @@ body:has(.settings-container:not(.hidden)) .main-content {
 
 .modal {
     background: var(--bg-primary);
-    box-shadow: var(--nm-shadow-out);
+    box-shadow: none;
     border-radius: var(--radius-xl);
     width: 100%;
     max-width: 540px;

@@ -1070,8 +1070,7 @@ body.dark-theme.oled-optimized .disabled-card-overlay {
     height: clamp(52px, 12vw, 64px);
     border-radius: clamp(14px, 3.5vw, 18px);
     background: var(--nm-surface);
-    box-shadow: var(--nm-shadow-out);
-    /* Deeper out shadow */
+    box-shadow: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1088,7 +1087,7 @@ body.dark-theme.oled-optimized .disabled-card-overlay {
 .modal-icon-vessel.danger {
     background: var(--nm-surface);
     color: #ff3b30;
-    box-shadow: var(--nm-shadow-in-sm);
+    box-shadow: none;
 }
 
 .modal-title-vessel {
