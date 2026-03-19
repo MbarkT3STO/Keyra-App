@@ -1,42 +1,62 @@
 import { syncVault } from './store.js';
 import { rateLimiter } from '../../core/rateLimiter.js';
+import { ThemeManager } from './managers/ThemeManager.js';
+import { SyncManager } from './managers/SyncManager.js';
+import { AccountManager } from './managers/AccountManager.js';
 
 export class UIManager {
-    private currentTheme: 'light' | 'dark' = 'light';
+    public theme: ThemeManager;
+    public sync: SyncManager;
+    public accounts: AccountManager;
     private currentTab: 'vault' | 'settings' | 'account' = 'vault';
-    private accounts: any[] = [];
     private timerInterval: any = null;
     private privacyMode: boolean = false;
     private screenGuardian: boolean = false;
-    private oledMode: boolean = false;
-    private performanceMode: boolean = false;
     private menuExitIntegration: boolean = false;
     private privacyBlur: boolean = false;
     private windowResizable: boolean = false;
     private wallpaperPreset: string = 'nebula';
     private searchQuery: string = '';
-    private syncCount: number = 0;
-    private liveSyncInterval: any = null;
-    private lastSyncUpdateInterval: any = null;
     private emailResendTimer: number = 0;
     private emailResendInterval: any = null;
-    private cardCache: HTMLElement[] = [];
     private launchOnStartup: boolean = false;
     private minimizeToTray: boolean = false;
     private globalHotkey: boolean = false;
     private autoCheckUpdates: boolean = true;
     private vaultViewStyle: 'unified' | 'compact' | 'secure' = 'compact';
-    private activeOtpAccount: any = null;
-    private pendingConflictAction: string | null = null;
-    private pendingConflictData: any = null;
-    private syncVisible: boolean = true;
 
 
     constructor(public userId: string = 'default') {
-        this.initTheme();
+        this.theme = new ThemeManager(userId, () => this.pushSettings());
+        this.sync = new SyncManager(userId, {
+            getSettingsObject: () => this.getSettingsObject(),
+            onConflict: (action, data) => this.accounts.showSyncConflictModal(action, data),
+            onSettingsApply: (settings) => this.applySettings(settings, true),
+            onAccountsRefresh: () => this.refreshAccounts(),
+            onActivityUpdate: () => this.updateLastActivityDisplay(),
+            showToast: (msg, type) => this.showToast(msg, type),
+            setLoading: (show, title, subtitle) => this.setLoading(show, title, subtitle),
+        });
+        this.accounts = new AccountManager({
+            getPrivacyMode: () => this.privacyMode,
+            getVaultViewStyle: () => this.vaultViewStyle,
+            getUserId: () => this.userId,
+            showToast: (msg, type) => this.showToast(msg, type),
+            setLoading: (show, title, subtitle) => this.setLoading(show, title, subtitle),
+            showModal: (content) => this.showModal(content),
+            hideModal: () => this.hideModal(),
+            showCopyFeedback: (el) => this.showCopyFeedback(el),
+            applySettings: (settings, saveLocal) => this.applySettings(settings, saveLocal),
+            handleLocalAccountUI: (user) => this.handleLocalAccountUI(user),
+            updateLastActivity: (action) => this.updateLastActivity(action),
+            pushSettings: () => this.pushSettings(),
+            updateSegmentedUI: (id, val) => this.updateSegmentedUI(id, val),
+            updateAccountView: () => this.updateAccountView(),
+            showStaticModal: (id) => this.showStaticModal(id),
+        });
+        this.theme.init();
         this.initPrivacyMode();
         this.initScreenGuardian();
-        this.initPerformanceMode();
         this.initMenuExitIntegration();
         this.initInteractivePrivacy();
         this.initWindowResizable();
@@ -44,11 +64,13 @@ export class UIManager {
         this.initSegmentedStates();
         this.setupEventListeners();
         this.updateLockVaultVisibility();
-        this.startTimer();
+        this.accounts.startTimer();
         this.loadInitialData();
         this.initFromCloud();
-        this.startLiveSync();
-        this.startLastSyncTimer();
+        this.sync.startLiveSync();
+        this.sync.startLastSyncTimer();
+        // Listen for private sync config saved event
+        document.addEventListener('sync:configSaved', () => this.loadInitialData());
         this.initConnectivityStatus();
         this.updatePinStatus();
         this.initUpdateSystem();
@@ -232,74 +254,19 @@ export class UIManager {
     }
 
     public setSyncing(isSyncing: boolean) {
-        if (isSyncing) this.syncCount++;
-        else this.syncCount = Math.max(0, this.syncCount - 1);
-
-        this.updateSyncIndicator(this.syncCount > 0 ? 'syncing' : 'synced');
+        this.sync.setSyncing(isSyncing);
     }
 
     public updateSyncIndicator(state: 'synced' | 'syncing' | 'error' | 'warning', message?: string) {
-        const indicator = document.getElementById('navbar-sync-indicator');
-        if (!indicator) return;
-
-        // Reset classes
-        indicator.className = 'sync-indicator ' + state;
-        
-        // Hide if sync is not enabled/setup for this user
-        indicator.classList.toggle('hidden', !this.syncVisible);
-        if (!this.syncVisible) return;
-        
-        // Update Title/Tooltip
-        let title = 'Synced and up to date';
-        if (state === 'syncing') title = 'Syncing in progress...';
-        if (state === 'error') title = message || 'Connection issue or PAT expired';
-        if (state === 'warning') title = message || 'Sync issue detected';
-        
-        indicator.title = title;
-
-        // Force a small pulse on state change
-        indicator.style.transform = 'scale(1.2)';
-        setTimeout(() => indicator.style.transform = '', 200);
-
-        // Also update the textual display in settings if it exists
-        if (state === 'synced') {
-            this.updateLastSyncDisplay();
-        }
+        this.sync.updateSyncIndicator(state, message);
     }
 
     private startLastSyncTimer() {
-        this.updateLastSyncDisplay();
-        if (this.lastSyncUpdateInterval) clearInterval(this.lastSyncUpdateInterval);
-        this.lastSyncUpdateInterval = setInterval(() => this.updateLastSyncDisplay(), 30000); // Every 30s
+        this.sync.startLastSyncTimer();
     }
 
     private updateLastSyncDisplay() {
-        const lastSyncEl = document.getElementById('sync-last-time');
-        if (!lastSyncEl) return;
-
-        const lastSyncStr = localStorage.getItem(this.getStorageKey('last_sync'));
-        if (!lastSyncStr) {
-            lastSyncEl.textContent = 'Never synced';
-            return;
-        }
-
-        const lastSync = new Date(lastSyncStr);
-        const now = new Date();
-        const diffMs = now.getTime() - lastSync.getTime();
-        const diffMin = Math.floor(diffMs / 60000);
-
-        if (diffMin < 1) {
-            lastSyncEl.textContent = 'Last synced: Just now';
-        } else if (diffMin < 60) {
-            lastSyncEl.textContent = `Last synced: ${diffMin}m ago`;
-        } else {
-            const diffHrs = Math.floor(diffMin / 60);
-            if (diffHrs < 24) {
-                lastSyncEl.textContent = `Last synced: ${diffHrs}h ago`;
-            } else {
-                lastSyncEl.textContent = `Last synced: ${Math.floor(diffHrs / 24)}d ago`;
-            }
-        }
+        this.sync.updateLastSyncDisplay();
     }
 
     public setLoading(show: boolean, title: string = "One moment...", subtitle: string = "GETTING THINGS READY") {
@@ -339,8 +306,8 @@ export class UIManager {
                 privacyMode: this.privacyMode,
                 screenGuardian: this.screenGuardian,
                 autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0',
-                oledMode: this.oledMode,
-                performanceMode: this.performanceMode,
+                oledMode: this.theme.oledMode,
+                performanceMode: this.theme.performanceMode,
                 menuExitIntegration: this.menuExitIntegration,
                 privacyBlur: this.privacyBlur,
                 windowResizable: this.windowResizable,
@@ -355,38 +322,7 @@ export class UIManager {
     }
 
     public async pushSettings(updateLocal: boolean = true) {
-        // Rate limiting check
-        const rateLimitCheck = rateLimiter.isAllowed('sync', this.userId);
-        if (!rateLimitCheck.allowed) {
-            console.warn('Sync rate limited:', rateLimitCheck.message);
-            this.showToast(rateLimitCheck.message || "Too many sync operations. Please wait.", "error");
-            return { success: false, message: 'Rate limited' };
-        }
-
-        this.setSyncing(true);
-        try {
-            rateLimiter.recordAttempt('sync', this.userId);
-            
-            const settings = this.getSettingsObject();
-            const res = await (window as any).api.updateUserSettings(settings);
-            
-            if (res.conflict) {
-                this.showSyncConflictModal('update-user-settings', settings);
-                return;
-            }
-
-            if (res.success && updateLocal) {
-                localStorage.setItem(this.getStorageKey('settings'), JSON.stringify(settings));
-            }
-            localStorage.setItem(this.getStorageKey('last_sync'), new Date().toISOString());
-            return res;
-        } catch (err) {
-            console.error("Failed to push settings:", err);
-            return { success: false };
-        } finally {
-            this.setSyncing(false);
-            this.updateLastActivityDisplay();
-        }
+        return this.sync.pushSettings(updateLocal);
     }
 
     public applySettings(settings: any, saveLocal: boolean = true) {
@@ -441,20 +377,17 @@ export class UIManager {
         }
 
         if (settings.oledMode !== undefined) {
-            this.oledMode = !!settings.oledMode;
+            this.theme.applyOledMode(!!settings.oledMode);
             const oledToggle = document.getElementById('oled-mode-toggle') as HTMLInputElement;
-            if (oledToggle) oledToggle.checked = this.oledMode;
-            document.body.classList.toggle('oled-optimized', this.oledMode && this.currentTheme === 'dark');
-            // Re-apply accent to ensure OLED vibrancy if needed
+            if (oledToggle) oledToggle.checked = this.theme.oledMode;
             const currentAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
             this.setAccentColor(currentAccent, true);
         }
 
         if (settings.performanceMode !== undefined) {
-            this.performanceMode = !!settings.performanceMode;
+            this.theme.applyPerformanceMode(!!settings.performanceMode);
             const perfToggle = document.getElementById('performance-mode-toggle') as HTMLInputElement;
-            if (perfToggle) perfToggle.checked = this.performanceMode;
-            document.body.classList.toggle('performance-mode', this.performanceMode);
+            if (perfToggle) perfToggle.checked = this.theme.performanceMode;
         }
 
         if (settings.menuExitIntegration !== undefined) {
@@ -490,8 +423,8 @@ export class UIManager {
             localStorage.setItem(this.getStorageKey('privacyMode'), String(this.privacyMode));
             localStorage.setItem(this.getStorageKey('screenGuardian'), String(this.screenGuardian));
             if (settings.autolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(settings.autolock));
-            localStorage.setItem(this.getStorageKey('oled_mode'), String(this.oledMode));
-            localStorage.setItem(this.getStorageKey('performance_mode'), String(this.performanceMode));
+            localStorage.setItem(this.getStorageKey('oled_mode'), String(this.theme.oledMode));
+            localStorage.setItem(this.getStorageKey('performance_mode'), String(this.theme.performanceMode));
             localStorage.setItem(this.getStorageKey('menu_exit_integration'), String(this.menuExitIntegration));
             localStorage.setItem(this.getStorageKey('privacy_blur'), String(this.privacyBlur));
             localStorage.setItem(this.getStorageKey('window_resizable'), String(this.windowResizable));
@@ -505,106 +438,16 @@ export class UIManager {
     }
 
     private initTheme() {
-        const savedTheme = localStorage.getItem(this.getStorageKey('theme')) || 'auto';
-        this.setTheme(savedTheme, true);
-
-        // Listen for OS theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-            const currentSetting = localStorage.getItem(this.getStorageKey('theme')) || 'auto';
-            if (currentSetting === 'auto') {
-                this.setTheme('auto', true);
-            }
-        });
+        // Delegated to ThemeManager — kept for compatibility
+        this.theme.init();
     }
 
     public setTheme(theme: string, silent: boolean = false) {
-        let themeToApply = theme;
-        if (theme === 'auto') {
-            themeToApply = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-
-        this.currentTheme = themeToApply as 'light' | 'dark';
-        localStorage.setItem(this.getStorageKey('theme'), theme);
-        localStorage.setItem('keyra_theme', theme); // For head script
-
-        document.documentElement.setAttribute('data-theme', themeToApply);
-        document.body.classList.remove('light-theme', 'dark-theme');
-        document.body.classList.add(themeToApply + '-theme');
-
-        // OLED Optimization
-        const isDark = themeToApply === 'dark';
-        document.body.classList.toggle('oled-optimized', this.oledMode && isDark);
-
-        this.updateSegmentedUI('theme-segmented', theme);
-
-        const themeIcon = document.getElementById('theme-icon-fa');
-        const themeText = document.getElementById('theme-text');
-        if (themeIcon) {
-            themeIcon.className = themeToApply === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-        }
-        if (themeText) themeText.textContent = themeToApply === 'dark' ? 'Light Mode' : 'Dark Mode';
-
-        if (!silent) this.pushSettings();
+        this.theme.setTheme(theme, silent);
     }
 
     public setAccentColor(accentColor: string, silent: boolean = false) {
-        const root = document.documentElement;
-        const accentHues: Record<string, number> = {
-            'royal-purple': 258,
-            'electric-blue': 200,
-            'emerald-green': 145,
-            'solar-orange': 15,
-            // New Modern & Cute Accent Colors
-            'rose-quartz': 330,
-            'peach-blossom': 20,
-            'lavender-dream': 270,
-            'mint-fresh': 160,
-            'sky-blue': 190,
-            'coral-sunset': 10,
-            'amethyst-glow': 280,
-            'lemon-zest': 45,
-            'ocean-teal': 175,
-            'bubblegum': 320,
-            'sage-serene': 150,
-            'golden-hour': 35,
-            'orchid-mystic': 300,
-            'turquoise-dream': 180
-        };
-
-        const hue = accentHues[accentColor];
-        if (hue) {
-            // Update --h so dark/light body class backgrounds tint with the accent color
-            root.style.setProperty('--h', hue.toString());
-            root.style.setProperty('--dynamic-accent-hue', hue.toString());
-            
-            // OLED awareness for accent primary
-            if (this.currentTheme === 'dark' && this.oledMode) {
-                root.style.setProperty('--accent-primary', `hsl(${hue}, 100%, 75%)`);
-            } else {
-                root.style.setProperty('--accent-primary', `hsl(${hue}, 100%, 68%)`);
-            }
-            
-            root.style.setProperty('--accent-secondary', `hsl(${hue + 20}, 100%, 75%)`);
-            root.style.setProperty('--accent-hover', `hsl(${hue}, 100%, 62%)`);
-            root.style.setProperty('--accent-soft', `hsla(${hue}, 100%, 68%, 0.12)`);
-
-            root.style.setProperty('--aura-1', `hsla(${hue}, 100%, 68%, 0.38)`);
-            root.style.setProperty('--aura-2', `hsla(${hue + 30}, 100%, 75%, 0.22)`);
-            root.style.setProperty('--aura-3', `hsla(${hue - 30}, 100%, 75%, 0.18)`);
-
-            // Always sync background hues to accent color now that wallpaper system is gone
-            root.style.setProperty('--bg-hue-a', hue.toString());
-            root.style.setProperty('--bg-hue-b', (hue + 30).toString());
-
-            localStorage.setItem(this.getStorageKey('accent_color'), accentColor);
-
-            // Update active state in UI
-            document.querySelectorAll('.accent-color-option').forEach(option => {
-                option.classList.toggle('active', option.getAttribute('data-accent') === accentColor);
-            });
-
-            if (!silent) this.pushSettings();
-        }
+        this.theme.setAccentColor(accentColor, silent);
     }
 
     private initPrivacyMode() {
@@ -621,23 +464,13 @@ export class UIManager {
     }
 
     private initPerformanceMode() {
-        this.performanceMode = localStorage.getItem(this.getStorageKey('performance_mode')) === 'true';
-        const toggle = document.getElementById('performance-mode-toggle') as HTMLInputElement;
-        if (toggle) toggle.checked = this.performanceMode;
-        document.body.classList.toggle('performance-mode', this.performanceMode);
-        
-        // If performance mode is active, we significantly reduce animation complexity at the root
-        if (this.performanceMode) {
-            document.documentElement.style.setProperty('--transition-fast', '0s');
-            document.documentElement.style.setProperty('--transition-medium', '0s');
-        }
+        // Delegated to ThemeManager
+        this.theme.applyPerformanceMode(this.theme.performanceMode);
     }
 
     private initOledMode() {
-        this.oledMode = localStorage.getItem(this.getStorageKey('oled_mode')) === 'true';
-        const toggle = document.getElementById('oled-mode-toggle') as HTMLInputElement;
-        if (toggle) toggle.checked = this.oledMode;
-        document.body.classList.toggle('oled-optimized', this.oledMode && this.currentTheme === 'dark');
+        // Delegated to ThemeManager
+        this.theme.applyOledMode(this.theme.oledMode);
     }
 
     private initMenuExitIntegration() {
@@ -820,7 +653,7 @@ export class UIManager {
         // Redundant close listeners removed (now handled in app.ts for immediate activation)
 
         document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
-            const nextTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+            const nextTheme = this.theme.currentTheme === 'light' ? 'dark' : 'light';
             this.setTheme(nextTheme);
         });
 
@@ -880,47 +713,26 @@ export class UIManager {
 
         // OLED Mode Toggle
         document.getElementById('oled-mode-toggle')?.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            this.oledMode = target.checked;
-            localStorage.setItem(this.getStorageKey('oled_mode'), String(this.oledMode));
-            
-            const isDark = this.currentTheme === 'dark';
-            document.body.classList.toggle('oled-optimized', this.oledMode && isDark);
-            
-            // Re-apply accent for vibrancy
+            const enabled = (e.target as HTMLInputElement).checked;
+            this.theme.applyOledMode(enabled);
             const currentAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
             this.setAccentColor(currentAccent, true);
-
             this.pushSettings();
-            
-            if (this.oledMode && !isDark) {
+            if (enabled && this.theme.currentTheme !== 'dark') {
                 this.showToast("Pure Black only works in Dark Mode", "info");
             } else {
-                this.showToast(this.oledMode ? "Pure Black (OLED) Activated" : "Standard Dark Mode Restored", "success");
+                this.showToast(enabled ? "Pure Black (OLED) Activated" : "Standard Dark Mode Restored", "success");
             }
-            this.updateLastActivity(`OLED Mode ${this.oledMode ? 'on' : 'off'}`);
+            this.updateLastActivity(`OLED Mode ${enabled ? 'on' : 'off'}`);
         });
 
         // Performance Mode Toggle
         document.getElementById('performance-mode-toggle')?.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            this.performanceMode = target.checked;
-            localStorage.setItem(this.getStorageKey('performance_mode'), String(this.performanceMode));
-            document.body.classList.toggle('performance-mode', this.performanceMode);
-            
-            // Immediate CSS variable update for root-level speed
-            const root = document.documentElement;
-            if (this.performanceMode) {
-                root.style.setProperty('--transition-fast', '0s');
-                root.style.setProperty('--transition-medium', '0s');
-            } else {
-                root.style.removeProperty('--transition-fast');
-                root.style.removeProperty('--transition-medium');
-            }
-
+            const enabled = (e.target as HTMLInputElement).checked;
+            this.theme.applyPerformanceMode(enabled);
             this.pushSettings();
-            this.showToast(this.performanceMode ? "Performance Mode is on" : "Performance Mode is off", "info");
-            this.updateLastActivity(`Performance Mode ${this.performanceMode ? 'on' : 'off'}`);
+            this.showToast(enabled ? "Performance Mode is on" : "Performance Mode is off", "info");
+            this.updateLastActivity(`Performance Mode ${enabled ? 'on' : 'off'}`);
         });
 
         // Menu Exit Toggle
@@ -934,26 +746,8 @@ export class UIManager {
             this.updateLastActivity(`Menu Exit ${this.menuExitIntegration ? 'on' : 'off'}`);
         });
 
-        // Private Sync Listeners
-        document.getElementById('btn-open-private-sync')?.addEventListener('click', () => {
-            this.openPrivateSyncModal();
-        });
-
-        document.getElementById('btn-close-private-sync')?.addEventListener('click', () => {
-            const modal = document.getElementById('modal-private-sync');
-            if (modal) {
-                modal.classList.remove('show');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }
-        });
-
-        document.getElementById('btn-test-sync-connection')?.addEventListener('click', () => {
-            this.testPrivateSyncConnection();
-        });
-
-        document.getElementById('btn-save-private-sync')?.addEventListener('click', () => {
-            this.savePrivateSyncConfig();
-        });
+        // Private Sync Listeners — delegated to SyncManager
+        this.sync.setupEventListeners();
 
         // Vault View Type Toggle (Vault View Header)
         const countdownSegmented = document.getElementById('countdown-style-segmented');
@@ -1022,29 +816,6 @@ export class UIManager {
 
         // Accent Color
         this.setupAccentColorSelector();
-        
-        // Cloud Sync Toggle (Unified for both online and private sync)
-        document.getElementById('cloud-sync-toggle')?.addEventListener('change', async (e) => {
-            const target = e.target as HTMLInputElement;
-            const user = await (window as any).api.getCurrentUser();
-            
-            if (user?.isLocal) {
-                if (user.privateSync) {
-                    const newConfig = { ...user.privateSync, enabled: target.checked };
-                    await (window as any).api.updatePrivateSyncConfig(newConfig);
-                    this.syncVisible = target.checked;
-                    this.updateSyncIndicator(this.syncCount > 0 ? 'syncing' : 'synced');
-                    this.showToast(target.checked ? "Private Auto-Sync enabled" : "Private Auto-Sync disabled", "info");
-                }
-            } else {
-                // Online sync toggle logic (already persisted via pushSettings and settings object)
-                this.pushSettings();
-                this.showToast(target.checked ? "Cloud Auto-Sync enabled" : "Cloud Auto-Sync disabled", "info");
-            }
-            this.updateLastActivity(`Sync ${target.checked ? 'on' : 'off'}`);
-        });
-
-        document.getElementById('btn-sync-now')?.addEventListener('click', () => this.manualSync());
 
         // Vault Maintenance
         document.getElementById('btn-export-vault')?.addEventListener('click', async () => {
@@ -1550,8 +1321,8 @@ export class UIManager {
             }
 
             // Sync Indicator Visibility
-            this.syncVisible = !!(user.privateSync && user.privateSync.enabled);
-            this.updateSyncIndicator(this.syncCount > 0 ? 'syncing' : 'synced');
+            this.sync.syncVisible = !!(user.privateSync && user.privateSync.enabled);
+            this.updateSyncIndicator(this.sync.syncVisible ? 'synced' : 'synced');
         } else {
             document.body.classList.remove('local-only');
             if (syncTitle) syncTitle.textContent = "Cloud Sync";
@@ -1560,8 +1331,8 @@ export class UIManager {
             if (syncOverlay) syncOverlay.classList.add('hidden');
 
             // Online users always see the indicator (sync is part of the core experience)
-            this.syncVisible = true;
-            this.updateSyncIndicator(this.syncCount > 0 ? 'syncing' : 'synced');
+            this.sync.syncVisible = true;
+            this.updateSyncIndicator('synced');
         }
 
 
@@ -1579,88 +1350,15 @@ export class UIManager {
     }
 
     private async openPrivateSyncModal() {
-        const user = await (window as any).api.getCurrentUser();
-        if (!user) return;
-
-        const patInput = document.getElementById('sync-github-pat') as HTMLInputElement;
-        const ownerInput = document.getElementById('sync-github-owner') as HTMLInputElement;
-        const repoInput = document.getElementById('sync-github-repo') as HTMLInputElement;
-
-        if (user.privateSync) {
-            if (patInput) patInput.value = user.privateSync.pat || '';
-            if (ownerInput) ownerInput.value = user.privateSync.owner || '';
-            if (repoInput) repoInput.value = user.privateSync.repo || '';
-        }
-
-        this.showStaticModal('modal-private-sync');
+        this.sync.openPrivateSyncModal();
     }
 
     private async testPrivateSyncConnection() {
-        const pat = (document.getElementById('sync-github-pat') as HTMLInputElement)?.value;
-        const owner = (document.getElementById('sync-github-owner') as HTMLInputElement)?.value;
-        const repo = (document.getElementById('sync-github-repo') as HTMLInputElement)?.value;
-
-        if (!pat || !owner || !repo) {
-            this.showToast("Please fill in all fields", "info");
-            return;
-        }
-
-        this.setLoading(true, "Testing Connection", "CONTACTING GITHUB API");
-        try {
-            const result = await (window as any).api.testPrivateSyncConnection({ pat, owner, repo });
-            if (result.success) {
-                this.showToast("Connection successful!", "success");
-            } else {
-                this.showToast(`Connection failed: ${result.message}`, "error");
-            }
-        } catch (e: any) {
-            this.showToast(`Error: ${e.message}`, "error");
-        } finally {
-            this.setLoading(false);
-        }
+        this.sync.testPrivateSyncConnection();
     }
 
     private async savePrivateSyncConfig() {
-        const pat = (document.getElementById('sync-github-pat') as HTMLInputElement)?.value;
-        const owner = (document.getElementById('sync-github-owner') as HTMLInputElement)?.value;
-        const repo = (document.getElementById('sync-github-repo') as HTMLInputElement)?.value;
-
-        if (!pat || !owner || !repo) {
-            this.showToast("Please fill in all fields", "info");
-            return;
-        }
-
-        this.setLoading(true, "Saving Config", "ENCRYPTING CREDENTIALS");
-        try {
-            const config = { enabled: true, pat, owner, repo };
-            const result = await (window as any).api.updatePrivateSyncConfig(config);
-            if (result.success) {
-                this.showToast("Private Sync enabled successfully!", "success");
-                const modal = document.getElementById('modal-private-sync');
-                if (modal) {
-                    modal.classList.remove('show');
-                    setTimeout(() => modal.classList.add('hidden'), 300);
-                }
-                
-                // Update local status desc
-                const syncStatusDesc = document.getElementById('sync-status-desc');
-                if (syncStatusDesc) syncStatusDesc.textContent = "Private GitHub Sync Active";
-
-                // Update the setup button text if it exists
-                const privateSyncBtn = document.getElementById('btn-open-private-sync');
-                if (privateSyncBtn) {
-                    privateSyncBtn.innerHTML = '<i class="fa-solid fa-gear"></i><span>Configure Private Sync</span>';
-                }
-                
-                await this.loadInitialData(); // Refresh UI
-            } else {
-                this.showToast(`Failed to save: ${result.message}`, "error");
-            }
-        } catch (e: any) {
-            this.showToast(`Error: ${e.message}`, "error");
-        } finally {
-            this.setLoading(false);
-        }
+        this.sync.savePrivateSyncConfig(() => this.loadInitialData());
     }
 
 
@@ -1684,50 +1382,15 @@ export class UIManager {
     }
 
     private setupAccentColorSelector() {
-        document.querySelectorAll('.accent-color-option').forEach(option => {
-            option.addEventListener('click', () => {
-                const accent = option.getAttribute('data-accent');
-                if (accent) {
-                    this.setAccentColor(accent);
-                    this.showToast("Color updated!", "success");
-                    this.updateLastActivity(`Changed color to ${accent}`);
-                }
-            });
+        this.theme.setupAccentColorSelector((accent) => {
+            this.setAccentColor(accent);
+            this.showToast("Color updated!", "success");
+            this.updateLastActivity(`Changed color to ${accent}`);
         });
     }
 
     private async manualSync() {
-        if (!navigator.onLine) {
-            this.showToast("Cannot sync while offline", "error");
-            return;
-        }
-        this.setLoading(true, "Synchronizing Vault", "CLOUD BACKUP IN PROGRESS");
-        this.setSyncing(true);
-        const btn = document.getElementById('btn-sync-now');
-        const icon = btn?.querySelector('i');
-        const statusDesc = document.getElementById('sync-status-desc');
-
-        if (icon) icon.classList.add('sync-spin');
-        if (statusDesc) statusDesc.textContent = 'Synchronizing...';
-
-        try {
-            await this.pushSettings();
-            await this.refreshAccounts();
-            this.showToast("Vault backed up!", "success");
-            localStorage.setItem(this.getStorageKey('last_sync'), new Date().toISOString());
-            this.updateLastActivity('Manual Cloud Sync');
-            if (statusDesc) statusDesc.textContent = 'Synchronized';
-            this.updateSyncIndicator('synced');
-        } catch (err: any) {
-            this.showToast("Sync failed", "error");
-            this.updateSyncIndicator('error', err.message || 'Sync failed');
-            if (statusDesc) statusDesc.textContent = 'Sync Failed';
-        } finally {
-            if (icon) icon.classList.remove('sync-spin');
-            this.setSyncing(false);
-            this.setLoading(false);
-            this.updateLastActivityDisplay();
-        }
+        this.sync.manualSync();
     }
 
     private updateLastActivity(action: string) {
@@ -1814,45 +1477,18 @@ export class UIManager {
 
 
     public async refreshAccounts() {
-        // Show skeleton loaders
-        this.showSkeletonLoaders();
-        
-        // Fetch accounts
-        this.accounts = await (window as any).api.getAccounts();
-        
-        // Small delay to ensure smooth transition (minimum 300ms for better UX)
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Render actual accounts
-        this.renderAccounts();
+        return this.accounts.refreshAccounts();
     }
     
     private showSkeletonLoaders(count: number = 6) {
-        const grid = document.getElementById('accounts-grid');
-        const emptyState = document.getElementById('empty-state');
-        const searchEmptyState = document.getElementById('search-empty-state');
-        
-        if (!grid) return;
-        
-        // Hide empty states
-        emptyState?.classList.add('hidden');
-        searchEmptyState?.classList.add('hidden');
-        
-        // Show grid and populate with skeletons
-        grid.classList.remove('hidden');
-        grid.innerHTML = '';
-        
-        for (let i = 0; i < count; i++) {
-            const skeleton = this.createSkeletonCard(i);
-            grid.appendChild(skeleton);
-        }
+        this.accounts.showSkeletonLoaders(count);
     }
     
     private createSkeletonCard(index: number): HTMLElement {
+        // Delegated — kept for internal compatibility
         const card = document.createElement('div');
         card.className = 'skeleton-card';
         card.style.animationDelay = `${index * 0.06}s`;
-        
         card.innerHTML = `
             <div class="skeleton-header">
                 <div class="skeleton-icon skeleton-shimmer"></div>
@@ -1864,509 +1500,44 @@ export class UIManager {
             <div class="skeleton-otp skeleton-shimmer"></div>
             <div class="skeleton-button skeleton-shimmer"></div>
         `;
-        
         return card;
     }
 
     private renderAccounts() {
-        const grid = document.getElementById('accounts-grid');
-        const emptyState = document.getElementById('empty-state');
-        const searchEmptyState = document.getElementById('search-empty-state');
-        if (!grid || !emptyState || !searchEmptyState) return;
-
-        const filtered = this.accounts.filter(acc =>
-            acc.issuer.toLowerCase().includes(this.searchQuery) ||
-            acc.account.toLowerCase().includes(this.searchQuery)
-        );
-
-        // State 1: Completely Empty Vault
-        if (this.accounts.length === 0) {
-            grid.classList.add('hidden');
-            emptyState.classList.remove('hidden');
-            searchEmptyState.classList.add('hidden');
-        } 
-        // State 2: No Results Found for Search
-        else if (filtered.length === 0) {
-            grid.classList.add('hidden');
-            emptyState.classList.add('hidden');
-            searchEmptyState.classList.remove('hidden');
-        }
-        // State 3: Active Results
-        else {
-            grid.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-            searchEmptyState.classList.add('hidden');
-            grid.innerHTML = '';
-            this.cardCache = []; 
-            filtered.forEach((acc, index) => {
-                const card = this.createAccountCard(acc, index);
-                grid.appendChild(card);
-                this.cardCache.push(card);
-            });
-
-            // Immediate batch update for all rendered cards so they don't stay empty for 1s
-            const secrets = filtered.map(acc => acc.secret);
-            (window as any).api.getBatchOTPs(secrets).then((res: { otps: string[], remaining: number }) => {
-                this.cardCache.forEach((card, i) => {
-                    if (res.otps[i]) this.updateCardOTP(card, res.otps[i], res.remaining);
-                });
-            });
-        }
+        this.accounts.renderAccounts();
     }
 
     private createAccountCard(account: any, index: number): HTMLElement {
-        const card = document.createElement('div');
-        card.className = 'account-card animate-fade-in';
-        card.style.animationDelay = `${index * 0.05}s`;
-
-        card.innerHTML = `
-            <div class="account-header">
-                <div class="account-icon">
-                    <i class="${this.getIcon(account.issuer)}"></i>
-                </div>
-                <div class="account-info">
-                    <div class="service-name">${account.issuer}</div>
-                    <div class="account-identity">${account.account}</div>
-                </div>
-                <div class="card-actions">
-                <button class="btn-card-more">
-                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                </button>
-                <div class="card-dropdown">
-                    <div class="card-dropdown-item edit-btn">
-                        <i class="fa-solid fa-pen-to-square icon-left"></i>
-                        <span>Edit</span>
-                    </div>
-                    <div class="card-dropdown-item danger delete-btn">
-                        <i class="fa-solid fa-trash-can icon-left"></i>
-                        <span>Delete</span>
-                    </div>
-                </div>
-            </div>
-            </div>
-            
-            <div class="otp-hero">
-                ${this.vaultViewStyle !== 'secure' ? `
-                    <div class="otp-code ${this.privacyMode ? 'privacy-hidden' : ''}">
-                        ${this.privacyMode ? '••••••' : '------'}
-                    </div>
-                ` : `
-                    <button class="btn-primary secure-view-btn" style="width: 100%; height: 50px; background: var(--nm-surface); box-shadow: var(--nm-shadow-out-sm);">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        <span>Secure View</span>
-                    </button>
-                `}
-
-                ${this.vaultViewStyle === 'compact' ? `
-                <div class="timer-linear-vessel">
-                    <div class="timer-linear-progress"></div>
-                </div>` : ''}
-            </div>
-
-            ${this.vaultViewStyle !== 'secure' ? `
-            <div class="card-footer" style="padding: 0;">
-                <button class="btn-primary copy-btn" style="width: 100%;">
-                    <i class="fa-solid fa-copy icon-left"></i>
-                    <span>Copy Code</span>
-                </button>
-            </div>
-            ` : ''}
-        `;
-
-        const copyBtn = card.querySelector('.copy-btn') as HTMLElement;
-        if (copyBtn) {
-            copyBtn.onclick = async () => {
-                const otpCode = await (window as any).api.generateTOTP(account.secret);
-                await navigator.clipboard.writeText(otpCode);
-                this.showToast("Code copied!", "success");
-                this.updateLastActivity('OTP copied');
-            };
-        }
-
-        const codeEl = card.querySelector('.otp-code') as HTMLElement;
-        if (codeEl) {
-            codeEl.onclick = async () => {
-                const otpCode = await (window as any).api.generateTOTP(account.secret);
-                await navigator.clipboard.writeText(otpCode);
-                this.showToast("OTP Copied", "success");
-                this.showCopyFeedback(codeEl);
-                this.updateLastActivity('OTP copied');
-            };
-        }
-
-        const moreBtn = card.querySelector('.btn-card-more') as HTMLElement;
-        const dropdown = card.querySelector('.card-dropdown') as HTMLElement;
-
-        moreBtn?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // Close all other dropdowns first
-            document.querySelectorAll('.card-dropdown.show').forEach(d => {
-                if (d !== dropdown) {
-                    d.classList.remove('show');
-                    d.previousElementSibling?.classList.remove('active');
-                }
-            });
-            dropdown.classList.toggle('show');
-            moreBtn.classList.toggle('active');
-        });
-
-        card.querySelector('.edit-btn')?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdown.classList.remove('show');
-            moreBtn.classList.remove('active');
-            this.showEditModal(account);
-        });
-
-        card.querySelector('.delete-btn')?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdown.classList.remove('show');
-            moreBtn.classList.remove('active');
-            this.showDeleteConfirm(account);
-        });
-
-        card.querySelector('.secure-view-btn')?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.showOtpModal(account);
-        });
-
-        // Initial update will be handled by the batch call in renderAccounts or the timer
-        return card;
+        return this.accounts.createAccountCard(account, index);
     }
 
     private async handleScannedData(data: string) {
-        try {
-            if (!data.startsWith('otpauth://totp/')) {
-                this.showToast("QR code not recognized", "error");
-                return;
-            }
-
-            this.setLoading(true, "Processing QR", "DECODING SECURE URI");
-            try {
-                const parsed = await (window as any).api.parseURI(data);
-                await (window as any).api.generateTOTP(parsed.secret);
-
-                const res = await (window as any).api.saveAccount({
-                    id: Date.now().toString(),
-                    issuer: parsed.issuer,
-                    account: parsed.account,
-                    secret: parsed.secret
-                });
-
-                if (res.conflict) {
-                    this.showSyncConflictModal('save-account', {
-                        id: Date.now().toString(),
-                        issuer: parsed.issuer,
-                        account: parsed.account,
-                        secret: parsed.secret
-                    });
-                    return;
-                }
-
-                this.accounts = res.accounts || [];
-                this.renderAccounts();
-                this.showToast(`Account added!`, "success");
-                this.updateLastActivity('Added token via Scan');
-            } finally {
-                this.setLoading(false);
-            }
-        } catch (err) {
-            console.error("Invalid QR Format", err);
-            this.showToast("Invalid QR Format", "error");
-        }
+        return this.accounts.handleScannedData(data);
     }
 
     private async updateCardOTP(card: HTMLElement, otp: string, remaining: number) {
-        const codeElement = card.querySelector('.otp-code') as HTMLElement;
-        if (!codeElement) return;
-
-        const formattedOtp = otp.substring(0, 3) + ' ' + otp.substring(3);
-        
-        if (!this.privacyMode) {
-            if (codeElement.textContent !== formattedOtp) {
-                codeElement.textContent = formattedOtp;
-            }
-        }
-
-        // Mode 1: Unified (Global Bar)
-        if (this.vaultViewStyle === 'unified') {
-            const globalProgressBar = document.getElementById('global-otp-timer') as HTMLElement;
-            if (globalProgressBar) {
-                const scale = remaining / 30;
-                globalProgressBar.style.transform = `scaleX(${scale})`;
-                globalProgressBar.style.backgroundColor = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
-            }
-        } 
-        // Mode 2: Compact (Individual Bars)
-        else if (this.vaultViewStyle === 'compact') {
-            const progressBar = card.querySelector('.timer-linear-progress') as HTMLElement;
-            if (progressBar) {
-                const scale = remaining / 30;
-                progressBar.style.transform = `scaleX(${scale})`;
-                progressBar.style.backgroundColor = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
-            }
-        }
-        // Mode 3: Secure (Modal) - Updates are handled separately via this.updateOtpModal if modal is open
+        return this.accounts.updateCardOTP(card, otp, remaining);
     }
 
     private updateOtpModal(otp: string, remaining: number) {
-        const modal = document.querySelector('.otp-modal-container');
-        if (!modal || !this.activeOtpAccount) return;
-
-        const codeDisp = modal.querySelector('.otp-modal-code-vessel') as HTMLElement;
-        const formattedOtp = otp.substring(0, 3) + ' ' + otp.substring(3);
-        
-        if (codeDisp && codeDisp.textContent !== formattedOtp) {
-            codeDisp.textContent = formattedOtp;
-        }
-
-        const circle = modal.querySelector('.timer-circle-progress') as SVGCircleElement;
-        const text = modal.querySelector('.timer-countdown-text') as HTMLElement;
-        if (circle && text) {
-            const radius = 54;
-            const circumference = 2 * Math.PI * radius;
-            const offset = circumference - (remaining / 30) * circumference;
-            
-            circle.style.strokeDasharray = `${circumference} ${circumference}`;
-            circle.style.strokeDashoffset = offset.toString();
-            circle.style.stroke = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
-            
-            text.textContent = remaining.toString();
-            text.style.color = remaining <= 5 ? '#ff3b30' : 'var(--accent-primary)';
-        }
+        this.accounts.updateOtpModal(otp, remaining);
     }
 
     private async showOtpModal(account: any) {
-        this.activeOtpAccount = account;
-        const initialOtp = await (window as any).api.generateTOTP(account.secret);
-        const { remaining } = await (window as any).api.getBatchOTPs([account.secret]);
-
-        const content = `
-            <div class="otp-modal-container">
-                <div class="otp-modal-header">
-                    <div class="otp-modal-name">${account.issuer}</div>
-                    <div class="otp-modal-account">${account.account}</div>
-                </div>
-
-                <div class="circular-timer-vessel">
-                    <svg class="circular-timer-svg" width="120" height="120">
-                        <circle class="timer-circle-bg" cx="60" cy="60" r="54"></circle>
-                        <circle class="timer-circle-progress" cx="60" cy="60" r="54"></circle>
-                    </svg>
-                    <div class="timer-countdown-text">${remaining}</div>
-                </div>
-
-                <div class="otp-modal-code-vessel" id="otp-modal-copy">
-                    ${initialOtp.substring(0, 3)} ${initialOtp.substring(3)}
-                </div>
-
-                <div class="otp-modal-footer">
-                    <button class="btn-primary" id="btn-otp-modal-copy" style="flex: 1;">
-                        <i class="fa-solid fa-copy"></i>
-                        Copy
-                    </button>
-                    <button class="user-button" id="btn-otp-modal-close" style="width: auto; padding: 0 20px;">Close</button>
-                </div>
-            </div>
-        `;
-
-        this.showModal(content);
-        this.updateOtpModal(initialOtp, remaining);
-
-        document.getElementById('btn-otp-modal-copy')?.addEventListener('click', () => {
-            navigator.clipboard.writeText(initialOtp);
-            this.showToast("Code copied!", "success");
-            this.showCopyFeedback(document.getElementById('otp-modal-copy')!);
-        });
-        document.getElementById('otp-modal-copy')?.addEventListener('click', () => {
-             navigator.clipboard.writeText(initialOtp);
-            this.showToast("OTP Copied", "success");
-            this.showCopyFeedback(document.getElementById('otp-modal-copy')!);
-        });
-        document.getElementById('btn-otp-modal-close')?.addEventListener('click', () => {
-            this.activeOtpAccount = null;
-            this.hideModal();
-        });
+        return this.accounts.showOtpModal(account);
     }
 
     private startTimer() {
-        if (this.timerInterval) clearInterval(this.timerInterval);
-        this.timerInterval = setInterval(async () => {
-            if (this.accounts.length === 0 || this.cardCache.length === 0) return;
-            
-            // Batch process all secrets in one IPC called
-            const secrets = this.accounts.map(acc => acc.secret);
-            const { otps, remaining } = await (window as any).api.getBatchOTPs(secrets);
-
-            this.cardCache.forEach((card, i) => {
-                if (otps[i]) this.updateCardOTP(card, otps[i], remaining);
-            });
-
-            // Update active modal if open
-            if (this.activeOtpAccount) {
-                const activeIndex = this.accounts.findIndex(a => a.id === this.activeOtpAccount.id);
-                if (activeIndex !== -1 && otps[activeIndex]) {
-                    this.updateOtpModal(otps[activeIndex], remaining);
-                }
-            }
-        }, 1000);
+        // Delegated to AccountManager
+        this.accounts.startTimer();
     }
 
     private showSyncConflictModal(action: string, data: any) {
-        this.pendingConflictAction = action;
-        this.pendingConflictData = data;
-
-        const modal = document.getElementById('modal-sync-conflict');
-        if (!modal) return;
-
-        modal.classList.remove('hidden');
-        setTimeout(() => modal.classList.add('show'), 10);
-
-        const forcePushOption = document.getElementById('option-force-push');
-        const pullRemoteOption = document.getElementById('option-pull-remote');
-        const resolveBtn = document.getElementById('btn-resolve-sync-conflict') as HTMLButtonElement;
-        const closeBtn = document.getElementById('btn-close-sync-conflict');
-
-        let selectedResolution: 'force' | 'pull' | null = null;
-
-        const updateSelection = (res: 'force' | 'pull') => {
-            selectedResolution = res;
-            forcePushOption?.classList.toggle('selected', res === 'force');
-            pullRemoteOption?.classList.toggle('selected', res === 'pull');
-            if (resolveBtn) {
-                resolveBtn.classList.remove('disabled');
-                resolveBtn.disabled = false;
-            }
-        };
-
-        forcePushOption?.addEventListener('click', () => updateSelection('force'));
-        pullRemoteOption?.addEventListener('click', () => updateSelection('pull'));
-
-        closeBtn?.addEventListener('click', () => {
-            modal.classList.remove('show');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-            this.pendingConflictAction = null;
-            this.pendingConflictData = null;
-        });
-
-        resolveBtn.addEventListener('click', async () => {
-            if (!selectedResolution) return;
-
-            this.setLoading(true, "Resolving Conflict", "SYNCHRONIZING SECURE DATA");
-            try {
-                if (selectedResolution === 'force') {
-                    // Retrying the same action with force=true
-                    // I need to update the IPC calls to support a 'force' argument if I go this way.
-                    // Actually, I'll update syncUserData in auth.ts to handle force-push.
-                    // For now, let's assume we can pass a 'force' flag.
-                    
-                    let res: any;
-                    if (this.pendingConflictAction === 'save-account') {
-                        res = await (window as any).api.saveAccount(this.pendingConflictData, true);
-                    } else if (this.pendingConflictAction === 'delete-account') {
-                        res = await (window as any).api.deleteAccount(this.pendingConflictData, true);
-                    } else if (this.pendingConflictAction === 'update-user-settings') {
-                        res = await (window as any).api.updateUserSettings(this.pendingConflictData, true);
-                    }
-
-                    if (res && res.success) {
-                        this.showToast("Conflict resolved: local data pushed", "success");
-                        if (res.accounts) {
-                            this.accounts = res.accounts;
-                            this.renderAccounts();
-                        }
-                        modal.classList.remove('show');
-                        setTimeout(() => modal.classList.add('hidden'), 300);
-                        this.hideModal(); // Hide the original action modal if any
-                    } else {
-                        this.showToast(res?.message || "Resolution failed", "error");
-                    }
-                } else {
-                    // Pull Remote
-                    await this.refreshAccounts();
-                    const user = await (window as any).api.getCurrentUser();
-                    if (user) {
-                        this.handleLocalAccountUI(user);
-                        this.applySettings(user.settings || {}, true);
-                    }
-                    this.showToast("Conflict resolved: remote data pulled", "success");
-                    modal.classList.remove('show');
-                    setTimeout(() => modal.classList.add('hidden'), 300);
-                    this.hideModal();
-                }
-            } catch (err) {
-                console.error("Resolution Error:", err);
-                this.showToast("An error occurred during resolution", "error");
-            } finally {
-                this.setLoading(false);
-            }
-        });
+        this.accounts.showSyncConflictModal(action, data);
     }
 
     private getIcon(issuer: string): string {
-        const name = issuer.toLowerCase();
-        
-        // 1. Precise Brand Mapping (Top Tier)
-        const icons: { [key: string]: string } = {
-            'google': 'fa-brands fa-google', 'github': 'fa-brands fa-github', 'microsoft': 'fa-brands fa-microsoft', 'apple': 'fa-brands fa-apple',
-            'amazon': 'fa-brands fa-amazon', 'facebook': 'fa-brands fa-facebook', 'twitter': 'fa-brands fa-twitter', 'discord': 'fa-brands fa-discord',
-            'binance': 'fa-solid fa-coins', 'coinbase': 'fa-solid fa-wallet', 'stripe': 'fa-brands fa-stripe', 'paypal': 'fa-brands fa-paypal',
-            'slack': 'fa-brands fa-slack', 'instagram': 'fa-brands fa-instagram', 'linkedin': 'fa-brands fa-linkedin', 'twitch': 'fa-brands fa-twitch',
-            'spotify': 'fa-brands fa-spotify', 'netflix': 'fa-solid fa-tv', 'steam': 'fa-brands fa-steam', 'epic': 'fa-solid fa-gamepad',
-            'dropbox': 'fa-brands fa-dropbox', 'figma': 'fa-brands fa-figma', 'canva': 'fa-solid fa-palette', 'adobe': 'fa-solid fa-pen-nib',
-            'shopify': 'fa-brands fa-shopify', 'reddit': 'fa-brands fa-reddit', 'bitbucket': 'fa-brands fa-bitbucket',
-            'gitlab': 'fa-brands fa-gitlab', 'heroku': 'fa-solid fa-server', 'digitalocean': 'fa-brands fa-digital-ocean', 'cloudflare': 'fa-brands fa-cloudflare',
-            'vercel': 'fa-solid fa-triangle-exclamation', 'netlify': 'fa-solid fa-globe', 'firebase': 'fa-solid fa-flame', 'wordpress': 'fa-brands fa-wordpress',
-            'medium': 'fa-brands fa-medium', 'patreon': 'fa-brands fa-patreon', 'discordapp': 'fa-brands fa-discord',
-            'protonmail': 'fa-solid fa-envelope', 'nordvpn': 'fa-solid fa-shield-halved', 'expressvpn': 'fa-solid fa-shield-halved',
-            'bitwarden': 'fa-solid fa-lock', '1password': 'fa-solid fa-key', 'lastpass': 'fa-solid fa-key',
-            'uber': 'fa-brands fa-uber', 'lyft': 'fa-solid fa-car', 'airbnb': 'fa-brands fa-airbnb', 'notion': 'fa-solid fa-file-lines',
-            'zoom': 'fa-solid fa-video', 'trello': 'fa-brands fa-trello', 'asana': 'fa-solid fa-list-check', 'clickup': 'fa-solid fa-layer-group'
-        };
-
-        if (icons[name]) return icons[name];
-
-        // 2. Keyword-based Fuzzy Matching (Intelligent Heuristics)
-        const keywords: [string | RegExp, string][] = [
-            // Cloud & Infrastructure
-            [/aws|amazon|cloud/i, 'fa-solid fa-cloud'],
-            [/azure|microsoft/i, 'fa-brands fa-microsoft'],
-            [/server|host|vps|deploy/i, 'fa-solid fa-server'],
-            [/db|database|mongo|sql|redis/i, 'fa-solid fa-database'],
-            
-            // Communication & Social
-            [/mail|email|outlook|gmail/i, 'fa-solid fa-envelope'],
-            [/chat|message|messenger|slack|discord/i, 'fa-solid fa-comment-dots'],
-            [/social|network|brand/i, 'fa-solid fa-share-nodes'],
-            
-            // Finance
-            [/bank|finance|money|wallet|pay/i, 'fa-solid fa-wallet'],
-            [/crypto|coin|token|eth|btc/i, 'fa-solid fa-coins'],
-            [/card|credit|debit/i, 'fa-solid fa-credit-card'],
-            
-            // Security & Dev
-            [/auth|security|protect|shield|vault/i, 'fa-solid fa-shield-halved'],
-            [/key|password|pass|login|access/i, 'fa-solid fa-key'],
-            [/code|dev|git|build|repo/i, 'fa-solid fa-code'],
-            [/api|endpoint|webhook/i, 'fa-solid fa-link'],
-            
-            // Media & Entertainment
-            [/video|movie|tv|stream|netflix|yt|youtube/i, 'fa-solid fa-video'],
-            [/music|audio|song|sound/i, 'fa-solid fa-music'],
-            [/game|play|epic|xbox|psn/i, 'fa-solid fa-gamepad'],
-            
-            // Business & Identity
-            [/shop|store|cart|ebay|buy/i, 'fa-solid fa-cart-shopping'],
-            [/user|account|profile|id/i, 'fa-solid fa-user'],
-            [/work|corp|company|office/i, 'fa-solid fa-briefcase']
-        ];
-
-        for (const [pattern, icon] of keywords) {
-            if (typeof pattern === 'string' && name.includes(pattern)) return icon;
-            if (pattern instanceof RegExp && pattern.test(name)) return icon;
-        }
-
-        // 3. Last Resort Fallback
-        return 'fa-solid fa-shield';
+        return this.accounts.getIcon(issuer);
     }
 
     private showModal(content: string) {
@@ -2982,226 +2153,15 @@ export class UIManager {
     }
 
     private showAddModal() {
-        const content = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-icon-vessel">
-                        <i class="fa-solid fa-circle-plus"></i>
-                    </div>
-                    <div class="modal-title-vessel">
-                        <h2>Add Token</h2>
-                        <p>SAVE DIGITAL IDENTITY</p>
-                    </div>
-                </div>
-                <div class="modal-divider"></div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">Service</label>
-                        <input type="text" id="new-issuer" class="form-input" placeholder="e.g. GitHub, Google">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Account</label>
-                        <input type="text" id="new-account" class="form-input" placeholder="name@domain.com" inputmode="email">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">TOTP Secret</label>
-                        <input type="text" id="new-secret" class="form-input" placeholder="Enter secret key" autocomplete="off">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-primary" id="save-new-account">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        Save Token
-                    </button>
-                    <button class="user-button" id="btn-scan-screen-trigger" style="justify-content: center; white-space: nowrap;">
-                        <i class="fa-solid fa-desktop"></i>
-                        Scan
-                    </button>
-                    <button class="user-button" id="cancel-add-btn" style="justify-content: center;">Cancel</button>
-                </div>
-            </div>
-        `;
-        this.showModal(content);
-        
-        document.getElementById('btn-scan-screen-trigger')?.addEventListener('click', () => {
-            this.hideModal();
-            (window as any).api.openCaptureWindow();
-        });
-
-        // Listen for capture results (globally once or every time? Better in constructor or persistent)
-        // I'll add handleScannedData to UIManager for reuse
-
-        const saveAccountAction = async () => {
-            const issuer = (document.getElementById('new-issuer') as HTMLInputElement).value.trim();
-            const account = (document.getElementById('new-account') as HTMLInputElement).value.trim();
-            const secret = (document.getElementById('new-secret') as HTMLInputElement).value.replace(/\s/g, '').toUpperCase();
-            
-            if (issuer && secret) {
-                this.setLoading(true, "Securing Token", "ENCRYPTING NEW IDENTITY");
-                try {
-                    const res = await (window as any).api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
-                    
-                    if (res.conflict) {
-                        this.showSyncConflictModal('save-account', { id: Date.now().toString(), issuer, account, secret });
-                        return;
-                    }
-
-                    this.accounts = res.accounts || [];
-                    this.renderAccounts();
-                    this.hideModal();
-                    this.showToast("Account saved!", "success");
-                    this.updateLastActivity('Added token');
-                } finally {
-                    this.setLoading(false);
-                }
-            } else {
-                this.showToast("Service and Secret are required", "error");
-            }
-        };
-
-        document.getElementById('save-new-account')?.addEventListener('click', saveAccountAction);
-        
-        ['new-issuer', 'new-account', 'new-secret'].forEach(id => {
-            document.getElementById(id)?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') saveAccountAction();
-            });
-        });
-
-        document.getElementById('cancel-add-btn')?.addEventListener('click', () => this.hideModal());
+        this.accounts.showAddModal();
     }
 
     private showEditModal(account: any) {
-        const content = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-icon-vessel">
-                        <i class="fa-solid fa-sliders"></i>
-                    </div>
-                    <div class="modal-title-vessel">
-                        <h2>Edit Identity</h2>
-                        <p>UPDATE SERVICE DETAILS</p>
-                    </div>
-                </div>
-                <div class="modal-divider"></div>
-                <div class="modal-body">
-                    <div class="modal-entity-badge">
-                        <div class="entity-icon">
-                            <i class="fa-solid fa-shield"></i>
-                        </div>
-                        <div class="entity-info">
-                            <span class="entity-name">${account.issuer}</span>
-                            <span class="entity-label">${account.account || 'Vault Token'}</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Service</label>
-                        <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Account</label>
-                        <input type="text" id="edit-account" class="form-input" value="${account.account}" inputmode="email">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-primary" id="update-account">
-                        <i class="fa-solid fa-check"></i>
-                        Save Changes
-                    </button>
-                    <button class="user-button" id="cancel-edit-btn" style="justify-content: center;">Cancel</button>
-                </div>
-            </div>
-        `;
-        this.showModal(content);
-        const updateAccountAction = async () => {
-            const issuer = (document.getElementById('edit-issuer') as HTMLInputElement).value.trim();
-            const accName = (document.getElementById('edit-account') as HTMLInputElement).value.trim();
-            if (issuer) {
-                this.setLoading(true, "Updating Identity", "SYNCHRONIZING CHANGES");
-                try {
-                    const res = await (window as any).api.saveAccount({ ...account, issuer, account: accName });
-                    
-                    if (res.conflict) {
-                        this.showSyncConflictModal('save-account', { ...account, issuer, account: accName });
-                        return;
-                    }
-
-                    this.accounts = res.accounts || [];
-                    this.renderAccounts();
-                    this.hideModal();
-                    this.showToast("Account updated!", "success");
-                    this.updateLastActivity('Edited token');
-                } finally {
-                    this.setLoading(false);
-                }
-            }
-        };
-
-        document.getElementById('update-account')?.addEventListener('click', updateAccountAction);
-        
-        ['edit-issuer', 'edit-account'].forEach(id => {
-            document.getElementById(id)?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') updateAccountAction();
-            });
-        });
-
-        document.getElementById('cancel-edit-btn')?.addEventListener('click', () => this.hideModal());
+        this.accounts.showEditModal(account);
     }
 
     private showDeleteConfirm(account: any) {
-        const content = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-icon-vessel danger">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </div>
-                    <div class="modal-title-vessel">
-                        <h2 class="danger">Delete Token?</h2>
-                        <p>PERMANENT ACTION</p>
-                    </div>
-                </div>
-                <div class="modal-divider"></div>
-                <div class="modal-body">
-                    <div class="modal-entity-badge">
-                        <div class="entity-icon">
-                            <i class="fa-solid fa-shield"></i>
-                        </div>
-                        <div class="entity-info">
-                            <span class="entity-name">${account.issuer}</span>
-                            <span class="entity-label">${account.account || 'Vault Token'}</span>
-                        </div>
-                    </div>
-                    <p class="modal-help-text">Removing this token is permanent. You will lose access to its OTP codes.</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-danger" id="confirm-delete">
-                        <i class="fa-solid fa-trash-can"></i>
-                        Delete Token
-                    </button>
-                    <button class="user-button" id="cancel-delete-btn" style="justify-content: center;">Keep Token</button>
-                </div>
-            </div>
-        `;
-        this.showModal(content);
-        document.getElementById('confirm-delete')?.addEventListener('click', async () => {
-            this.setLoading(true, "Removing Token", "PERMANENT DELETION IN PROGRESS");
-            try {
-                const res = await (window as any).api.deleteAccount(account.id);
-                
-                if (res.conflict) {
-                    this.showSyncConflictModal('delete-account', account.id);
-                    return;
-                }
-
-                this.accounts = res.accounts || [];
-                this.renderAccounts();
-                this.hideModal();
-                this.showToast("Account removed", "info");
-                this.updateLastActivity('Deleted token');
-            } finally {
-                this.setLoading(false);
-            }
-        });
-        document.getElementById('cancel-delete-btn')?.addEventListener('click', () => this.hideModal());
+        this.accounts.showDeleteConfirm(account);
     }
 
     private async showImportPasswordModal(data: any) {
@@ -3408,42 +2368,12 @@ export class UIManager {
     }
 
     private startLiveSync() {
-        if (this.liveSyncInterval) clearInterval(this.liveSyncInterval);
-        // Poll every 45 seconds to stay within GitHub API limits while remaining "reactive"
-        this.liveSyncInterval = setInterval(() => this.checkForUpdates(), 45000);
+        // Delegated to SyncManager
+        this.sync.startLiveSync();
     }
 
     private async checkForUpdates() {
-        if (!navigator.onLine) return; // Skip background sync if offline
-
-        // Don't sync if user is active in sensitive areas or typing
-        if (document.activeElement?.tagName === 'INPUT' ||
-            document.querySelector('.modal.show')) {
-            return;
-        }
-
-        try {
-            const result = await (window as any).api.pollForUpdates();
-            if (result.changed) {
-                this.setSyncing(true);
-
-                // If settings changed, apply them
-                if (result.settings) {
-                    this.applySettings(result.settings, true); // Update local cache too
-                }
-
-                // If accounts changed (discovered via global registry or user-data update)
-                await this.refreshAccounts();
-
-                // Successful sync pulse
-                this.updateSyncIndicator('synced');
-                this.setSyncing(false);
-            }
-        } catch (e: any) {
-            console.error("Background sync failed:", e);
-            this.updateSyncIndicator('warning', 'Background sync failed');
-            this.setSyncing(false);
-        }
+        // Delegated to SyncManager
     }
 
 
@@ -4048,255 +2978,11 @@ export class UIManager {
     }
     
     private showExportOptionsModal() {
-        const content = `
-            <div class="custom-scrollbar" style="max-height: 85vh; overflow-y: auto; max-width: 580px; padding: clamp(24px, 5vw, 32px); margin: 0 auto;">
-                <!-- Header -->
-                <div style="display: flex; align-items: flex-start; gap: 18px; margin-bottom: 24px;">
-                    <div class="account-icon nm-icon-large" style="width: 64px; height: 64px; flex-shrink: 0;">
-                        <i class="fa-solid fa-download" style="font-size: 28px;"></i>
-                    </div>
-                    <div style="flex: 1; min-width: 0;">
-                        <h2 style="font-weight: 900; font-size: clamp(20px, 4vw, 24px); color: var(--text-primary); margin: 0 0 6px 0; line-height: 1.2;">Export Vault</h2>
-                        <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600; line-height: 1.4;">Choose your preferred export format</p>
-                    </div>
-                </div>
-                
-                <!-- Export Format Options -->
-                <div style="display: grid; gap: 10px; margin-bottom: 20px;">
-                    <!-- Full Encrypted Backup -->
-                    <button class="export-option-card" data-format="encrypted" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
-                        <div class="export-option-icon">
-                            <i class="fa-solid fa-lock" style="font-size: 18px; color: var(--accent-primary);"></i>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Full Encrypted Backup</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Complete vault with settings (.keyra)</div>
-                        </div>
-                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
-                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
-                        </div>
-                    </button>
-                    
-                    <!-- QR Codes PDF -->
-                    <button class="export-option-card" data-format="qr-pdf" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
-                        <div class="export-option-icon">
-                            <i class="fa-solid fa-qrcode" style="font-size: 18px; color: var(--accent-primary);"></i>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">QR Codes (PDF)</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Printable QR codes for each account</div>
-                        </div>
-                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
-                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
-                        </div>
-                    </button>
-                    
-                    <!-- Plain JSON -->
-                    <button class="export-option-card" data-format="json" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
-                        <div class="export-option-icon">
-                            <i class="fa-solid fa-file-code" style="font-size: 18px; color: #ff9500;"></i>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Plain JSON</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Unencrypted JSON for migration (.json)</div>
-                        </div>
-                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
-                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
-                        </div>
-                    </button>
-                    
-                    <!-- Text File -->
-                    <button class="export-option-card" data-format="text" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
-                        <div class="export-option-icon">
-                            <i class="fa-solid fa-file-lines" style="font-size: 18px; color: var(--text-secondary);"></i>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Text File</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Human-readable text format (.txt)</div>
-                        </div>
-                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
-                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
-                        </div>
-                    </button>
-                </div>
-                
-                <!-- Account Selection Toggle -->
-                <div id="export-selection-container" style="background: var(--bg-primary); border-radius: 12px; padding: 14px; box-shadow: var(--nm-shadow-in-sm); margin-bottom: 20px; display: none;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div style="flex: 1; min-width: 0; margin-right: 12px;">
-                            <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Export Selection</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Choose specific accounts or export all</div>
-                        </div>
-                        <label class="switch" style="flex-shrink: 0;">
-                            <input type="checkbox" id="export-selective" checked>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-                    <div id="export-accounts-list" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bg-secondary);">
-                        <!-- Account checkboxes will be inserted here -->
-                    </div>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-primary" id="confirm-export" style="flex: 2; height: 52px; font-size: 14px; font-weight: 800; border-radius: 12px;">
-                        <i class="fa-solid fa-download"></i>
-                        <span>Export Vault</span>
-                    </button>
-                    <button class="user-button" id="cancel-export" style="flex: 1; justify-content: center; height: 52px; font-weight: 800; border-radius: 12px;">Cancel</button>
-                </div>
-            </div>
-        `;
-        
-        this.showModal(content);
-        
-        let selectedFormat = 'encrypted';
-        
-        // Get the selection container
-        const selectionContainer = document.getElementById('export-selection-container');
-        
-        // Handle format selection
-        document.querySelectorAll('.export-option-card').forEach(card => {
-            card.addEventListener('click', () => {
-                document.querySelectorAll('.export-option-card').forEach(c => {
-                    (c as HTMLElement).style.borderColor = 'transparent';
-                    (c as HTMLElement).style.boxShadow = 'var(--nm-shadow-out)';
-                    (c as HTMLElement).classList.remove('selected');
-                    const check = c.querySelector('.export-check') as HTMLElement;
-                    if (check) check.style.opacity = '0';
-                });
-                
-                (card as HTMLElement).style.borderColor = 'var(--accent-primary)';
-                (card as HTMLElement).style.boxShadow = '0 0 0 3px rgba(var(--accent-rgb), 0.15)';
-                (card as HTMLElement).classList.add('selected');
-                const check = card.querySelector('.export-check') as HTMLElement;
-                if (check) {
-                    check.style.opacity = '1';
-                    check.style.borderColor = 'var(--accent-primary)';
-                    check.style.background = 'var(--accent-primary)';
-                }
-                
-                selectedFormat = card.getAttribute('data-format') || 'encrypted';
-                
-                // Show/hide selection container based on format
-                if (selectionContainer) {
-                    if (selectedFormat === 'encrypted') {
-                        selectionContainer.style.display = 'none';
-                    } else {
-                        selectionContainer.style.display = 'block';
-                    }
-                }
-            });
-        });
-        
-        // Select first option by default
-        const firstCard = document.querySelector('.export-option-card') as HTMLElement;
-        if (firstCard) firstCard.click();
-        
-        // Handle selective export toggle
-        const selectiveToggle = document.getElementById('export-selective') as HTMLInputElement;
-        const accountsList = document.getElementById('export-accounts-list');
-        
-        selectiveToggle?.addEventListener('change', () => {
-            if (accountsList) {
-                if (selectiveToggle.checked) {
-                    accountsList.style.display = 'none';
-                } else {
-                    accountsList.style.display = 'block';
-                    // Populate accounts list
-                    accountsList.innerHTML = this.accounts.map(acc => `
-                        <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-secondary); border-radius: 10px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s ease;">
-                            <input type="checkbox" class="export-account-check" data-id="${acc.id}" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-primary);">
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${acc.issuer}</div>
-                                <div style="font-size: 10px; color: var(--text-secondary); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${acc.account}</div>
-                            </div>
-                        </label>
-                    `).join('');
-                }
-            }
-        });
-        
-        // Handle export
-        document.getElementById('confirm-export')?.addEventListener('click', async () => {
-            const exportAll = selectiveToggle?.checked !== false;
-            let accountsToExport = this.accounts;
-            
-            if (!exportAll) {
-                const selectedIds = Array.from(document.querySelectorAll('.export-account-check:checked'))
-                    .map(cb => (cb as HTMLInputElement).getAttribute('data-id'));
-                accountsToExport = this.accounts.filter(acc => selectedIds.includes(acc.id));
-                
-                if (accountsToExport.length === 0) {
-                    this.showToast("Please select at least one account", "error");
-                    return;
-                }
-            }
-            
-            this.hideModal();
-            await this.performExport(selectedFormat, accountsToExport);
-        });
-        
-        document.getElementById('cancel-export')?.addEventListener('click', () => this.hideModal());
+        this.accounts.showExportOptionsModal();
     }
     
-    private async performExport(format: string, accounts: any[]) {
-        this.setLoading(true, "Exporting Vault", "PREPARING SECURE EXPORT");
-        
-        try {
-            switch (format) {
-                case 'encrypted':
-                    await this.exportEncrypted();
-                    break;
-                case 'qr-pdf':
-                    await this.exportQRCodesPDF(accounts);
-                    break;
-                case 'json':
-                    await this.exportJSON(accounts);
-                    break;
-                case 'text':
-                    await this.exportText(accounts);
-                    break;
-            }
-            
-            this.showToast("Export completed successfully!", "success");
-            this.updateLastActivity('Exported vault');
-        } catch (error) {
-            console.error("Export failed:", error);
-            this.showToast("Export failed. Please try again.", "error");
-        } finally {
-            this.setLoading(false);
-        }
-    }
-    
-    private async exportEncrypted() {
-        const res = await (window as any).api.exportVault();
-        if (!res.success && res.message) {
-            throw new Error(res.message);
-        }
-    }
-    
-    private async exportQRCodesPDF(accounts: any[]) {
-        const res = await (window as any).api.exportQRHTML(accounts);
-        if (!res.success && res.message) {
-            throw new Error(res.message);
-        }
-        if (res.success) {
-            this.showToast("Open the HTML file and print to PDF", "info");
-        }
-    }
-    
-    private async exportJSON(accounts: any[]) {
-        const res = await (window as any).api.exportJSON(accounts);
-        if (!res.success && res.message) {
-            throw new Error(res.message);
-        }
-    }
-    
-    private async exportText(accounts: any[]) {
-        const res = await (window as any).api.exportText(accounts);
-        if (!res.success && res.message) {
-            throw new Error(res.message);
-        }
+    private async performExport(format: string, accountsList: any[]) {
+        return this.accounts.performExport(format, accountsList);
     }
 }
+
