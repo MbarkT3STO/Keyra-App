@@ -1037,16 +1037,7 @@ export class UIManager {
 
         // Vault Maintenance
         document.getElementById('btn-export-vault')?.addEventListener('click', async () => {
-            this.setLoading(true, "Encrypting Backup", "PREPARING OFFLINE ARCHIVE");
-            try {
-                const res = await (window as any).api.exportVault();
-                if (res.success) {
-                    this.showToast("Vault backup created", "success");
-                    this.updateLastActivity('Backed up vault');
-                }
-            } finally {
-                this.setLoading(false);
-            }
+            this.showExportOptionsModal();
         });
         document.getElementById('btn-import-vault')?.addEventListener('click', async () => {
             this.setLoading(true, "Opening Explorer", "SELECTING BACKUP FILE");
@@ -3890,5 +3881,258 @@ export class UIManager {
                 waBtn?.classList.add('hidden');
             }
         });
+    }
+    
+    private showExportOptionsModal() {
+        const content = `
+            <div class="custom-scrollbar" style="max-height: 85vh; overflow-y: auto; max-width: 580px; padding: clamp(24px, 5vw, 32px); margin: 0 auto;">
+                <!-- Header -->
+                <div style="display: flex; align-items: flex-start; gap: 18px; margin-bottom: 24px;">
+                    <div class="account-icon nm-icon-large" style="width: 64px; height: 64px; flex-shrink: 0;">
+                        <i class="fa-solid fa-download" style="font-size: 28px;"></i>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <h2 style="font-weight: 900; font-size: clamp(20px, 4vw, 24px); color: var(--text-primary); margin: 0 0 6px 0; line-height: 1.2;">Export Vault</h2>
+                        <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600; line-height: 1.4;">Choose your preferred export format</p>
+                    </div>
+                </div>
+                
+                <!-- Export Format Options -->
+                <div style="display: grid; gap: 10px; margin-bottom: 20px;">
+                    <!-- Full Encrypted Backup -->
+                    <button class="export-option-card" data-format="encrypted" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
+                        <div class="export-option-icon">
+                            <i class="fa-solid fa-lock" style="font-size: 18px; color: var(--accent-primary);"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Full Encrypted Backup</div>
+                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Complete vault with settings (.keyra)</div>
+                        </div>
+                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
+                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
+                        </div>
+                    </button>
+                    
+                    <!-- QR Codes PDF -->
+                    <button class="export-option-card" data-format="qr-pdf" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
+                        <div class="export-option-icon">
+                            <i class="fa-solid fa-qrcode" style="font-size: 18px; color: var(--accent-primary);"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">QR Codes (PDF)</div>
+                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Printable QR codes for each account</div>
+                        </div>
+                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
+                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
+                        </div>
+                    </button>
+                    
+                    <!-- Plain JSON -->
+                    <button class="export-option-card" data-format="json" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
+                        <div class="export-option-icon">
+                            <i class="fa-solid fa-file-code" style="font-size: 18px; color: #ff9500;"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Plain JSON</div>
+                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Unencrypted JSON for migration (.json)</div>
+                        </div>
+                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
+                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
+                        </div>
+                    </button>
+                    
+                    <!-- Text File -->
+                    <button class="export-option-card" data-format="text" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
+                        <div class="export-option-icon">
+                            <i class="fa-solid fa-file-lines" style="font-size: 18px; color: var(--text-secondary);"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Text File</div>
+                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Human-readable text format (.txt)</div>
+                        </div>
+                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
+                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Account Selection Toggle -->
+                <div id="export-selection-container" style="background: var(--bg-primary); border-radius: 12px; padding: 14px; box-shadow: var(--nm-shadow-in-sm); margin-bottom: 20px; display: none;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                            <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Export Selection</div>
+                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Choose specific accounts or export all</div>
+                        </div>
+                        <label class="switch" style="flex-shrink: 0;">
+                            <input type="checkbox" id="export-selective" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div id="export-accounts-list" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bg-secondary);">
+                        <!-- Account checkboxes will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" id="confirm-export" style="flex: 2; height: 52px; font-size: 14px; font-weight: 800; border-radius: 12px;">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Export Vault</span>
+                    </button>
+                    <button class="user-button" id="cancel-export" style="flex: 1; justify-content: center; height: 52px; font-weight: 800; border-radius: 12px;">Cancel</button>
+                </div>
+            </div>
+        `;
+        
+        this.showModal(content);
+        
+        let selectedFormat = 'encrypted';
+        
+        // Get the selection container
+        const selectionContainer = document.getElementById('export-selection-container');
+        
+        // Handle format selection
+        document.querySelectorAll('.export-option-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.export-option-card').forEach(c => {
+                    (c as HTMLElement).style.borderColor = 'transparent';
+                    (c as HTMLElement).style.boxShadow = 'var(--nm-shadow-out)';
+                    (c as HTMLElement).classList.remove('selected');
+                    const check = c.querySelector('.export-check') as HTMLElement;
+                    if (check) check.style.opacity = '0';
+                });
+                
+                (card as HTMLElement).style.borderColor = 'var(--accent-primary)';
+                (card as HTMLElement).style.boxShadow = '0 0 0 3px rgba(var(--accent-rgb), 0.15)';
+                (card as HTMLElement).classList.add('selected');
+                const check = card.querySelector('.export-check') as HTMLElement;
+                if (check) {
+                    check.style.opacity = '1';
+                    check.style.borderColor = 'var(--accent-primary)';
+                    check.style.background = 'var(--accent-primary)';
+                }
+                
+                selectedFormat = card.getAttribute('data-format') || 'encrypted';
+                
+                // Show/hide selection container based on format
+                if (selectionContainer) {
+                    if (selectedFormat === 'encrypted') {
+                        selectionContainer.style.display = 'none';
+                    } else {
+                        selectionContainer.style.display = 'block';
+                    }
+                }
+            });
+        });
+        
+        // Select first option by default
+        const firstCard = document.querySelector('.export-option-card') as HTMLElement;
+        if (firstCard) firstCard.click();
+        
+        // Handle selective export toggle
+        const selectiveToggle = document.getElementById('export-selective') as HTMLInputElement;
+        const accountsList = document.getElementById('export-accounts-list');
+        
+        selectiveToggle?.addEventListener('change', () => {
+            if (accountsList) {
+                if (selectiveToggle.checked) {
+                    accountsList.style.display = 'none';
+                } else {
+                    accountsList.style.display = 'block';
+                    // Populate accounts list
+                    accountsList.innerHTML = this.accounts.map(acc => `
+                        <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-secondary); border-radius: 10px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s ease;">
+                            <input type="checkbox" class="export-account-check" data-id="${acc.id}" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-primary);">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${acc.issuer}</div>
+                                <div style="font-size: 10px; color: var(--text-secondary); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${acc.account}</div>
+                            </div>
+                        </label>
+                    `).join('');
+                }
+            }
+        });
+        
+        // Handle export
+        document.getElementById('confirm-export')?.addEventListener('click', async () => {
+            const exportAll = selectiveToggle?.checked !== false;
+            let accountsToExport = this.accounts;
+            
+            if (!exportAll) {
+                const selectedIds = Array.from(document.querySelectorAll('.export-account-check:checked'))
+                    .map(cb => (cb as HTMLInputElement).getAttribute('data-id'));
+                accountsToExport = this.accounts.filter(acc => selectedIds.includes(acc.id));
+                
+                if (accountsToExport.length === 0) {
+                    this.showToast("Please select at least one account", "error");
+                    return;
+                }
+            }
+            
+            this.hideModal();
+            await this.performExport(selectedFormat, accountsToExport);
+        });
+        
+        document.getElementById('cancel-export')?.addEventListener('click', () => this.hideModal());
+    }
+    
+    private async performExport(format: string, accounts: any[]) {
+        this.setLoading(true, "Exporting Vault", "PREPARING SECURE EXPORT");
+        
+        try {
+            switch (format) {
+                case 'encrypted':
+                    await this.exportEncrypted();
+                    break;
+                case 'qr-pdf':
+                    await this.exportQRCodesPDF(accounts);
+                    break;
+                case 'json':
+                    await this.exportJSON(accounts);
+                    break;
+                case 'text':
+                    await this.exportText(accounts);
+                    break;
+            }
+            
+            this.showToast("Export completed successfully!", "success");
+            this.updateLastActivity('Exported vault');
+        } catch (error) {
+            console.error("Export failed:", error);
+            this.showToast("Export failed. Please try again.", "error");
+        } finally {
+            this.setLoading(false);
+        }
+    }
+    
+    private async exportEncrypted() {
+        const res = await (window as any).api.exportVault();
+        if (!res.success && res.message) {
+            throw new Error(res.message);
+        }
+    }
+    
+    private async exportQRCodesPDF(accounts: any[]) {
+        const res = await (window as any).api.exportQRHTML(accounts);
+        if (!res.success && res.message) {
+            throw new Error(res.message);
+        }
+        if (res.success) {
+            this.showToast("Open the HTML file and print to PDF", "info");
+        }
+    }
+    
+    private async exportJSON(accounts: any[]) {
+        const res = await (window as any).api.exportJSON(accounts);
+        if (!res.success && res.message) {
+            throw new Error(res.message);
+        }
+    }
+    
+    private async exportText(accounts: any[]) {
+        const res = await (window as any).api.exportText(accounts);
+        if (!res.success && res.message) {
+            throw new Error(res.message);
+        }
     }
 }

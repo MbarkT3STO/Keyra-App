@@ -308,6 +308,142 @@ ipcMain.handle('verify-backup-file', (event, backupData) => {
     return result;
 });
 
+// Export format handlers
+ipcMain.handle('export-qr-html', async (event, accounts) => {
+    const { filePath } = await dialog.showSaveDialog(mainWindow!, {
+        title: 'Export QR Codes',
+        defaultPath: `Keyra_QR_Codes_${Date.now()}.html`,
+        filters: [{ name: 'HTML Files', extensions: ['html'] }]
+    });
+
+    if (filePath) {
+        try {
+            const qrCodes = accounts.map((acc: any) => {
+                const uri = `otpauth://totp/${encodeURIComponent(acc.issuer)}:${encodeURIComponent(acc.account)}?secret=${acc.secret}&issuer=${encodeURIComponent(acc.issuer)}`;
+                return { account: acc, uri };
+            });
+            
+            let html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Keyra Vault - QR Codes</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; }
+        .page-break { page-break-after: always; }
+        .qr-container { margin-bottom: 60px; text-align: center; }
+        .qr-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .qr-subtitle { font-size: 16px; color: #666; margin-bottom: 20px; }
+        .qr-code { margin: 20px auto; }
+        .footer { font-size: 12px; color: #999; margin-top: 20px; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 40px;">Keyra Authenticator - QR Codes Backup</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 60px;">Generated on ${new Date().toLocaleString()}</p>
+`;
+            
+            qrCodes.forEach((item: any, index: number) => {
+                html += `
+    <div class="qr-container ${index < qrCodes.length - 1 ? 'page-break' : ''}">
+        <div class="qr-title">${item.account.issuer}</div>
+        <div class="qr-subtitle">${item.account.account}</div>
+        <div class="qr-code" id="qr-${index}"></div>
+        <div class="footer">Scan this QR code with your authenticator app</div>
+    </div>
+`;
+            });
+            
+            html += `
+    <script>
+        ${qrCodes.map((item: any, index: number) => `
+        new QRCode(document.getElementById('qr-${index}'), {
+            text: '${item.uri}',
+            width: 256,
+            height: 256
+        });
+        `).join('\n')}
+    </script>
+</body>
+</html>
+`;
+            
+            fs.writeFileSync(filePath, html);
+            return { success: true };
+        } catch (e) {
+            console.error('Export QR HTML failed:', e);
+            return { success: false, message: "Export failed." };
+        }
+    }
+    return { success: false };
+});
+
+ipcMain.handle('export-json', async (event, accounts) => {
+    const { filePath } = await dialog.showSaveDialog(mainWindow!, {
+        title: 'Export as JSON',
+        defaultPath: `Keyra_Export_${Date.now()}.json`,
+        filters: [{ name: 'JSON Files', extensions: ['json'] }]
+    });
+
+    if (filePath) {
+        try {
+            const data = accounts.map((acc: any) => ({
+                issuer: acc.issuer,
+                account: acc.account,
+                secret: acc.secret,
+                type: 'totp',
+                algorithm: 'SHA1',
+                digits: 6,
+                period: 30
+            }));
+            
+            fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+            return { success: true };
+        } catch (e) {
+            console.error('Export JSON failed:', e);
+            return { success: false, message: "Export failed." };
+        }
+    }
+    return { success: false };
+});
+
+ipcMain.handle('export-text', async (event, accounts) => {
+    const { filePath } = await dialog.showSaveDialog(mainWindow!, {
+        title: 'Export as Text',
+        defaultPath: `Keyra_Export_${Date.now()}.txt`,
+        filters: [{ name: 'Text Files', extensions: ['txt'] }]
+    });
+
+    if (filePath) {
+        try {
+            let text = `Keyra Authenticator - Vault Export\n`;
+            text += `Generated: ${new Date().toLocaleString()}\n`;
+            text += `Total Accounts: ${accounts.length}\n`;
+            text += `\n${'='.repeat(60)}\n\n`;
+            
+            accounts.forEach((acc: any, index: number) => {
+                text += `${index + 1}. ${acc.issuer}\n`;
+                text += `   Account: ${acc.account}\n`;
+                text += `   Secret: ${acc.secret}\n`;
+                text += `   URI: otpauth://totp/${encodeURIComponent(acc.issuer)}:${encodeURIComponent(acc.account)}?secret=${acc.secret}&issuer=${encodeURIComponent(acc.issuer)}\n`;
+                text += `\n`;
+            });
+            
+            text += `${'='.repeat(60)}\n`;
+            text += `\nIMPORTANT: Keep this file secure. It contains sensitive authentication data.\n`;
+            
+            fs.writeFileSync(filePath, text);
+            return { success: true };
+        } catch (e) {
+            console.error('Export text failed:', e);
+            return { success: false, message: "Export failed." };
+        }
+    }
+    return { success: false };
+});
+
 ipcMain.handle('set-content-protection', (event, enabled) => {
     mainWindow?.setContentProtection(enabled);
     return true;
