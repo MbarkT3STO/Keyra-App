@@ -10,6 +10,7 @@ import { PrivacyManager } from './managers/PrivacyManager.js';
 import { SystemManager } from './managers/SystemManager.js';
 import { UpdateManager } from './managers/UpdateManager.js';
 import { VaultManager } from './managers/VaultManager.js';
+import { SettingsManager } from './managers/SettingsManager.js';
 
 export class UIManager {
     public theme: ThemeManager;
@@ -23,9 +24,8 @@ export class UIManager {
     public system: SystemManager;
     public updates: UpdateManager;
     public vault: VaultManager;
+    public settings: SettingsManager;
     private timerInterval: any = null;
-    private menuExitIntegration: boolean = false;
-    private windowResizable: boolean = false;
     private wallpaperPreset: string = 'nebula';
 
 
@@ -119,14 +119,35 @@ export class UIManager {
             performExport: (format, list) => this.accounts.performExport(format, list),
             setSearchQuery: (query) => { this.accounts.searchQuery = query; },
         });
+        this.settings = new SettingsManager({
+            getStorageKey: (key) => this.getStorageKey(key),
+            pushSettings: () => this.pushSettings(),
+            showToast: (msg, type) => this.showToast(msg, type),
+            updateLastActivity: (action) => this.updateLastActivity(action),
+            setTheme: (theme, silent) => this.setTheme(theme, silent),
+            setAccentColor: (accent, silent) => this.setAccentColor(accent, silent),
+            getCurrentTheme: () => this.theme.currentTheme,
+            getAccentColor: () => localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple',
+            applyOledMode: (enabled) => this.theme.applyOledMode(enabled),
+            getOledMode: () => this.theme.oledMode,
+            applyPerformanceMode: (enabled) => this.theme.applyPerformanceMode(enabled),
+            applyPrivacyMode: (enabled, save) => this.privacy.applyPrivacyMode(enabled, save),
+            getPrivacyMode: () => this.privacy.privacyMode,
+            applyScreenGuardian: (enabled, save) => this.privacy.applyScreenGuardian(enabled, save),
+            getScreenGuardian: () => this.privacy.screenGuardian,
+            applyPrivacyBlur: (enabled, save) => this.privacy.applyPrivacyBlur(enabled, save),
+            getPrivacyBlur: () => this.privacy.privacyBlur,
+            getVaultViewStyle: () => this.vault.vaultViewStyle,
+            renderAccounts: () => this.renderAccounts(),
+            setupAccentColorSelectorInTheme: (onChange) => this.theme.setupAccentColorSelector(onChange),
+        });
         this.theme.init();
         this.privacy.initPrivacyMode();
         this.privacy.initScreenGuardian();
-        this.initMenuExitIntegration();
+        this.settings.init();
         this.privacy.initInteractivePrivacy();
-        this.initWindowResizable();
         this.vault.initVaultViewStyle();
-        this.initSegmentedStates();
+        this.settings.initSegmentedStates();
         this.setupEventListeners();
         this.nav.init();
         this.updateLockVaultVisibility();
@@ -196,9 +217,9 @@ export class UIManager {
                 autolock: localStorage.getItem(this.getStorageKey('autolock')) || '0',
                 oledMode: this.theme.oledMode,
                 performanceMode: this.theme.performanceMode,
-                menuExitIntegration: this.menuExitIntegration,
+                menuExitIntegration: this.settings.menuExitIntegration,
                 privacyBlur: this.privacy.privacyBlur,
-                windowResizable: this.windowResizable,
+                windowResizable: this.settings.windowResizable,
                 launchOnStartup: this.system.launchOnStartup,
                 minimizeToTray: this.system.minimizeToTray,
                 globalHotkey: this.system.globalHotkey,
@@ -257,10 +278,10 @@ export class UIManager {
         }
 
         if (settings.menuExitIntegration !== undefined) {
-            this.menuExitIntegration = !!settings.menuExitIntegration;
+            this.settings.menuExitIntegration = !!settings.menuExitIntegration;
             const menuExitToggle = document.getElementById('menu-exit-toggle') as HTMLInputElement;
-            if (menuExitToggle) menuExitToggle.checked = this.menuExitIntegration;
-            this.updateCloseButtonVisibility();
+            if (menuExitToggle) menuExitToggle.checked = this.settings.menuExitIntegration;
+            this.settings.updateCloseButtonVisibility();
         }
 
         if (settings.privacyBlur !== undefined) {
@@ -274,10 +295,10 @@ export class UIManager {
         }
         
         if (settings.windowResizable !== undefined) {
-            this.windowResizable = !!settings.windowResizable;
+            this.settings.windowResizable = !!settings.windowResizable;
             const resizableToggle = document.getElementById('window-resizable-toggle') as HTMLInputElement;
-            if (resizableToggle) resizableToggle.checked = this.windowResizable;
-            (window as any).api.setResizable(this.windowResizable);
+            if (resizableToggle) resizableToggle.checked = this.settings.windowResizable;
+            (window as any).api.setResizable(this.settings.windowResizable);
         }
 
         if (saveLocal) {
@@ -289,9 +310,9 @@ export class UIManager {
             if (settings.autolock !== undefined) localStorage.setItem(this.getStorageKey('autolock'), String(settings.autolock));
             localStorage.setItem(this.getStorageKey('oled_mode'), String(this.theme.oledMode));
             localStorage.setItem(this.getStorageKey('performance_mode'), String(this.theme.performanceMode));
-            localStorage.setItem(this.getStorageKey('menu_exit_integration'), String(this.menuExitIntegration));
+            localStorage.setItem(this.getStorageKey('menu_exit_integration'), String(this.settings.menuExitIntegration));
             localStorage.setItem(this.getStorageKey('privacy_blur'), String(this.privacy.privacyBlur));
-            localStorage.setItem(this.getStorageKey('window_resizable'), String(this.windowResizable));
+            localStorage.setItem(this.getStorageKey('window_resizable'), String(this.settings.windowResizable));
             localStorage.setItem(this.getStorageKey('auto_check_updates'), String(this.updates.autoCheckUpdates));
             localStorage.setItem(this.getStorageKey('vault_view_style'), this.vault.vaultViewStyle);
             if (settings.vaultPin !== undefined) localStorage.setItem(this.getStorageKey('vault_pin'), settings.vaultPin);
@@ -310,58 +331,23 @@ export class UIManager {
     }
 
     private initMenuExitIntegration() {
-        this.menuExitIntegration = localStorage.getItem(this.getStorageKey('menu_exit_integration')) === 'true';
-        const toggle = document.getElementById('menu-exit-toggle') as HTMLInputElement;
-        if (toggle) toggle.checked = this.menuExitIntegration;
-        this.updateCloseButtonVisibility();
+        this.settings.initMenuExitIntegration();
     }
 
-
     private updateCloseButtonVisibility() {
-        const navBtn = document.getElementById('btn-close-app');
-        const menuBtn = document.getElementById('menu-close-app-btn');
-        if (navBtn) navBtn.classList.toggle('hidden', this.menuExitIntegration);
-        if (menuBtn) {
-            menuBtn.classList.toggle('hidden', !this.menuExitIntegration);
-        }
+        this.settings.updateCloseButtonVisibility();
     }
 
     private initWindowResizable() {
-        this.windowResizable = localStorage.getItem(this.getStorageKey('window_resizable')) === 'true';
-        const toggle = document.getElementById('window-resizable-toggle') as HTMLInputElement;
-        if (toggle) toggle.checked = this.windowResizable;
-        (window as any).api.setResizable(this.windowResizable);
+        this.settings.initWindowResizable();
     }
 
     private initSegmentedStates() {
-        const theme = localStorage.getItem(this.getStorageKey('theme')) || 'auto';
-        this.updateSegmentedUI('theme-segmented', theme);
-
-        const autolock = localStorage.getItem(this.getStorageKey('autolock')) || '0';
-        this.updateSegmentedUI('autolock-segmented', autolock);
-
-        this.updateSegmentedUI('countdown-style-segmented', this.vault.vaultViewStyle);
+        this.settings.initSegmentedStates();
     }
 
     private updateSegmentedUI(containerId: string, value: string) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-
-        const segments = container.querySelectorAll('.segment');
-        const indicator = container.querySelector('.segment-indicator') as HTMLElement;
-
-        let activeIdx = 0;
-        segments.forEach((seg, idx) => {
-            const isActive = seg.getAttribute('data-val') === value;
-            seg.classList.toggle('active', isActive);
-            if (isActive) activeIdx = idx;
-        });
-
-        if (indicator) {
-            const segmentWidth = 100 / segments.length;
-            indicator.style.width = `calc(${segmentWidth}% - 6px)`;
-            indicator.style.left = `calc(${activeIdx * segmentWidth}% + 3px)`;
-        }
+        this.settings.updateSegmentedUI(containerId, value);
     }
 
     private setupEventListeners() {
@@ -412,69 +398,8 @@ export class UIManager {
         });
         document.getElementById('empty-add-btn')?.addEventListener('click', () => this.accounts.showAddModal());
 
-        // Segmented Theme Toggle (Light/Dark/Auto)
-        document.querySelectorAll('#theme-segmented .segment').forEach(seg => {
-            seg.addEventListener('click', (e) => {
-                const target = e.currentTarget as HTMLElement;
-                const val = target.getAttribute('data-val')!;
-                this.setTheme(val);
-                this.updateLastActivity(`Changed appearance to ${val}`);
-                
-                if (val === 'auto') {
-                    this.showToast("App will now follow system theme", "info");
-                } else {
-                    this.showToast(`${val.charAt(0).toUpperCase() + val.slice(1)} mode enabled`, "info");
-                }
-            });
-        });
-
-        // Segmented Auto-Lock
-        document.querySelectorAll('#autolock-segmented .segment').forEach(seg => {
-            seg.addEventListener('click', (e) => {
-                const target = e.currentTarget as HTMLElement;
-                const val = target.getAttribute('data-val')!;
-                localStorage.setItem(this.getStorageKey('autolock'), val);
-                this.updateSegmentedUI('autolock-segmented', val);
-                this.pushSettings();
-                this.showToast(val === '0' ? 'Auto-lock turned off' : `Locked after ${val}m of inactivity`, "info");
-                this.updateLastActivity(`Changed autolock to ${val}m`);
-            });
-        });
-
-        // OLED Mode Toggle
-        document.getElementById('oled-mode-toggle')?.addEventListener('change', (e) => {
-            const enabled = (e.target as HTMLInputElement).checked;
-            this.theme.applyOledMode(enabled);
-            const currentAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
-            this.setAccentColor(currentAccent, true);
-            this.pushSettings();
-            if (enabled && this.theme.currentTheme !== 'dark') {
-                this.showToast("Pure Black only works in Dark Mode", "info");
-            } else {
-                this.showToast(enabled ? "Pure Black (OLED) Activated" : "Standard Dark Mode Restored", "success");
-            }
-            this.updateLastActivity(`OLED Mode ${enabled ? 'on' : 'off'}`);
-        });
-
-        // Performance Mode Toggle
-        document.getElementById('performance-mode-toggle')?.addEventListener('change', (e) => {
-            const enabled = (e.target as HTMLInputElement).checked;
-            this.theme.applyPerformanceMode(enabled);
-            this.pushSettings();
-            this.showToast(enabled ? "Performance Mode is on" : "Performance Mode is off", "info");
-            this.updateLastActivity(`Performance Mode ${enabled ? 'on' : 'off'}`);
-        });
-
-        // Menu Exit Toggle
-        document.getElementById('menu-exit-toggle')?.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            this.menuExitIntegration = target.checked;
-            localStorage.setItem(this.getStorageKey('menu_exit_integration'), String(this.menuExitIntegration));
-            this.updateCloseButtonVisibility();
-            this.pushSettings();
-            this.showToast(this.menuExitIntegration ? "Close button moved to menu" : "Close button moved to navbar", "info");
-            this.updateLastActivity(`Menu Exit ${this.menuExitIntegration ? 'on' : 'off'}`);
-        });
+        // Settings toggles — delegated to SettingsManager
+        this.settings.setupEventListeners();
 
         // Private Sync Listeners — delegated to SyncManager
         this.sync.setupEventListeners();
@@ -484,50 +409,6 @@ export class UIManager {
 
         // Settings PIN
         document.getElementById('setup-pin-btn')?.addEventListener('click', () => this.pin.showPinSetup());
-
-        // Privacy Mode Toggle
-        document.getElementById('privacy-mode-toggle')?.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            this.privacy.applyPrivacyMode(target.checked, true);
-            this.pushSettings();
-            this.renderAccounts();
-            this.showToast(this.privacy.privacyMode ? "Codes are now hidden" : "Codes are now visible", "info");
-            this.updateLastActivity(`Hide Codes ${this.privacy.privacyMode ? 'on' : 'off'}`);
-        });
-
-        // Screen Guardian Toggle
-        document.getElementById('screen-guardian-toggle')?.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            this.privacy.applyScreenGuardian(target.checked, true);
-            this.pushSettings();
-            this.showToast(this.privacy.screenGuardian ? "Screenshot protection is on" : "Screenshot protection is off", "info");
-            this.updateLastActivity(`Anti-Peek ${this.privacy.screenGuardian ? 'on' : 'off'}`);
-        });
-
-        // Interactive Privacy Toggle
-        document.getElementById('privacy-blur-toggle')?.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            this.privacy.applyPrivacyBlur(target.checked, true);
-            this.pushSettings();
-            this.showToast(this.privacy.privacyBlur ? "Auto-blur is on" : "Auto-blur is off", "info");
-            this.updateLastActivity(`Auto-blur ${this.privacy.privacyBlur ? 'on' : 'off'}`);
-        });
-
-        // Window Resizable Toggle
-        document.getElementById('window-resizable-toggle')?.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            this.windowResizable = target.checked;
-            localStorage.setItem(this.getStorageKey('window_resizable'), String(this.windowResizable));
-            (window as any).api.setResizable(this.windowResizable);
-            this.pushSettings();
-            this.showToast(this.windowResizable ? "App is now resizable" : "App is now fixed size", "info");
-            this.updateLastActivity(`Window resizing ${this.windowResizable ? 'on' : 'off'}`);
-        });
-
-        // Accent Color
-        this.setupAccentColorSelector();
-        const savedAccent = localStorage.getItem(this.getStorageKey('accent_color')) || 'royal-purple';
-        this.setAccentColor(savedAccent, true);
 
         // Unlock
         document.getElementById('form-unlock')?.addEventListener('submit', (e) => {
@@ -624,14 +505,6 @@ export class UIManager {
                 modal.classList.add('hidden');
             }, 300);
         }
-    }
-
-    private setupAccentColorSelector() {
-        this.theme.setupAccentColorSelector((accent) => {
-            this.setAccentColor(accent);
-            this.showToast("Color updated!", "success");
-            this.updateLastActivity(`Changed color to ${accent}`);
-        });
     }
 
     private updateLastActivity(action: string) {
