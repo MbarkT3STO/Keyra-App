@@ -471,7 +471,7 @@ export class UIManager {
         const container = document.getElementById('toast-container');
         if (!container) return;
 
-        const DURATION = 3000;
+        const DURATION = 5000;
         const iconMap = {
             success: 'fa-solid fa-circle-check',
             error:   'fa-solid fa-circle-exclamation',

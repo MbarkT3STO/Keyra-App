@@ -4,12 +4,35 @@
 <!-- Global Loading Overlay -->
 <div id="loading-overlay" class="modal-overlay hidden" style="z-index: 99999;">
     <div class="loading-content">
-        <div class="nm-spinner-vessel">
-            <div class="nm-spinner"></div>
-            <div class="nm-spinner-inner"></div>
+
+        <!-- Neumorphic spinner stack -->
+        <div class="nm-loader-stack">
+            <!-- Outer raised ring -->
+            <div class="nm-loader-outer-ring"></div>
+            <!-- Spinning accent arc -->
+            <div class="nm-loader-arc"></div>
+            <!-- Middle inset well -->
+            <div class="nm-loader-well">
+                <!-- Inner raised core -->
+                <div class="nm-loader-core">
+                    <img src="assets/logo.png" class="nm-loader-logo" alt="">
+                </div>
+            </div>
+            <!-- Pulsing aura -->
+            <div class="nm-loader-aura-ring"></div>
         </div>
-        <h2 id="loading-title" class="loading-title">Processing</h2>
-        <p id="loading-subtitle" class="loading-subtitle">VAULT SECURITY SYNCHRONIZATION</p>
+
+        <!-- Text -->
+        <div class="loading-text-group">
+            <h2 id="loading-title" class="loading-title">Processing</h2>
+            <p id="loading-subtitle" class="loading-subtitle">VAULT SECURITY SYNCHRONIZATION</p>
+        </div>
+
+        <!-- Animated dots -->
+        <div class="nm-loader-dots">
+            <span></span><span></span><span></span>
+        </div>
+
     </div>
 </div>
 
