@@ -84,6 +84,7 @@ export class UIManager {
         });
         this.connectivity = new ConnectivityManager({
             showToast: (msg, type) => this.showToast(msg, type),
+            manualSync: () => this.sync.manualSync(),
         });
         this.nav = new NavigationManager({
             onTabSwitch: (tab) => {

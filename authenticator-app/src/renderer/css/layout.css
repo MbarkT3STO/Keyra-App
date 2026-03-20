@@ -4,7 +4,6 @@
     height: 100vh;
     width: 100vw;
     background: transparent;
-    overflow: hidden;
     position: relative;
     z-index: 10;
 }
@@ -48,7 +47,7 @@ body.local-only .online-only:not(#sync-settings-card) {
     display: none !important;
 }
 
-body.local-only #connectivity-status,
+body.local-only #connectivity-status .nm-status-icon-wrap,
 body.local-only #about-sync-row {
     display: none !important;
 }
@@ -113,12 +112,13 @@ body.local-only #about-sync-row {
 .navbar-right {
     flex: 0 0 auto;
     justify-content: flex-end;
+    position: relative;
 }
 
 /* Surgery: Disable drag only on interactive elements to allow window movement */
 .nav-tabs,
 .user-menu,
-.connectivity-indicator,
+.nm-status-pill,
 .navbar-brand {
     -webkit-app-region: no-drag;
 }

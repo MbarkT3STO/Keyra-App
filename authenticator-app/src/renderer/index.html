@@ -388,19 +388,45 @@
                 </div>
 
                 <div class="navbar-section navbar-right">
-                    <!-- Modern Connectivity Indicator (Glass Pill) -->
-                    <div id="connectivity-status" class="connectivity-indicator online">
-                        <span class="status-dot"></span>
-                        <span id="status-text">Online</span>
+                    <!-- Merged Connectivity + Sync Indicator -->
+                    <div id="connectivity-status" class="nm-status-pill online" title="Status">
+                        <!-- Cloud icon (default) -->
+                        <i class="fa-solid fa-cloud-arrow-up" id="nm-status-icon"></i>
+                        <!-- Spinning ring (syncing only) -->
+                        <div class="nm-pill-ring" id="nm-pill-ring"></div>
+                        <span class="nm-status-dot" id="nm-conn-dot"></span>
+                    </div>
+
+                    <!-- Status Popover -->
+                    <div id="status-popover" class="nm-status-popover">
+                        <div class="nm-popover-row">
+                            <div class="nm-popover-icon" id="popover-conn-icon">
+                                <i class="fa-solid fa-wifi"></i>
+                            </div>
+                            <div class="nm-popover-info">
+                                <span class="nm-popover-label">Network</span>
+                                <span class="nm-popover-value" id="popover-conn-text">Online</span>
+                            </div>
+                        </div>
+                        <div class="nm-popover-divider online-only" id="popover-sync-section"></div>
+                        <div class="nm-popover-row online-only" id="popover-sync-row">
+                            <div class="nm-popover-icon" id="popover-sync-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <div class="nm-popover-info">
+                                <span class="nm-popover-label">Cloud Sync</span>
+                                <span class="nm-popover-value" id="popover-sync-text">Synced</span>
+                            </div>
+                        </div>
+                        <div class="nm-popover-divider online-only"></div>
+                        <button class="nm-popover-sync-btn online-only" id="btn-popover-sync">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                            <span>Sync Now</span>
+                        </button>
                     </div>
 
                     <div class="user-menu">
                         <button class="user-button" id="user-dropdown-btn">
-                            <!-- Live Sync Indicator -->
-                            <div id="navbar-sync-indicator" class="sync-indicator synced hidden" title="Synced and up to date">
-                                <i class="fa-solid fa-cloud"></i>
-                                <span class="sync-dot"></span>
-                            </div>
                             <div class="user-avatar" id="user-avatar" style="overflow: hidden;">
                                 <img id="navbar-avatar-img" class="hidden"
                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">

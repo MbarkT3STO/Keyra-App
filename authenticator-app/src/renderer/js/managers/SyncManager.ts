@@ -39,21 +39,40 @@ export class SyncManager {
     }
 
     public updateSyncIndicator(state: SyncState, message?: string) {
-        const indicator = document.getElementById('navbar-sync-indicator');
-        if (!indicator) return;
+        const pill = document.getElementById('connectivity-status');
+        if (!pill) return;
 
-        indicator.className = 'sync-indicator ' + state;
-        indicator.classList.toggle('hidden', !this.syncVisible);
-        if (!this.syncVisible) return;
+        pill.classList.remove('sync-synced', 'sync-syncing', 'sync-error', 'sync-warning', 'sync-hidden');
 
-        let title = 'Synced and up to date';
-        if (state === 'syncing') title = 'Syncing in progress...';
-        if (state === 'error') title = message || 'Connection issue or PAT expired';
-        if (state === 'warning') title = message || 'Sync issue detected';
+        if (!this.syncVisible) {
+            pill.classList.add('sync-hidden');
+        } else {
+            pill.classList.add('sync-' + state);
+        }
 
-        indicator.title = title;
-        indicator.style.transform = 'scale(1.2)';
-        setTimeout(() => indicator.style.transform = '', 200);
+        const colorMap: Record<string, string> = {
+            synced:  '#34c759',
+            syncing: 'var(--accent-primary)',
+            error:   '#ff3b30',
+            warning: '#ff9500',
+        };
+        const color = this.syncVisible ? (colorMap[state] ?? 'var(--text-tertiary)') : 'var(--text-tertiary)';
+
+        const syncIcon = document.getElementById('popover-sync-icon');
+        const syncText = document.getElementById('popover-sync-text');
+        if (syncIcon) syncIcon.style.color = color;
+
+        let popoverText = 'Synced';
+        let title = 'Online · Synced';
+        if (state === 'syncing') { title = 'Syncing...';              popoverText = 'Syncing...'; }
+        if (state === 'error')   { title = message || 'Sync error';   popoverText = 'Error'; }
+        if (state === 'warning') { title = message || 'Sync warning'; popoverText = 'Warning'; }
+        pill.title = title;
+
+        if (syncText && state !== 'synced') {
+            syncText.textContent = popoverText;
+            syncText.style.color = color;
+        }
 
         if (state === 'synced') this.updateLastSyncDisplay();
     }
@@ -67,26 +86,31 @@ export class SyncManager {
     }
 
     public updateLastSyncDisplay() {
-        const lastSyncEl = document.getElementById('sync-last-time');
-        if (!lastSyncEl) return;
+        const lastSyncEl    = document.getElementById('sync-last-time');
+        const popoverSyncEl = document.getElementById('popover-sync-text');
 
         const lastSyncStr = localStorage.getItem(this.getStorageKey('last_sync'));
         if (!lastSyncStr) {
-            lastSyncEl.textContent = 'Never synced';
+            if (lastSyncEl)    lastSyncEl.textContent    = 'Never synced';
+            if (popoverSyncEl) popoverSyncEl.textContent = 'Never synced';
             return;
         }
 
         const lastSync = new Date(lastSyncStr);
-        const diffMin = Math.floor((new Date().getTime() - lastSync.getTime()) / 60000);
+        const diffMin  = Math.floor((new Date().getTime() - lastSync.getTime()) / 60000);
 
-        if (diffMin < 1) lastSyncEl.textContent = 'Last synced: Just now';
-        else if (diffMin < 60) lastSyncEl.textContent = `Last synced: ${diffMin}m ago`;
+        let text: string;
+        if (diffMin < 1)       text = 'Last synced: Just now';
+        else if (diffMin < 60) text = `Last synced: ${diffMin}m ago`;
         else {
             const diffHrs = Math.floor(diffMin / 60);
-            lastSyncEl.textContent = diffHrs < 24
+            text = diffHrs < 24
                 ? `Last synced: ${diffHrs}h ago`
                 : `Last synced: ${Math.floor(diffHrs / 24)}d ago`;
         }
+
+        if (lastSyncEl)    lastSyncEl.textContent    = text;
+        if (popoverSyncEl) popoverSyncEl.textContent = text;
     }
 
     // ─── Push Settings ────────────────────────────────────────────────────────
@@ -102,7 +126,6 @@ export class SyncManager {
         this.setSyncing(true);
         try {
             rateLimiter.recordAttempt('sync', this.userId);
-
             const settings = this.cb.getSettingsObject();
             const res = await (window as any).api.updateUserSettings(settings);
 
@@ -133,21 +156,38 @@ export class SyncManager {
             return;
         }
 
+        // Reset counter to avoid stale state from previous operations
+        this.syncCount = 0;
+
         this.cb.setLoading(true, "Synchronizing Vault", "CLOUD BACKUP IN PROGRESS");
-        this.setSyncing(true);
+        this.updateSyncIndicator('syncing');
 
         const btn = document.getElementById('btn-sync-now');
         const icon = btn?.querySelector('i');
         const statusDesc = document.getElementById('sync-status-desc');
-
         if (icon) icon.classList.add('sync-spin');
         if (statusDesc) statusDesc.textContent = 'Synchronizing...';
 
         try {
-            await this.pushSettings();
+            const rateLimitCheck = rateLimiter.isAllowed('sync', this.userId);
+            if (!rateLimitCheck.allowed) {
+                this.cb.showToast(rateLimitCheck.message || "Too many sync operations. Please wait.", "error");
+                return;
+            }
+            rateLimiter.recordAttempt('sync', this.userId);
+
+            const settings = this.cb.getSettingsObject();
+            const res = await (window as any).api.updateUserSettings(settings);
+
+            if (res?.conflict) {
+                this.cb.onConflict('update-user-settings', settings);
+            } else if (res?.success) {
+                localStorage.setItem(this.getStorageKey('settings'), JSON.stringify(settings));
+            }
+
             await this.cb.onAccountsRefresh();
-            this.cb.showToast("Vault backed up!", "success");
             localStorage.setItem(this.getStorageKey('last_sync'), new Date().toISOString());
+            this.cb.showToast("Vault synced!", "success");
             if (statusDesc) statusDesc.textContent = 'Synchronized';
             this.updateSyncIndicator('synced');
         } catch (err: any) {
@@ -155,8 +195,8 @@ export class SyncManager {
             this.updateSyncIndicator('error', err.message || 'Sync failed');
             if (statusDesc) statusDesc.textContent = 'Sync Failed';
         } finally {
+            this.syncCount = 0;
             if (icon) icon.classList.remove('sync-spin');
-            this.setSyncing(false);
             this.cb.setLoading(false);
             this.cb.onActivityUpdate();
         }
@@ -173,18 +213,18 @@ export class SyncManager {
         if (!navigator.onLine) return;
         if (document.activeElement?.tagName === 'INPUT' || document.querySelector('.modal.show')) return;
 
+        this.setSyncing(true);
         try {
             const result = await (window as any).api.pollForUpdates();
             if (result.changed) {
-                this.setSyncing(true);
                 if (result.settings) this.cb.onSettingsApply(result.settings);
                 await this.cb.onAccountsRefresh();
-                this.updateSyncIndicator('synced');
-                this.setSyncing(false);
+                localStorage.setItem(this.getStorageKey('last_sync'), new Date().toISOString());
             }
         } catch (e: any) {
             console.error("Background sync failed:", e);
             this.updateSyncIndicator('warning', 'Background sync failed');
+        } finally {
             this.setSyncing(false);
         }
     }

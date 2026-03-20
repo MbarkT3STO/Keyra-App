@@ -38,217 +38,258 @@
     text-transform: uppercase;
 }
 
-/* Connectivity Indicator - Cute & Modern */
-.connectivity-indicator {
+/* ── Merged Status Pill: Connectivity + Sync ── */
+.nm-status-pill {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0;
-    padding: 0;
-    width: 34px;
-    height: 34px;
-    background: var(--nm-surface);
-    box-shadow: var(--nm-shadow-out-sm), var(--glass-outline);
-    border: var(--glass-border);
+    width: 40px;
+    height: 40px;
     border-radius: var(--radius-full);
-    color: var(--text-secondary);
-    transition: all var(--transition-medium);
-    margin-right: 12px;
-    cursor: pointer;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.connectivity-indicator:hover {
-    transform: scale(1.05);
-}
-
-.connectivity-indicator:active {
-    box-shadow: var(--nm-shadow-in-sm);
-    transform: scale(0.97);
-}
-
-.connectivity-indicator.expanded {
-    width: auto;
-    max-width: 160px;
-    padding: 0 14px;
-    justify-content: flex-start;
-    gap: 8px;
-}
-
-.connectivity-indicator.online {
-    color: #34c759;
-}
-
-.connectivity-indicator.offline {
-    color: #ff3b30;
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: currentColor;
-    position: relative;
-}
-
-.connectivity-indicator.online .status-dot::after {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.4;
-    animation: statusPulse 2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-}
-
-@keyframes statusPulse {
-    0% {
-        transform: scale(0.5);
-        opacity: 0.6;
-    }
-
-    100% {
-        transform: scale(2.5);
-        opacity: 0;
-    }
-}
-
-.connectivity-indicator #status-text {
-    font-size: var(--font-size-2xs);
-    font-weight: var(--weight-black);
-    text-transform: uppercase;
-    letter-spacing: var(--ls-wide);
-    transition: all var(--transition-medium);
-    opacity: 0;
-    width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    display: inline-block;
-    pointer-events: none;
-}
-
-.connectivity-indicator.expanded #status-text {
-    opacity: 1;
-    width: 72px;
-    margin-left: 4px;
-}
-
-/* Sync Indicator - Subtle Neumorphic */
-.sync-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
     background: var(--nm-surface);
     box-shadow: var(--nm-shadow-out-sm);
     color: var(--text-tertiary);
     position: relative;
-    transition: all var(--transition-medium);
+    transition: box-shadow var(--transition-medium), transform var(--transition-medium);
     cursor: pointer;
+    flex-shrink: 0;
+    margin-right: 12px;
 }
 
-.sync-indicator i {
-    font-size: 12px;
-    transition: all var(--transition-medium);
+/* Cloud icon */
+#nm-status-icon {
+    font-size: 14px;
+    transition: color var(--transition-medium), opacity var(--transition-medium);
+    position: relative;
+    z-index: 1;
+    color: var(--text-tertiary);
 }
 
-.sync-dot {
+/* Spinning neumorphic ring — hidden by default */
+.nm-pill-ring {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 8px;
-    height: 8px;
+    inset: 4px;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    border-top-color: var(--accent-primary);
+    border-right-color: var(--accent-primary);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-medium);
+    filter: drop-shadow(0 0 4px var(--accent-primary));
+}
+
+/* Connectivity dot — bottom-right corner */
+.nm-status-dot {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     border: 2px solid var(--nm-surface);
-    background: #8e8e93;
-    /* Default Neutral */
-    transition: all var(--transition-medium);
+    background: var(--text-tertiary);
+    transition: background var(--transition-medium);
+    z-index: 2;
 }
 
-/* States */
-.sync-indicator.synced {
-    color: var(--accent-primary);
-}
-
-.sync-indicator.synced .sync-dot {
+/* ── Connectivity states ── */
+.nm-status-pill.online .nm-status-dot {
     background: #34c759;
-    /* Green */
-    box-shadow: 0 0 8px rgba(52, 199, 89, 0.4);
+}
+.nm-status-pill.online .nm-status-dot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: #34c759;
+    opacity: 0.4;
+    animation: nmDotPulse 2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+.nm-status-pill.offline .nm-status-dot {
+    background: #ff3b30;
 }
 
-.sync-indicator.syncing {
-    color: var(--accent-primary);
+/* ── Sync states ── */
+.nm-status-pill.sync-hidden #nm-status-icon {
+    color: var(--text-tertiary);
+    opacity: 0.35;
 }
 
-.sync-indicator.syncing i {
-    animation: syncRotate 2s linear infinite;
+/* synced — pressed-in, green icon */
+.nm-status-pill.sync-synced {
+    box-shadow: var(--nm-shadow-in-sm);
+}
+.nm-status-pill.sync-synced #nm-status-icon {
+    color: #34c759;
 }
 
-.sync-indicator.syncing .sync-dot {
-    background: var(--accent-primary);
-    animation: syncPulse 1.5s ease-in-out infinite;
+/* syncing — raised, ring spins, icon hidden */
+.nm-status-pill.sync-syncing {
+    box-shadow: var(--nm-shadow-out-sm);
+}
+.nm-status-pill.sync-syncing #nm-status-icon {
+    opacity: 0;
+}
+.nm-status-pill.sync-syncing .nm-pill-ring {
+    opacity: 1;
+    animation: nmRingSpin 1s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
 }
 
-.sync-indicator.error {
+/* error — pressed-in, red */
+.nm-status-pill.sync-error {
+    box-shadow: var(--nm-shadow-in-sm);
+}
+.nm-status-pill.sync-error #nm-status-icon {
     color: #ff3b30;
 }
 
-.sync-indicator.error .sync-dot {
-    background: #ff3b30;
-    box-shadow: 0 0 8px rgba(255, 59, 48, 0.4);
+/* warning — pressed-in, orange */
+.nm-status-pill.sync-warning {
+    box-shadow: var(--nm-shadow-in-sm);
 }
-
-.sync-indicator.warning {
+.nm-status-pill.sync-warning #nm-status-icon {
     color: #ff9500;
 }
 
-.sync-indicator.warning .sync-dot {
-    background: #ff9500;
-    box-shadow: 0 0 8px rgba(255, 149, 0, 0.4);
-}
-
-@keyframes syncRotate {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes syncPulse {
-    0% {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 0.5;
-        transform: scale(1.2);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.sync-indicator:hover {
-    transform: scale(1.1);
+.nm-status-pill:hover {
+    transform: scale(1.06);
     box-shadow: var(--nm-shadow-out);
 }
-
-.sync-indicator:active {
-    transform: scale(0.95);
+.nm-status-pill:active {
+    transform: scale(0.94);
     box-shadow: var(--nm-shadow-in-sm);
 }
+
+/* ── Status Popover ── */
+.nm-status-popover {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px) scale(0.96);
+    transform-origin: top center;
+    width: 210px;
+    background: var(--nm-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--nm-shadow-out);
+    padding: 14px;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--transition-medium),
+        transform var(--transition-medium),
+        visibility var(--transition-medium);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nm-status-popover.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.nm-popover-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nm-popover-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--nm-surface);
+    box-shadow: var(--nm-shadow-in-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    color: var(--text-tertiary);
+    transition: color var(--transition-medium);
+}
+
+.nm-popover-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.nm-popover-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-tertiary);
+}
+
+.nm-popover-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    transition: color var(--transition-medium);
+}
+
+.nm-popover-divider {
+    height: 1px;
+    background: var(--nm-shadow-dark);
+    opacity: 0.25;
+    border-radius: var(--radius-full);
+    margin: 0 2px;
+}
+
+.nm-popover-sync-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--nm-surface);
+    box-shadow: var(--nm-shadow-out-sm);
+    color: var(--accent-primary);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    transition: all var(--transition-fast);
+    border: none;
+    cursor: pointer;
+}
+
+.nm-popover-sync-btn:hover {
+    box-shadow: var(--nm-shadow-out);
+    color: var(--accent-hover);
+}
+
+.nm-popover-sync-btn:active {
+    box-shadow: var(--nm-shadow-in-sm);
+    transform: scale(0.97);
+}
+
+/* Sync spinning state on popover icon */
+.nm-status-pill.sync-syncing ~ .nm-status-popover #popover-sync-icon i {
+    animation: nmSyncSpin 1.4s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+}
+
+@keyframes nmDotPulse {
+    0%   { transform: scale(0.5); opacity: 0.6; }
+    100% { transform: scale(2.8); opacity: 0; }
+}
+@keyframes nmRingSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Popover sync icon spin when syncing */
+.nm-status-pill.sync-syncing ~ .nm-status-popover #popover-sync-icon i {
+    animation: nmRingSpin 1s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+}
+
 
 
 .fa-solid,
