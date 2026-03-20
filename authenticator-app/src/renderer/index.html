@@ -272,81 +272,90 @@
 <!-- Premium Neumorphic About Modal -->
 <div id="about-modal" class="modal-overlay hidden">
     <div class="modal about-modal-card animate-fade-in">
-        <div class="nm-modal-header" style="margin-bottom: 4px;">
-            <div class="about-hero-vessel">
-                <img src="assets/logo.png" alt="Keyra Logo" class="app-logo-medium">
+
+        <!-- Hero -->
+        <div class="about-hero">
+            <div class="about-logo-vessel">
+                <img src="assets/logo.png" alt="Keyra Logo" class="about-logo-img">
+                <div class="about-logo-aura"></div>
             </div>
-            <div class="nm-modal-titles">
-                <h2 class="nm-modal-title">Keyra Authenticator</h2>
-                <p class="nm-modal-subtitle">PROFESSIONAL SECURITY MADE SIMPLE</p>
+            <div class="about-hero-text">
+                <h2 class="about-app-name">Keyra Authenticator</h2>
+                <p class="about-tagline">PROFESSIONAL SECURITY MADE SIMPLE</p>
+            </div>
+            <div class="about-version-chip">
+                <i class="fa-solid fa-code-branch"></i>
+                <span>v1.2.0</span>
             </div>
         </div>
 
         <div class="nm-modal-divider"></div>
 
-        <div class="about-info-sections">
-            <div class="about-info-row">
-                <div class="info-row-label">
-                    <i class="fa-solid fa-code-branch"></i>
-                    <span class="label-text">VERSION</span>
-                </div>
-                <div class="info-row-content">
-                    <span class="version-badge">v1.2.0</span>
-                </div>
-            </div>
-
-            <div class="about-info-row">
-                <div class="info-row-label">
+        <!-- Stat Cards -->
+        <div class="about-stats-grid">
+            <div class="about-stat-card">
+                <div class="about-stat-icon">
                     <i class="fa-solid fa-shield-halved"></i>
-                    <span class="label-text">STATUS</span>
                 </div>
-                <div class="info-row-content">
-                    <span class="status-indicator online">
-                        <span class="status-dot"></span>
+                <div class="about-stat-body">
+                    <span class="about-stat-label">STATUS</span>
+                    <span class="about-stat-value">
+                        <span class="status-dot-live"></span>
                         PROTECTED
                     </span>
                 </div>
             </div>
 
-            <div class="about-info-row">
-                <div class="info-row-label">
+            <div class="about-stat-card">
+                <div class="about-stat-icon">
                     <i class="fa-solid fa-bolt"></i>
-                    <span class="label-text">ACTIVITY</span>
                 </div>
-                <div class="info-row-content">
-                    <span id="about-last-action" style="font-size: 11px; font-weight: 700;">Nothing yet</span>
+                <div class="about-stat-body">
+                    <span class="about-stat-label">LAST ACTION</span>
+                    <span id="about-last-action" class="about-stat-value">Nothing yet</span>
                 </div>
             </div>
 
-            <div id="about-sync-row" class="about-info-row online-only">
-                <div class="info-row-label">
+            <div id="about-sync-row" class="about-stat-card online-only">
+                <div class="about-stat-icon">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span class="label-text">CLOUD SYNC</span>
                 </div>
-                <div class="info-row-content">
-                    <span id="about-last-sync" style="font-size: 11px; font-weight: 700;">Never Secured</span>
+                <div class="about-stat-body">
+                    <span class="about-stat-label">CLOUD SYNC</span>
+                    <span id="about-last-sync" class="about-stat-value">Never Secured</span>
+                </div>
+            </div>
+
+            <div class="about-stat-card">
+                <div class="about-stat-icon">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div class="about-stat-body">
+                    <span class="about-stat-label">ENCRYPTION</span>
+                    <span class="about-stat-value">AES-256-GCM</span>
                 </div>
             </div>
         </div>
 
         <div class="nm-modal-divider"></div>
 
-        <div class="about-footer-actions">
-            <p class="footer-label">Connect with us</p>
-            <div class="about-social-group">
-                <button class="social-btn" title="GitHub"
+        <!-- Footer: social + copyright -->
+        <div class="about-footer">
+            <div class="about-social-row">
+                <button class="about-social-btn" title="GitHub"
                     onclick="window.api.openExternal('https://github.com/MbarkT3STO/Keyra-App')">
                     <i class="fa-brands fa-github"></i>
                 </button>
-                <button class="social-btn" title="X (Twitter)"
+                <button class="about-social-btn" title="X (Twitter)"
                     onclick="window.api.openExternal('https://x.com/mbarkt3sto')">
                     <i class="fa-brands fa-x-twitter"></i>
                 </button>
-                <button class="social-btn" title="Website"
+                <button class="about-social-btn" title="Website"
                     onclick="window.api.openExternal('https://keyraauth.netlify.app/')">
                     <i class="fa-solid fa-globe"></i>
                 </button>
             </div>
+            <p class="about-copyright">© 2025 Keyra · Built with care</p>
         </div>
 
         <button class="auth-close-btn"
