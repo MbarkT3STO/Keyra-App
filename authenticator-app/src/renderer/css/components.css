@@ -179,12 +179,19 @@
 }
 
 /* ── Status Popover ── */
+.nm-pill-anchor {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 .nm-status-popover {
     position: absolute;
     top: calc(100% + 12px);
-    left: 50%;
-    transform: translateX(-50%) translateY(8px) scale(0.96);
-    transform-origin: top center;
+    right: 0;
+    left: auto;
+    transform: translateY(8px) scale(0.96);
+    transform-origin: top right;
     width: 210px;
     background: var(--nm-surface);
     border-radius: var(--radius-lg);
@@ -205,7 +212,7 @@
 .nm-status-popover.show {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
 }
 
 .nm-popover-row {
