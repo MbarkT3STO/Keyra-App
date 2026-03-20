@@ -3338,3 +3338,87 @@ button {
     .mock-search-vessel { display: none; }
     .mock-settings-grid { grid-template-columns: 1fr; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCROLL REVEAL ANIMATIONS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered children */
+.reveal-stagger > * {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal-stagger.revealed > *:nth-child(1) { transition-delay: 0.05s; opacity: 1; transform: none; }
+.reveal-stagger.revealed > *:nth-child(2) { transition-delay: 0.15s; opacity: 1; transform: none; }
+.reveal-stagger.revealed > *:nth-child(3) { transition-delay: 0.25s; opacity: 1; transform: none; }
+.reveal-stagger.revealed > *:nth-child(4) { transition-delay: 0.35s; opacity: 1; transform: none; }
+.reveal-stagger.revealed > *:nth-child(5) { transition-delay: 0.45s; opacity: 1; transform: none; }
+.reveal-stagger.revealed > *:nth-child(6) { transition-delay: 0.55s; opacity: 1; transform: none; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   HERO LIVE MOCKUP
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.mockup-nav-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--radius-full);
+    margin-top: 10px;
+}
+
+.mockup-tab {
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+}
+
+.mockup-tab.active {
+    color: var(--accent-primary);
+    background: var(--bg-primary);
+    box-shadow: var(--nm-raised);
+}
+
+.mockup-ring-vessel {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.mockup-ring-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.mockup-ring-bg {
+    fill: none;
+    stroke: rgba(128,128,128,0.15);
+    stroke-width: 4;
+}
+
+.mockup-ring-fg {
+    fill: none;
+    stroke: var(--accent-primary);
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+}

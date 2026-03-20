@@ -4,18 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Keyra App - Secure, Modern, and Fast Authenticator">
+    <meta name="description" content="Keyra is a modern open-source 2FA authenticator with bank-grade encryption, neumorphic design, and cross-platform cloud sync.">
     <title>Keyra | The Modern Authenticator</title>
 
-    <!-- Fonts -->
+    <!-- Canonical -->
+    <link rel="canonical" href="https://keyra-app.netlify.app/">
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="https://keyra-app.netlify.app/">
+    <meta property="og:title"       content="Keyra | The Modern Authenticator">
+    <meta property="og:description" content="A premium open-source 2FA authenticator with neumorphic design, bank-grade encryption, and cross-platform cloud sync.">
+    <meta property="og:image"       content="https://keyra-app.netlify.app/logo.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:site"        content="@mbarkt3sto">
+    <meta name="twitter:title"       content="Keyra | The Modern Authenticator">
+    <meta name="twitter:description" content="A premium open-source 2FA authenticator with neumorphic design, bank-grade encryption, and cross-platform cloud sync.">
+    <meta name="twitter:image"       content="https://keyra-app.netlify.app/logo.png">
+
+    <!-- Fonts (single combined request) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Icons (solid + brands subsets only, ~60% smaller than all.min.css) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="icon.png">
@@ -113,7 +130,7 @@
             </div>
 
             <div class="hero-visual">
-                <!-- Abstract UI Representation -->
+                <!-- Live Hero Mockup -->
                 <div class="mockup-container nm-convex">
                     <div class="mockup-header">
                         <div class="window-controls">
@@ -121,23 +138,50 @@
                             <span class="nm-inset"></span>
                             <span class="nm-inset"></span>
                         </div>
+                        <div class="mockup-nav-tabs nm-inset">
+                            <span class="mockup-tab active">Vault</span>
+                            <span class="mockup-tab">Settings</span>
+                        </div>
                     </div>
                     <div class="mockup-body">
                         <div class="mockup-card nm-flat">
                             <div class="mockup-icon nm-inset"><i class="fa-brands fa-github text-gradient"></i></div>
                             <div class="mockup-text">
                                 <div class="mockup-title">GitHub</div>
-                                <div class="mockup-code">123 456</div>
+                                <div class="mockup-code" id="hero-code-1">--- ---</div>
                             </div>
-                            <div class="mockup-pie nm-convex"></div>
+                            <div class="mockup-ring-vessel">
+                                <svg class="mockup-ring-svg" viewBox="0 0 36 36">
+                                    <circle class="mockup-ring-bg" cx="18" cy="18" r="14"/>
+                                    <circle class="mockup-ring-fg" id="hero-ring-1" cx="18" cy="18" r="14"/>
+                                </svg>
+                            </div>
                         </div>
                         <div class="mockup-card nm-flat">
                             <div class="mockup-icon nm-inset"><i class="fa-brands fa-google text-gradient"></i></div>
                             <div class="mockup-text">
                                 <div class="mockup-title">Google</div>
-                                <div class="mockup-code">987 654</div>
+                                <div class="mockup-code" id="hero-code-2">--- ---</div>
                             </div>
-                            <div class="mockup-pie nm-convex"></div>
+                            <div class="mockup-ring-vessel">
+                                <svg class="mockup-ring-svg" viewBox="0 0 36 36">
+                                    <circle class="mockup-ring-bg" cx="18" cy="18" r="14"/>
+                                    <circle class="mockup-ring-fg" id="hero-ring-2" cx="18" cy="18" r="14"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mockup-card nm-flat">
+                            <div class="mockup-icon nm-inset"><i class="fa-brands fa-discord text-gradient"></i></div>
+                            <div class="mockup-text">
+                                <div class="mockup-title">Discord</div>
+                                <div class="mockup-code" id="hero-code-3">--- ---</div>
+                            </div>
+                            <div class="mockup-ring-vessel">
+                                <svg class="mockup-ring-svg" viewBox="0 0 36 36">
+                                    <circle class="mockup-ring-bg" cx="18" cy="18" r="14"/>
+                                    <circle class="mockup-ring-fg" id="hero-ring-3" cx="18" cy="18" r="14"/>
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -146,12 +190,12 @@
 
         <!-- Features Showcase -->
         <section class="features" id="features">
-            <div class="section-header">
+            <div class="section-header reveal">
                 <h2>Designed for the Modern Web</h2>
                 <p>Everything you need to secure your digital life, wrapped in a stunning interface.</p>
             </div>
 
-            <div class="features-grid">
+            <div class="features-grid reveal-stagger">
                 <div class="feature-card nm-flat">
                     <div class="feature-icon nm-convex">
                         <i class="fa-solid fa-palette text-gradient"></i>
@@ -182,12 +226,12 @@
 
         <!-- Demonstration Section -->
         <section class="demo" id="demo">
-            <div class="section-header">
+            <div class="section-header reveal">
                 <h2>See It In Action</h2>
                 <p>Experience the authentic Keyra desktop interface.</p>
             </div>
 
-            <div class="mock-app-container nm-flat">
+            <div class="mock-app-container nm-flat reveal">
                 <!-- Mock Navbar -->
                 <header class="mock-navbar">
                     <div class="mock-navbar-wrapper">
@@ -385,7 +429,7 @@
         </section>
         <!-- Download Section -->
         <section class="download" id="download">
-            <div class="download-container nm-flat">
+            <div class="download-container nm-flat reveal">
                 <div class="download-info">
                     <h2>Available on your <br> favorite platform</h2>
                     <p>Download Keyra Desktop App for a seamless, native experience on your operating system.</p>
@@ -394,7 +438,7 @@
                 <div class="download-options">
                     <!-- Windows -->
                     <div class="download-dropdown-vessel" id="windows-download">
-                        <a href="#" class="download-card nm-convex" id="windows-card">
+                        <a href="https://github.com/MbarkT3STO/Keyra-App/releases/download/v1.2.0/Keyra.Authenticator.Setup.1.2.0.exe" class="download-card nm-convex" id="windows-card" download>
                             <i class="fa-brands fa-windows"></i>
                             <div class="os-info">
                                 <span class="os-name">Windows</span>
@@ -416,7 +460,7 @@
                         </button>
                         <div class="download-submenu nm-inset" id="macos-dropdown">
                             <a href="#" class="submenu-item">
-                                <div class="submenu-icon"><i class="fa-solid fa-microchip"></i></div>
+                            <a href="https://github.com/MbarkT3STO/Keyra-App/releases" target="_blank" class="submenu-item">
                                 <div class="submenu-text">
                                     <span class="arch-name">Apple Silicon</span>
                                     <span class="arch-desc">M1 / M2 / M3</span>
@@ -424,7 +468,7 @@
                                 <i class="fa-solid fa-download"></i>
                             </a>
                             <a href="#" class="submenu-item">
-                                <div class="submenu-icon"><i class="fa-solid fa-microchip"></i></div>
+                            <a href="https://github.com/MbarkT3STO/Keyra-App/releases" target="_blank" class="submenu-item">
                                 <div class="submenu-text">
                                     <span class="arch-name">Intel</span>
                                     <span class="arch-desc">64-bit Intel</span>
@@ -446,7 +490,7 @@
                         </button>
                         <div class="download-submenu nm-inset" id="linux-dropdown">
                             <a href="#" class="submenu-item">
-                                <div class="submenu-icon"><i class="fa-solid fa-microchip"></i></div>
+                            <a href="https://github.com/MbarkT3STO/Keyra-App/releases" target="_blank" class="submenu-item">
                                 <div class="submenu-text">
                                     <span class="arch-name">Linux x64</span>
                                     <span class="arch-desc">AppImage / .deb</span>
@@ -454,7 +498,7 @@
                                 <i class="fa-solid fa-download"></i>
                             </a>
                             <a href="#" class="submenu-item">
-                                <div class="submenu-icon"><i class="fa-solid fa-microchip"></i></div>
+                            <a href="https://github.com/MbarkT3STO/Keyra-App/releases" target="_blank" class="submenu-item">
                                 <div class="submenu-text">
                                     <span class="arch-name">Linux ARM64</span>
                                     <span class="arch-desc">Raspberry Pi</span>
@@ -469,12 +513,12 @@
         <!-- Community & Developer Section -->
         <section class="community" id="community">
             <div class="community-container">
-                <div class="section-header">
+                <div class="section-header reveal">
                     <h2>Connect with Keyra</h2>
                     <p>Meet the developer and join our growing community of security enthusiasts.</p>
                 </div>
 
-                <div class="community-grid">
+                <div class="community-grid reveal-stagger">
                     <!-- Developer Card -->
                     <div class="community-card nm-flat dev-card">
                         <div class="dev-avatar-vessel">

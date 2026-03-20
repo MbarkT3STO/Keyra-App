@@ -50,31 +50,47 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize
     initTheme();
 
-    // Smooth reveal animations on scroll
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
 
-    const observer = new IntersectionObserver((entries) => {
+    // ─── Scroll Reveal ──────────────────────────────────────────────────────
+    const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-                observer.unobserve(entry.target);
+                entry.target.classList.add('revealed');
+                revealObserver.unobserve(entry.target);
             }
         });
-    }, observerOptions);
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-    // Apply animation tracking to cards
-    const elementsToReveal = document.querySelectorAll('.feature-card, .download-card');
-    
-    elementsToReveal.forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-        observer.observe(el);
-    });
+    document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => revealObserver.observe(el));
+
+    // ─── Hero Live Mockup ────────────────────────────────────────────────────
+    const HERO_OFFSETS = [0, 9, 18];
+    const HERO_CIRC    = 2 * Math.PI * 14;
+
+    const tickHero = () => {
+        HERO_OFFSETS.forEach((offset, i) => {
+            const idx  = i + 1;
+            const pct  = ((30 - ((Date.now() / 1000 + offset) % 30)) / 30);
+            const slot = Math.floor((Date.now() / 1000 + offset) / 30);
+            const code = String(Math.abs((slot * 1234567 + offset * 9871) % 1000000)).padStart(6, '0');
+            const fmt  = code.slice(0, 3) + ' ' + code.slice(3);
+            const color = pct < 0.2 ? '#ff3b30' : 'var(--accent-primary)';
+
+            const codeEl = document.getElementById(`hero-code-${idx}`);
+            const ringEl = document.getElementById(`hero-ring-${idx}`);
+
+            if (codeEl && codeEl.textContent !== fmt) codeEl.textContent = fmt;
+            if (ringEl) {
+                ringEl.style.strokeDasharray  = HERO_CIRC;
+                ringEl.style.strokeDashoffset = HERO_CIRC * (1 - pct);
+                ringEl.style.stroke = color;
+            }
+        });
+    };
+
+    tickHero();
+    setInterval(tickHero, 500);
+
 
     // ─── Desktop App Simulation ───────────────────────────────────────────────
 
