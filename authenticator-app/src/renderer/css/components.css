@@ -2420,7 +2420,7 @@ body.light-theme .setting-row:hover {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   PREMIUM SPLASH SCREEN
+   NEUMORPHIC SPLASH SCREEN
    ───────────────────────────────────────────────────────────────────────────── */
 .splash-screen {
     position: fixed;
@@ -2430,8 +2430,8 @@ body.light-theme .setting-row:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
-        visibility 1s;
+    transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0.9s;
 }
 
 .splash-screen.fade-out {
@@ -2444,111 +2444,150 @@ body.light-theme .setting-row:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 40px;
-    animation: splashContentUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    gap: 48px;
+    animation: splashContentUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 @keyframes splashContentUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px) scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(28px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.splash-logo {
+/* ── Logo vessel: three layers of depth ── */
+.splash-logo-vessel {
     position: relative;
-    width: 140px;
-    height: 140px;
-    background: var(--nm-surface);
-    border-radius: 40px;
+    width: 200px;
+    height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Outermost ring — raised */
+.splash-ring-outer {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--nm-surface);
     box-shadow: var(--nm-shadow-out);
-    color: var(--accent-primary);
-    animation: splashPulse 2.5s ease-in-out infinite;
 }
 
-@keyframes splashPulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.1);
-    }
-}
-
-.splash-logo i {
-    width: 100%;
-    height: 100%;
-}
-
-.splash-loader {
-    width: 240px;
-    height: 4px;
+/* Middle ring — inset groove */
+.splash-ring-inner {
+    position: absolute;
+    inset: 18px;
+    border-radius: 50%;
     background: var(--nm-surface);
     box-shadow: var(--nm-shadow-in-sm);
-    border-radius: var(--radius-full);
-    position: relative;
-    overflow: hidden;
 }
 
-.splash-progress {
+/* Spinning accent arc */
+.splash-arc {
     position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
-    background-size: 200% 100%;
-    animation: progressFlow 2s linear infinite;
-    transition: width 0.5s ease;
+    inset: 6px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: var(--accent-primary);
+    border-right-color: var(--accent-primary);
+    filter: drop-shadow(0 0 6px var(--accent-primary));
+    animation: splashArcSpin 1.6s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+    z-index: 2;
 }
 
-@keyframes progressFlow {
-    0% {
-        background-position: 200% 0;
-    }
+/* Logo circle — raised, sits on top */
+.splash-logo {
+    position: relative;
+    z-index: 3;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--nm-surface);
+    box-shadow: var(--nm-shadow-out-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: splashLogoBreathe 3s ease-in-out infinite;
+}
 
-    100% {
-        background-position: -200% 0;
+.splash-logo img {
+    width: 72px;
+    height: 72px;
+}
+
+@keyframes splashArcSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes splashLogoBreathe {
+    0%, 100% { box-shadow: var(--nm-shadow-out-sm); }
+    50%       {
+        box-shadow:
+            10px 10px 22px var(--nm-shadow-dark),
+            -10px -10px 22px var(--nm-shadow-light);
     }
+}
+
+/* ── Text block ── */
+.splash-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
 
 .splash-title {
-    font-size: var(--font-size-3xl);
+    font-family: var(--font-heading);
+    font-size: clamp(48px, 8vw, 72px);
     font-weight: var(--weight-black);
-    letter-spacing: var(--ls-tight);
-    color: var(--text-primary);
+    letter-spacing: -3px;
     margin: 0;
-    line-height: 1.1;
+    line-height: 1;
     text-transform: uppercase;
-    text-align: center;
+    background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .splash-status {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    text-align: center;
+    gap: 14px;
 }
 
 #splash-status-text {
-    font-size: 11px;
-    font-weight: 850;
-    color: var(--accent-primary);
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 2.5px;
-    text-align: center;
+    letter-spacing: 3px;
+}
+
+/* Progress bar — neumorphic inset track */
+.splash-progress-bar {
+    width: 200px;
+    height: 5px;
+    border-radius: var(--radius-full);
+    background: var(--nm-surface);
+    box-shadow: var(--nm-shadow-in-sm);
+    overflow: hidden;
+}
+
+.splash-progress-inner {
+    height: 100%;
+    width: 40%;
+    border-radius: var(--radius-full);
+    background: var(--accent-primary);
+    filter: drop-shadow(0 0 4px var(--accent-primary));
+    animation: splashProgressSlide 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes splashProgressSlide {
+    0%   { transform: translateX(-100%); opacity: 0.6; }
+    50%  { opacity: 1; }
+    100% { transform: translateX(350%); opacity: 0.6; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
