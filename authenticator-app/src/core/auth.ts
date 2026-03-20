@@ -878,6 +878,19 @@ export async function requestPhoneVerification(phoneNumber: string): Promise<Syn
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
     if (userIndex === -1) throw new Error("User missing from storage.");
 
+    // Reject if the number is already claimed by another user
+    const normalizePhone = (p?: string) => p?.replace(/\D/g, '');
+    const incomingDigits = normalizePhone(phoneNumber);
+    const conflict = users.find(u =>
+        u.id !== currentUser!.id && (
+            normalizePhone(u.phone) === incomingDigits ||
+            normalizePhone(u.pendingPhone) === incomingDigits
+        )
+    );
+    if (conflict) {
+        return { success: false, message: "This phone number is already associated with another account." };
+    }
+
     const user = users[userIndex];
     user.pendingPhone = phoneNumber;
     delete user.phoneVerificationCode; // Cleanup old system
