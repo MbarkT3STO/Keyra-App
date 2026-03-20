@@ -20,12 +20,11 @@
 }
 
 .brand-icon {
-    position: relative;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     flex-shrink: 0;
     background: var(--nm-surface);
-    border-radius: 12px;
+    border-radius: 14px;
     box-shadow: var(--nm-shadow-out-sm);
     display: flex;
     align-items: center;
@@ -33,45 +32,37 @@
     transition: box-shadow var(--transition-fast);
 }
 
-.brand-icon::after {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 16px;
-    background: var(--accent-primary);
-    opacity: 0.08;
-    filter: blur(8px);
-    pointer-events: none;
-}
-
 #navbar-brand:hover .brand-icon {
     box-shadow: var(--nm-shadow-out);
 }
 
+#navbar-brand:active .brand-icon {
+    box-shadow: var(--nm-shadow-in-sm);
+}
+
 .brand-icon img {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     object-fit: contain;
-    position: relative;
-    z-index: 1;
 }
 
 .brand-text-group {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
     line-height: 1;
 }
 
 .brand-name {
     font-family: var(--font-heading);
-    font-size: 16px;
+    font-size: 17px;
     font-weight: var(--weight-black);
     letter-spacing: -0.5px;
-    background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent-primary));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
+}
+
+.brand-name span {
+    color: var(--accent-primary);
 }
 
 .brand-sub {
