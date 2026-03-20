@@ -927,9 +927,9 @@ export async function removePhone(): Promise<SyncResult> {
     delete currentUser.phoneVerificationCode;
 
     await saveUsers(users);
-    await syncUserData(currentUser.username, user);
+    const syncRes = await syncUserData(currentUser.username, user);
 
-    return { success: true, message: "Phone number removed successfully." };
+    return { message: "Phone number removed successfully.", ...syncRes };
 }
 
 export async function verifyPhoneByWhatsAppMatch(waNumber: string): Promise<SyncResult> {
@@ -942,32 +942,40 @@ export async function verifyPhoneByWhatsAppMatch(waNumber: string): Promise<Sync
     const user = users[userIndex];
     if (!user.pendingPhone) return { success: false, message: "No pending phone verification." };
 
-    console.log(`[Auth] Comparison Trace - Pending: "${user.pendingPhone}" (len: ${user.pendingPhone.length}), Received WA: "${waNumber}" (len: ${waNumber.length})`);
-
-    // Normalize both numbers (remove +, spaces, and any non-digit chars)
+    // Normalize both numbers to digits only
     const normalizedPending = user.pendingPhone.replace(/\D/g, '');
     const normalizedWA = waNumber.replace(/\D/g, '');
 
-    console.log(`[Auth] Comparison Trace - Normalized Pending: "${normalizedPending}" vs Normalized WA: "${normalizedWA}"`);
+    console.log(`[Auth] Phone match — pending: "${normalizedPending}", WA: "${normalizedWA}"`);
 
-    // For safety, we check if one is contained in the other or exact match.
-    // We also ensure both numbers have at least 8 digits to avoid false positives on short fragments.
-    if (normalizedPending.length >= 8 && normalizedWA.length >= 8 && 
-        (normalizedWA.endsWith(normalizedPending) || normalizedPending.endsWith(normalizedWA))) {
-        user.phone = user.pendingPhone;
-        user.isPhoneVerified = true;
-        delete user.pendingPhone;
-        delete user.phoneVerificationCode;
-        
-        // Sync local session
-        currentUser.phone = user.phone;
-        currentUser.isPhoneVerified = true;
+    // Require at least 8 digits on both sides.
+    // Accept if they are an exact match OR one is a suffix of the other
+    // (handles country-code prefix differences, e.g. "1234567890" vs "11234567890").
+    // The suffix must be at least 8 digits long to prevent false positives on short fragments.
+    const suffixMatch =
+        normalizedPending.length >= 8 &&
+        normalizedWA.length >= 8 &&
+        (normalizedWA === normalizedPending ||
+            (normalizedWA.length > normalizedPending.length && normalizedWA.endsWith(normalizedPending)) ||
+            (normalizedPending.length > normalizedWA.length && normalizedPending.endsWith(normalizedWA)));
 
-        await saveUsers(users);
-        return await syncUserData(currentUser.username, user);
+    if (!suffixMatch) {
+        return { success: false, message: "WhatsApp number does not match the entered phone number." };
     }
 
-    return { success: false, message: "WhatsApp number does not match entered phone." };
+    user.phone = user.pendingPhone;
+    user.isPhoneVerified = true;
+    delete user.pendingPhone;
+    delete user.phoneVerificationCode;
+
+    // Sync local session
+    currentUser.phone = user.phone;
+    currentUser.isPhoneVerified = true;
+    delete currentUser.pendingPhone;
+    delete currentUser.phoneVerificationCode;
+
+    await saveUsers(users);
+    return await syncUserData(currentUser.username, user);
 }
 
 export async function verifyMasterPassword(password: string): Promise<{ success: boolean, message: string }> {

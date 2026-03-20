@@ -15,6 +15,7 @@ export interface AuthCallbacks {
 export class AuthManager {
     private emailResendTimer: number = 0;
     private emailResendInterval: any = null;
+    private waListenerCleanups: Array<() => void> = [];
 
     constructor(private cb: AuthCallbacks) {}
 
@@ -326,6 +327,10 @@ export class AuthManager {
     }
 
     initWhatsAppLinking() {
+        // Remove any previously registered WA listeners to prevent duplicates
+        this.waListenerCleanups.forEach(fn => fn());
+        this.waListenerCleanups = [];
+
         const modalStatusText = document.getElementById('modal-wa-status');
         const modalQrImage = document.getElementById('modal-wa-qr-image') as HTMLImageElement;
         const modalLoader = document.getElementById('modal-wa-loader');
@@ -334,35 +339,79 @@ export class AuthManager {
         const modalQrErrorText = document.getElementById('wa-qr-error-text');
 
         const checkAndVerifyPhone = async (waNumber: string) => {
-            (window as any).api.logToMain(`[UI] WhatsApp READY. Received Number: ${waNumber}. Waiting 200ms for data sync...`);
-            await new Promise(resolve => setTimeout(resolve, 200));
+            (window as any).api.logToMain(`[UI] WhatsApp READY. Received Number: ${waNumber}.`);
             try {
                 const user = await (window as any).api.getCurrentUser();
                 if (user?.pendingPhone) {
                     const res = await (window as any).api.verifyPhoneByWhatsAppMatch(waNumber);
-                    if (res.success) { this.cb.showToast("Phone Verified! 🚀", "success"); this.hidePhoneQrModal(); this.updateAccountView(); }
-                    else {
+                    if (res.success) {
+                        this.cb.showToast("Phone Verified!", "success");
+                        this.hidePhoneQrModal();
+                        this.updateAccountView();
+                    } else {
                         if (modalQrOverlay) modalQrOverlay.classList.add('hidden');
-                        if (modalQrError && modalQrErrorText) { modalQrErrorText.textContent = "Number Mismatch! Please scan with the WhatsApp account matching your entered phone number."; modalQrError.classList.remove('hidden'); }
+                        if (modalQrError && modalQrErrorText) {
+                            modalQrErrorText.textContent = "Number Mismatch! Please scan with the WhatsApp account matching your entered phone number.";
+                            modalQrError.classList.remove('hidden');
+                        }
                     }
-                } else if (user?.isPhoneVerified) { this.hidePhoneQrModal(); }
-            } catch (err: any) { (window as any).api.logToMain(`[UI] Critical error during phone verification check: ${err.message || err}`); }
+                } else if (user?.isPhoneVerified) {
+                    this.hidePhoneQrModal();
+                }
+            } catch (err: any) {
+                (window as any).api.logToMain(`[UI] Critical error during phone verification check: ${err.message || err}`);
+            }
         };
 
         const updateUI = (status: { ready: boolean, qr: string | null, initializing?: boolean, authenticated?: boolean, waNumber?: string }) => {
             if (!status.ready && !status.authenticated) modalQrError?.classList.add('hidden');
-            if (status.authenticated) { modalQrOverlay?.classList.remove('hidden'); if (modalStatusText) modalStatusText.textContent = "VERIFYING IDENTITY"; }
-            else if (status.ready) { if (status.waNumber) checkAndVerifyPhone(status.waNumber); }
-            else if (status.initializing || !status.qr) { modalLoader?.classList.remove('hidden'); modalQrImage?.classList.add('hidden'); modalQrOverlay?.classList.add('hidden'); if (modalStatusText) modalStatusText.textContent = "INITIALIZING..."; }
-            else if (status.qr) { if (modalQrImage) modalQrImage.src = status.qr; modalLoader?.classList.add('hidden'); modalQrImage?.classList.remove('hidden'); modalQrOverlay?.classList.add('hidden'); if (modalStatusText) modalStatusText.textContent = "SCAN QR CODE"; }
+            if (status.authenticated) {
+                modalQrOverlay?.classList.remove('hidden');
+                if (modalStatusText) modalStatusText.textContent = "VERIFYING IDENTITY";
+            } else if (status.ready) {
+                if (status.waNumber) checkAndVerifyPhone(status.waNumber);
+            } else if (status.initializing || !status.qr) {
+                modalLoader?.classList.remove('hidden');
+                modalQrImage?.classList.add('hidden');
+                modalQrOverlay?.classList.add('hidden');
+                if (modalStatusText) modalStatusText.textContent = "INITIALIZING...";
+            } else if (status.qr) {
+                if (modalQrImage) modalQrImage.src = status.qr;
+                modalLoader?.classList.add('hidden');
+                modalQrImage?.classList.remove('hidden');
+                modalQrOverlay?.classList.add('hidden');
+                if (modalStatusText) modalStatusText.textContent = "SCAN QR CODE";
+            }
         };
 
+        // Fetch current status immediately
         (window as any).api.getWaStatus().then(updateUI);
-        (window as any).api.onWaInitializing(() => updateUI({ ready: false, qr: null, initializing: true }));
-        (window as any).api.onWaQrCode((qr: string) => updateUI({ ready: false, qr }));
-        (window as any).api.onWaAuthenticated(() => updateUI({ ready: false, qr: null, authenticated: true }));
-        (window as any).api.onWaReady(async (waNumber?: string) => updateUI({ ready: true, qr: null, waNumber }));
-        (window as any).api.onWaAuthFailure((err: string) => { if (modalStatusText) modalStatusText.textContent = "AUTH FAILURE"; this.cb.showToast(`WhatsApp Error: ${err}`, "error"); });
+
+        // Register listeners and track their removers
+        const api = (window as any).api;
+        const onInit    = () => updateUI({ ready: false, qr: null, initializing: true });
+        const onQr      = (qr: string) => updateUI({ ready: false, qr });
+        const onAuth    = () => updateUI({ ready: false, qr: null, authenticated: true });
+        const onReady   = (waNumber?: string) => updateUI({ ready: true, qr: null, waNumber });
+        const onFailure = (err: string) => {
+            if (modalStatusText) modalStatusText.textContent = "AUTH FAILURE";
+            this.cb.showToast(`WhatsApp Error: ${err}`, "error");
+        };
+
+        api.onWaInitializing(onInit);
+        api.onWaQrCode(onQr);
+        api.onWaAuthenticated(onAuth);
+        api.onWaReady(onReady);
+        api.onWaAuthFailure(onFailure);
+
+        // Store cleanup functions (ipcRenderer.removeListener equivalents via preload)
+        this.waListenerCleanups = [
+            () => api.offWaInitializing?.(onInit),
+            () => api.offWaQrCode?.(onQr),
+            () => api.offWaAuthenticated?.(onAuth),
+            () => api.offWaReady?.(onReady),
+            () => api.offWaAuthFailure?.(onFailure),
+        ];
     }
 
     setupAccountEvents() {
@@ -454,9 +503,6 @@ export class AuthManager {
             if (!phoneRegex.test(phone)) { this.cb.showToast("Invalid format. Use + and 8-15 digits (e.g. +123456789).", "error"); return; }
             this.cb.setLoading(true, "Saving", "PHONE SECURITY");
             try {
-                const lastInit = (window as any)._lastWaInit || 0;
-                if (Date.now() - lastInit < 2000) { this.cb.setLoading(true, "Wait...", "INITIALIZING"); await new Promise(resolve => setTimeout(resolve, 2000)); }
-                (window as any)._lastWaInit = Date.now();
                 const res = await (window as any).api.requestPhoneVerification(phone);
                 if (res.success) { this.cb.showToast("Number saved! Please scan to verify.", "success"); this.updateAccountView(); this.showPhoneQrModal(); }
                 else { this.cb.showToast(res.message, "error"); }
