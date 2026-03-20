@@ -61,25 +61,30 @@
     <!-- Premium Splash Screen Overlay -->
     <div id="splash-screen" class="splash-screen">
         <div class="splash-content">
-            <!-- Logo with neumorphic rings -->
+
+            <!-- Logo vessel -->
             <div class="splash-logo-vessel">
                 <div class="splash-ring-outer"></div>
                 <div class="splash-ring-inner"></div>
-                <div class="splash-arc"></div>
+                <div class="splash-arc splash-arc--cw"></div>
+                <div class="splash-arc splash-arc--ccw"></div>
                 <div class="splash-logo">
                     <img src="assets/logo.png" class="app-logo-large nm-logo">
                 </div>
             </div>
-            <!-- Text + progress -->
+
+            <!-- Title as loading indicator -->
             <div class="splash-text">
-                <h1 class="splash-title">Keyra</h1>
-                <div class="splash-status">
-                    <span id="splash-status-text">Getting things ready...</span>
-                    <div class="splash-progress-bar">
-                        <div class="splash-progress-inner"></div>
-                    </div>
-                </div>
+                <h1 class="splash-title" aria-label="Keyra">
+                    <span class="splash-letter" style="--i:0">K</span>
+                    <span class="splash-letter" style="--i:1">E</span>
+                    <span class="splash-letter" style="--i:2">Y</span>
+                    <span class="splash-letter" style="--i:3">R</span>
+                    <span class="splash-letter" style="--i:4">A</span>
+                </h1>
+                <span id="splash-status-text" class="splash-status-text">Getting things ready...</span>
             </div>
+
         </div>
     </div>
 
