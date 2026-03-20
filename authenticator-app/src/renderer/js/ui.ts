@@ -3,6 +3,7 @@ import { ThemeManager } from './managers/ThemeManager.js';
 import { SyncManager } from './managers/SyncManager.js';
 import { AccountManager } from './managers/AccountManager.js';
 import { AuthManager } from './managers/AuthManager.js';
+import { PinManager } from './managers/PinManager.js';
 import { ConnectivityManager } from './managers/ConnectivityManager.js';
 import { NavigationManager, TabName } from './managers/NavigationManager.js';
 import { PrivacyManager } from './managers/PrivacyManager.js';
@@ -15,6 +16,7 @@ export class UIManager {
     public sync: SyncManager;
     public accounts: AccountManager;
     public auth: AuthManager;
+    public pin: PinManager;
     public connectivity: ConnectivityManager;
     public nav: NavigationManager;
     public privacy: PrivacyManager;
@@ -64,11 +66,21 @@ export class UIManager {
             hideModal: () => this.hideModal(),
             showStaticModal: (id) => this.showStaticModal(id),
             pushSettings: () => this.pushSettings(),
-            updateLockVaultVisibility: () => this.updateLockVaultVisibility(),
-            updatePinStatus: () => this.updatePinStatus(),
             updateSyncIndicator: (state) => this.updateSyncIndicator(state as any),
             setSyncVisible: (visible) => { this.sync.syncVisible = visible; },
             formatSyncTime: (date) => this.formatSyncTime(date),
+        });
+        this.pin = new PinManager({
+            getUserId: () => this.userId,
+            getStorageKey: (key) => this.getStorageKey(key),
+            showToast: (msg, type) => this.showToast(msg, type),
+            setLoading: (show, title, subtitle) => this.setLoading(show, title, subtitle),
+            showModal: (content) => this.showModal(content),
+            hideModal: () => this.hideModal(),
+            pushSettings: () => this.pushSettings(),
+            updateLockVaultVisibility: () => this.updateLockVaultVisibility(),
+            updatePinStatus: () => this.updatePinStatus(),
+            updateLastActivity: (action) => this.updateLastActivity(action),
         });
         this.connectivity = new ConnectivityManager({
             showToast: (msg, type) => this.showToast(msg, type),
@@ -130,7 +142,7 @@ export class UIManager {
         this.updates.init();
         this.system.initSystemIntegration();
         this.auth.initPhoneSecurity();
-        this.migratePin();
+        this.pin.migratePin();
     }
 
     private getStorageKey(key: string): string {
@@ -321,10 +333,6 @@ export class UIManager {
         (window as any).api.setResizable(this.windowResizable);
     }
 
-    private async migratePin() {
-        return this.auth.migratePin();
-    }
-
     private initSegmentedStates() {
         const theme = localStorage.getItem(this.getStorageKey('theme')) || 'auto';
         this.updateSegmentedUI('theme-segmented', theme);
@@ -475,7 +483,7 @@ export class UIManager {
         this.vault.setupEventListeners();
 
         // Settings PIN
-        document.getElementById('setup-pin-btn')?.addEventListener('click', () => this.auth.showPinSetup());
+        document.getElementById('setup-pin-btn')?.addEventListener('click', () => this.pin.showPinSetup());
 
         // Privacy Mode Toggle
         document.getElementById('privacy-mode-toggle')?.addEventListener('change', (e) => {
@@ -560,7 +568,7 @@ export class UIManager {
 
         // Remove PIN Logic
         document.getElementById('remove-pin-btn')?.addEventListener('click', () => {
-            this.auth.showRemovePinConfirm();
+            this.pin.showRemovePinConfirm();
         });
 
         // Forgot PIN Logic
@@ -578,7 +586,7 @@ export class UIManager {
                     return;
                 }
                 
-                this.auth.showForgotPinConfirm();
+                this.pin.showForgotPinConfirm();
             });
         } else {
             console.warn("[Auth] Forgot PIN button NOT FOUND in DOM.");
@@ -723,19 +731,19 @@ export class UIManager {
     }
 
     public async lockVault() {
-        return this.auth.lockVault();
+        return this.pin.lockVault();
     }
 
     private handleUnlock() {
-        this.auth.handleUnlock();
+        this.pin.handleUnlock();
     }
 
     private async validateAndAutoUnlock(pinValue: string) {
-        return this.auth.validateAndAutoUnlock(pinValue);
+        return this.pin.validateAndAutoUnlock(pinValue);
     }
 
     private clearPinInput() {
-        this.auth.clearPinInput();
+        this.pin.clearPinInput();
     }
 
     private updateLockVaultVisibility() {
