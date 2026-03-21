@@ -231,6 +231,11 @@ export class SettingsManager {
                 this.host.showToast(res.message, 'error');
             }
         });
+
+        // Check for updates
+        document.getElementById('btn-check-updates')?.addEventListener('click', () => {
+            (window as any).__updateManager?.checkManually();
+        });
     }
 
     public getSettingsObject(): any {

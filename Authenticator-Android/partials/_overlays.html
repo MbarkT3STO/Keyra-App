@@ -48,6 +48,25 @@
 <!-- Toast container -->
 <div id="toast-container" class="toast-container"></div>
 
+<!-- Update banner — slides down from top when update available -->
+<div id="update-banner" class="update-banner hidden" role="alert">
+    <div class="update-banner-icon">
+        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+    </div>
+    <span class="update-banner-version">Update available</span>
+    <button class="update-banner-view" id="update-banner-view">View</button>
+    <button class="update-banner-dismiss" id="update-banner-dismiss" aria-label="Dismiss">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+</div>
+
+<!-- Update modal overlay -->
+<div id="update-modal-overlay" class="modal-overlay hidden">
+    <div class="modal update-modal">
+        <div id="update-modal-content"></div>
+    </div>
+</div>
+
 <!-- Connectivity indicator — fixed position, visually anchored to header -->
 <div id="connectivity-indicator" class="connectivity-indicator online" aria-live="polite" aria-label="Connection status">
     <span class="connectivity-dot"></span>

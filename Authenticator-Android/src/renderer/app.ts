@@ -6,8 +6,17 @@ import { App } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard } from '@capacitor/keyboard';
 import { ConnectivityManager } from './managers/ConnectivityManager';
+import { UpdateManager } from './managers/UpdateManager';
 
 let inactivityTimer: any = null;
+
+function initUpdateManager() {
+    const showToast = (msg: string, type: 'info' | 'success' | 'error') => {
+        (window as any).ui?.showToast(msg, type);
+    };
+    const um = new UpdateManager({ showToast });
+    (window as any).__updateManager = um;
+}
 
 function initConnectivity() {
     // Standalone connectivity monitor — runs before login, no host needed
@@ -100,6 +109,7 @@ async function init() {
     await initCapacitor();
     setupAuthUI();
     initConnectivity();
+    initUpdateManager();
 
     setAppInitCallback(async (resumed: boolean) => {
         try {
@@ -119,6 +129,9 @@ async function init() {
         } else {
             // Main UI is visible — allow connectivity indicator to show
             (window as any).__connectivityManager?.setReady();
+
+            // Check for updates silently on startup
+            (window as any).__updateManager?.checkOnStartup();
         }
 
         initAutoLock();

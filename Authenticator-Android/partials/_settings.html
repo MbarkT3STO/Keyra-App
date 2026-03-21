@@ -105,8 +105,17 @@
             <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-circle-info"></i></div><div class="bento-title-vessel"><h3 class="bento-title">About Keyra</h3><div class="bento-subtitle">Version & System Health</div></div></div>
             <div class="bento-content">
                 <div class="setting-row">
-                    <div class="setting-info"><div class="setting-name">System Version</div><div class="setting-desc">Stable v1.0.0-Android</div></div>
-                    <div class="badge" style="background: var(--bg-primary); box-shadow: var(--nm-pressed); color: var(--text-secondary); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">LATEST</div>
+                    <div class="setting-info">
+                        <div class="setting-name">System Version</div>
+                        <div class="setting-desc" id="version-row-desc">v1.0.0</div>
+                    </div>
+                    <span class="update-badge update-badge--ok" id="version-row-badge">LATEST</span>
+                </div>
+                <div class="setting-row" id="btn-check-updates-row">
+                    <div class="setting-info"><div class="setting-name">Check for Updates</div><div class="setting-desc">Tap to check for a newer version</div></div>
+                    <button class="mobile-action-btn" id="btn-check-updates" title="Check for updates" style="flex-shrink:0;">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
                 </div>
                 <div class="setting-row">
                     <div class="setting-info"><div class="setting-name">Last Activity</div><div class="setting-desc" id="last-action-display">No activity</div></div>
