@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "build:html": "node scripts/build-html.cjs",
     "cap:sync": "npm run build && npx cap sync",
     "cap:android": "npm run build && npx cap sync && npx cap open android",
     "cap:run": "npm run build && npx cap sync && npx cap run android --livereload --external"

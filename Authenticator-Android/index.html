@@ -41,728 +41,751 @@
 
 <body>
     <!-- Splash Screen -->
-    <div id="splash-screen" class="splash-screen">
-        <div class="splash-content">
-            <div class="splash-logo">
-                <img src="/logo.png" class="app-logo-large nm-logo">
-            </div>
-            <div class="splash-text">
-                <h1 class="splash-title">Keyra</h1>
-            </div>
-            <div class="splash-loader">
-                <div class="splash-progress"></div>
-            </div>
+<div id="splash-screen" class="splash-screen">
+    <div class="splash-content">
+        <div class="splash-logo">
+            <img src="/logo.png" class="app-logo-large nm-logo">
+        </div>
+        <div class="splash-text">
+            <h1 class="splash-title">Keyra</h1>
+        </div>
+        <div class="splash-loader">
+            <div class="splash-progress"></div>
         </div>
     </div>
+</div>
 
-    <div class="aura-background">
-        <div class="aura-blob aura-1"></div>
-    </div>
+<div class="aura-background">
+    <div class="aura-blob aura-1"></div>
+</div>
 
     <!-- Auth Overlay -->
-    <div id="auth-vessel" class="modal-overlay show auth-overlay">
-        <div class="modal auth-modal animate-fade-in">
+<div id="auth-vessel" class="modal-overlay show auth-overlay">
+    <div class="modal auth-modal animate-fade-in">
 
-            <!-- Brand header -->
-            <div class="auth-brand">
-                <div class="auth-logo-vessel">
-                    <img src="/logo.png" class="app-logo-large nm-logo">
-                </div>
-                <h1 class="auth-title">Keyra</h1>
-                <p class="auth-subtitle">YOUR VAULT IS SECURE</p>
-            </div>
-
-            <!-- Login Box -->
-            <div id="auth-login-box" class="auth-state-transition">
-                <form id="form-login" class="auth-form">
-                    <div class="form-group">
-                        <label class="form-label">Vault Name</label>
-                        <input type="text" id="login-username" class="form-input" placeholder="Your username" autocomplete="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Master Key</label>
-                        <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
-                    </div>
-                    <button type="submit" class="btn-primary auth-submit-btn">
-                        <i class="fa-solid fa-lock-open"></i>
-                        <span>Unlock Vault</span>
-                    </button>
-                    <div id="login-error" class="auth-error-msg"></div>
-                </form>
-                <div class="auth-switch-row">
-                    <span class="auth-switch-text">First time?</span>
-                    <button id="btn-show-signup" class="auth-switch-btn">Create your Vault</button>
-                </div>
-            </div>
-
-            <!-- Signup Box -->
-            <div id="auth-signup-box" class="auth-state-transition hidden">
-                <form id="form-signup" class="auth-form">
-                    <div class="form-group">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" id="signup-username" class="form-input" placeholder="John Doe" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" id="signup-email" class="form-input" placeholder="name@domain.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Master Password</label>
-                        <input type="password" id="signup-password" class="form-input" placeholder="Min 8 characters" required>
-                    </div>
-                    <button type="submit" class="btn-primary auth-submit-btn">
-                        <i class="fa-solid fa-vault"></i>
-                        <span>Create Vault</span>
-                    </button>
-                    <div id="signup-error" class="auth-error-msg"></div>
-                </form>
-                <div class="auth-switch-row">
-                    <span class="auth-switch-text">Already have a vault?</span>
-                    <button id="btn-show-login" class="auth-switch-btn">Sign In</button>
-                </div>
-            </div>
-
-            <!-- Verify Box -->
-            <div id="auth-verify-box" class="auth-state-transition hidden">
-                <div class="auth-verify-header">
-                    <div class="auth-verify-icon-vessel">
-                        <i class="fa-solid fa-envelope-open-text"></i>
-                    </div>
-                    <h2 class="auth-verify-title">Verify it's You</h2>
-                    <p class="auth-verify-desc">Enter the 6-digit code we sent to your email.</p>
-                </div>
-                <form id="form-verify" class="auth-form">
-                    <input type="hidden" id="verify-email-field">
-                    <div class="auth-digits-row">
-                        <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
-                        <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
-                        <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
-                        <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
-                        <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
-                        <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
-                    </div>
-                    <button type="submit" class="btn-primary auth-submit-btn">
-                        <i class="fa-solid fa-shield-check"></i>
-                        <span>Verify & Unlock</span>
-                    </button>
-                    <div id="verify-error" class="auth-error-msg"></div>
-                </form>
-                <div class="auth-verify-actions">
-                    <button id="btn-resend-code" class="auth-switch-btn">
-                        Resend Code <span id="resend-timer" class="auth-resend-timer"></span>
-                    </button>
-                    <button id="btn-show-login-from-verify" class="auth-back-btn">
-                        <i class="fa-solid fa-arrow-left"></i> Back to Login
-                    </button>
-                </div>
-            </div>
-
-            <!-- Auth Loading -->
-            <div id="auth-loading-overlay" class="auth-loading-overlay hidden">
-                <div class="auth-loader-content">
-                    <div class="auth-spinner-ring"><div class="auth-spinner-inner"></div></div>
-                    <p id="auth-loading-text" class="auth-loader-label">Unlocking Vault...</p>
-                    <p class="auth-loader-sublabel">SECURE CONNECTION</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="privacy-blur-overlay" class="privacy-blur-overlay hidden">
-        <div class="privacy-blur-content">
-            <div class="brand-vessel" style="margin-bottom: 24px;">
+        <!-- Brand header -->
+        <div class="auth-brand">
+            <div class="auth-logo-vessel">
                 <img src="/logo.png" class="app-logo-large nm-logo">
             </div>
-            <h2 style="font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px;">Vault Hidden</h2>
-            <p style="opacity: 0.7; font-weight: 600;">We've hidden your data to keep it private.</p>
+            <h1 class="auth-title">Keyra</h1>
+            <p class="auth-subtitle">YOUR VAULT IS SECURE</p>
+        </div>
+
+        <!-- Login Box -->
+        <div id="auth-login-box" class="auth-state-transition">
+            <form id="form-login" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">Vault Name</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="Your username" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Master Key</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="btn-primary auth-submit-btn">
+                    <i class="fa-solid fa-lock-open"></i>
+                    <span>Unlock Vault</span>
+                </button>
+                <div id="login-error" class="auth-error-msg"></div>
+            </form>
+            <div class="auth-switch-row">
+                <span class="auth-switch-text">First time?</span>
+                <button id="btn-show-signup" class="auth-switch-btn">Create your Vault</button>
+            </div>
+        </div>
+
+        <!-- Signup Box -->
+        <div id="auth-signup-box" class="auth-state-transition hidden">
+            <form id="form-signup" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="signup-username" class="form-input" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="signup-email" class="form-input" placeholder="name@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Master Password</label>
+                    <input type="password" id="signup-password" class="form-input" placeholder="Min 8 characters" required>
+                </div>
+                <button type="submit" class="btn-primary auth-submit-btn">
+                    <i class="fa-solid fa-vault"></i>
+                    <span>Create Vault</span>
+                </button>
+                <div id="signup-error" class="auth-error-msg"></div>
+            </form>
+            <div class="auth-switch-row">
+                <span class="auth-switch-text">Already have a vault?</span>
+                <button id="btn-show-login" class="auth-switch-btn">Sign In</button>
+            </div>
+        </div>
+
+        <!-- Verify Box -->
+        <div id="auth-verify-box" class="auth-state-transition hidden">
+            <div class="auth-verify-header">
+                <div class="auth-verify-icon-vessel">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <h2 class="auth-verify-title">Verify it's You</h2>
+                <p class="auth-verify-desc">Enter the 6-digit code we sent to your email.</p>
+            </div>
+            <form id="form-verify" class="auth-form">
+                <input type="hidden" id="verify-email-field">
+                <div class="auth-digits-row">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                </div>
+                <button type="submit" class="btn-primary auth-submit-btn">
+                    <i class="fa-solid fa-shield-check"></i>
+                    <span>Verify & Unlock</span>
+                </button>
+                <div id="verify-error" class="auth-error-msg"></div>
+            </form>
+            <div class="auth-verify-actions">
+                <button id="btn-resend-code" class="auth-switch-btn">
+                    Resend Code <span id="resend-timer" class="auth-resend-timer"></span>
+                </button>
+                <button id="btn-show-login-from-verify" class="auth-back-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Login
+                </button>
+            </div>
+        </div>
+
+        <!-- Auth Loading -->
+        <div id="auth-loading-overlay" class="auth-loading-overlay hidden">
+            <div class="auth-loader-content">
+                <div class="auth-spinner-ring"><div class="auth-spinner-inner"></div></div>
+                <p id="auth-loading-text" class="auth-loader-label">Unlocking Vault...</p>
+                <p class="auth-loader-sublabel">SECURE CONNECTION</p>
+            </div>
         </div>
     </div>
+</div>
+
+    <!-- Privacy blur overlay -->
+<div id="privacy-blur-overlay" class="privacy-blur-overlay hidden">
+    <div class="privacy-blur-content">
+        <div class="brand-vessel" style="margin-bottom: 24px;">
+            <img src="/logo.png" class="app-logo-large nm-logo">
+        </div>
+        <h2 style="font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px;">Vault Hidden</h2>
+        <p style="opacity: 0.7; font-weight: 600;">We've hidden your data to keep it private.</p>
+    </div>
+</div>
+
+<!-- Global Loading Overlay -->
+<div id="loading-overlay" class="modal-overlay hidden" style="z-index: 99999;">
+    <div class="loading-content">
+        <div class="nm-spinner-vessel"><div class="nm-spinner"></div><div class="nm-spinner-inner"></div></div>
+        <h2 id="loading-title" class="loading-title">Processing</h2>
+        <p id="loading-subtitle" class="loading-subtitle">VAULT SECURITY SYNCHRONIZATION</p>
+    </div>
+</div>
+
+<!-- Search Overlay (full-screen) -->
+<div id="search-overlay" class="search-overlay hidden">
+    <div class="search-overlay-bar">
+        <button class="search-overlay-back" id="search-overlay-back">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="search-overlay-input-vessel">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-overlay-input" class="search-overlay-input" placeholder="Search accounts..." autocomplete="off">
+            <button class="search-overlay-clear hidden" id="search-overlay-clear">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+    <div class="search-overlay-results" id="search-overlay-results"></div>
+</div>
+
+<!-- Simulation Toast -->
+<div id="simulation-toast" class="hidden nm-card simulation-toast">
+    <div class="simulation-toast-header"><i class="fa-solid fa-envelope"></i> SECURE INBOUND CODE</div>
+    <div style="font-size: 16px; font-weight: 600;">Code: <strong id="sim-code" style="color: var(--accent-primary); letter-spacing: 4px; font-size: 26px; font-family: 'Outfit'; margin-left: 16px;">000000</strong></div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Cloud sync indicator -->
+<div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" title="Cloud Sync Active">
+    <i class="fa-solid fa-cloud-arrow-up sync-icon"></i><span>Syncing...</span>
+</div>
+
+<!-- Connectivity indicator -->
+<div id="connectivity-indicator" class="connectivity-indicator online" aria-live="polite" aria-label="Connection status">
+    <span class="connectivity-dot"></span>
+    <span class="connectivity-label">Online</span>
+</div>
+
 
     <div class="app-container">
         <!-- Navbar: visible on desktop, hidden on mobile (bottom nav takes over) -->
-        <header class="navbar">
-            <div class="navbar-wrapper">
-                <div class="navbar-section navbar-left">
-                    <div class="navbar-brand">
-                        <div class="brand-icon"><img src="/logo.png" class="app-logo-small nm-logo"></div>
-                        <span class="brand-text">Keyra</span>
+<header class="navbar">
+    <div class="navbar-wrapper">
+        <div class="navbar-section navbar-left">
+            <div class="navbar-brand">
+                <div class="brand-icon"><img src="/logo.png" class="app-logo-small nm-logo"></div>
+                <span class="brand-text">Keyra</span>
+            </div>
+        </div>
+        <div class="navbar-section navbar-center">
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="vault"><i class="fa-solid fa-box-archive"></i><span>My Vault</span></button>
+                <button class="nav-tab" data-tab="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+            </nav>
+        </div>
+        <div class="navbar-section navbar-right">
+            <div class="user-menu">
+                <button class="user-button" id="user-dropdown-btn">
+                    <div class="user-avatar" id="user-avatar">
+                        <img id="navbar-avatar-img" class="hidden">
+                        <span id="navbar-avatar-initials">?</span>
                     </div>
-                </div>
-                <div class="navbar-section navbar-center">
-                    <nav class="nav-tabs">
-                        <button class="nav-tab active" data-tab="vault"><i class="fa-solid fa-box-archive"></i><span>My Vault</span></button>
-                        <button class="nav-tab" data-tab="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
-                    </nav>
-                </div>
-                <div class="navbar-section navbar-right">
-                    <div class="user-menu">
-                        <button class="user-button" id="user-dropdown-btn">
-                            <div class="user-avatar" id="user-avatar">
-                                <img id="navbar-avatar-img" class="hidden">
-                                <span id="navbar-avatar-initials">?</span>
-                            </div>
-                            <span class="user-name" id="user-name-display">User</span>
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
-                        <div class="dropdown-menu" id="user-dropdown">
-                            <div class="dropdown-header">
-                                <div class="dropdown-user-name" id="dropdown-user-name">User</div>
-                                <div class="dropdown-user-email" id="dropdown-user-email">user@keyra.app</div>
-                            </div>
-                            <div class="dropdown-item" id="account-settings-btn"><i class="fa-solid fa-user"></i><span>Account</span></div>
-                            <div class="nm-divider"></div>
-                            <div class="dropdown-item" id="lock-vault-btn"><i class="fa-solid fa-lock"></i><span>Lock Vault</span></div>
-                            <div class="dropdown-item" id="theme-toggle-btn"><i id="theme-icon-lucide" class="fa-solid fa-moon"></i><span id="theme-text">Dark Mode</span></div>
-                            <div class="nm-divider"></div>
-                            <div class="dropdown-item" id="btn-logout-trigger"><i class="fa-solid fa-right-from-bracket" style="color: #ff3b30;"></i><span style="color: #ff3b30; font-weight: 600;">Sign Out</span></div>
-                        </div>
+                    <span class="user-name" id="user-name-display">User</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-menu" id="user-dropdown">
+                    <div class="dropdown-header">
+                        <div class="dropdown-user-name" id="dropdown-user-name">User</div>
+                        <div class="dropdown-user-email" id="dropdown-user-email">user@keyra.app</div>
                     </div>
+                    <div class="dropdown-item" id="account-settings-btn"><i class="fa-solid fa-user"></i><span>Account</span></div>
+                    <div class="nm-divider"></div>
+                    <div class="dropdown-item" id="lock-vault-btn"><i class="fa-solid fa-lock"></i><span>Lock Vault</span></div>
+                    <div class="dropdown-item" id="theme-toggle-btn"><i id="theme-icon-lucide" class="fa-solid fa-moon"></i><span id="theme-text">Dark Mode</span></div>
+                    <div class="nm-divider"></div>
+                    <div class="dropdown-item" id="btn-logout-trigger"><i class="fa-solid fa-right-from-bracket" style="color: #ff3b30;"></i><span style="color: #ff3b30; font-weight: 600;">Sign Out</span></div>
                 </div>
             </div>
-        </header>
+        </div>
+    </div>
+</header>
+
 
         <main class="main-content">
             <!-- Vault View -->
-            <section id="vault-view" class="view-section">
-                <!-- Mobile inline header: brand + actions row -->
-                <div class="mobile-tab-header">
-                    <div class="mobile-tab-brand">
-                        <img src="/logo.png" class="app-logo-small nm-logo mobile-brand-logo">
-                        <span class="mobile-brand-name">Keyra</span>
-                    </div>
-                    <div class="mobile-tab-actions">
-                        <button class="mobile-action-btn" id="mobile-lock-btn" title="Lock Vault">
-                            <i class="fa-solid fa-lock"></i>
-                        </button>
-                        <button class="mobile-action-btn mobile-avatar-btn" id="mobile-avatar-btn">
-                            <div class="user-avatar" id="mobile-user-avatar">
-                                <img id="mobile-avatar-img" class="hidden">
-                                <span id="mobile-avatar-initials">?</span>
-                            </div>
-                        </button>
-                    </div>
+<section id="vault-view" class="view-section">
+    <!-- Mobile inline header -->
+    <div class="mobile-tab-header">
+        <div class="mobile-tab-brand">
+            <img src="/logo.png" class="app-logo-small nm-logo mobile-brand-logo">
+            <span class="mobile-brand-name">Keyra</span>
+        </div>
+        <div class="mobile-tab-actions">
+            <button class="mobile-action-btn" id="mobile-lock-btn" title="Lock Vault">
+                <i class="fa-solid fa-lock"></i>
+            </button>
+            <button class="mobile-action-btn mobile-avatar-btn" id="mobile-avatar-btn">
+                <div class="user-avatar" id="mobile-user-avatar">
+                    <img id="mobile-avatar-img" class="hidden">
+                    <span id="mobile-avatar-initials">?</span>
                 </div>
-                <!-- Mobile dropdown (reuses desktop dropdown) -->
-                <div class="dropdown-menu mobile-dropdown" id="mobile-user-dropdown">
-                    <div class="dropdown-header">
-                        <div class="dropdown-user-name" id="mobile-dropdown-user-name">User</div>
-                        <div class="dropdown-user-email" id="mobile-dropdown-user-email">user@keyra.app</div>
-                    </div>
-                    <div class="dropdown-item" id="mobile-theme-toggle-btn"><i id="mobile-theme-icon" class="fa-solid fa-moon"></i><span id="mobile-theme-text">Dark Mode</span></div>
-                    <div class="nm-divider"></div>
-                    <div class="dropdown-item" id="mobile-logout-trigger"><i class="fa-solid fa-right-from-bracket" style="color:#ff3b30;"></i><span style="color:#ff3b30;font-weight:600;">Sign Out</span></div>
-                </div>
-                <div class="section-header">
-                    <div class="header-main">
-                        <h1 class="section-title">My Vault</h1>
-                        <p class="section-subtitle">YOUR SAVED ACCOUNTS</p>
-                    </div>
-                    <div class="search-add-group">
-                        <div class="segmented-control vault-view-toggle" id="vault-view-segmented">
-                            <button class="segment" data-val="unified" title="Unified"><i class="fa-solid fa-grip-lines"></i></button>
-                            <button class="segment active" data-val="compact" title="Compact"><i class="fa-solid fa-grip"></i></button>
-                            <button class="segment" data-val="secure" title="Secure"><i class="fa-solid fa-shield-halved"></i></button>
-                            <div class="segment-indicator"></div>
-                        </div>
-                        <div class="search-vessel">
-                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input type="text" id="vault-search" class="form-input search-input" placeholder="Search your accounts...">
-                        </div>
-                        <button class="btn-primary" id="add-account-btn"><i class="fa-solid fa-plus"></i><span>Add Account</span></button>
-                    </div>
-                </div>
-                <div class="global-timer-vessel hidden" id="global-timer-vessel">
-                    <div class="global-timer-label"><i class="fa-solid fa-clock-rotate-left"></i><span>Security Sync</span></div>
-                    <div class="timer-linear-vessel global-bar"><div class="timer-linear-progress" id="global-otp-timer"></div></div>
-                </div>
-                <div class="accounts-grid" id="accounts-grid"></div>
-                <div id="empty-state" class="hidden">
-                    <div class="empty-state-container"><div class="empty-state-vessel">
-                        <div class="empty-state-illustration">
-                            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="empty-svg">
-                                <circle cx="60" cy="60" r="54" stroke="var(--accent-primary)" stroke-width="1.5" stroke-dasharray="8 6" opacity="0.2" class="empty-ring"/>
-                                <rect x="32" y="38" width="56" height="44" rx="10" fill="var(--bg-primary)" opacity="0.9" class="empty-vault"/>
-                                <rect x="44" y="52" width="32" height="6" rx="3" fill="var(--accent-primary)" opacity="0.25" class="empty-line1"/>
-                                <rect x="44" y="63" width="20" height="6" rx="3" fill="var(--accent-primary)" opacity="0.12" class="empty-line2"/>
-                                <circle cx="60" cy="30" r="10" fill="var(--bg-primary)" opacity="0.9" class="empty-lock"/>
-                                <path d="M56 30 Q56 26 60 26 Q64 26 64 30" stroke="var(--accent-primary)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
-                                <circle cx="60" cy="31" r="2" fill="var(--accent-primary)" opacity="0.6"/>
-                                <circle cx="28" cy="72" r="5" fill="var(--accent-primary)" opacity="0.1" class="empty-dot1"/>
-                                <circle cx="92" cy="48" r="4" fill="var(--accent-primary)" opacity="0.08" class="empty-dot2"/>
-                                <circle cx="85" cy="80" r="3" fill="var(--accent-primary)" opacity="0.12" class="empty-dot3"/>
-                            </svg>
-                        </div>
-                        <h2>Your Vault is Empty</h2>
-                        <p>Add your first account to get started.</p>
-                        <button class="btn-primary" id="empty-add-btn"><i class="fa-solid fa-plus"></i><span>Add Account</span></button>
-                    </div></div>
-                </div>
-                <div id="search-empty-state" class="hidden">
-                    <div class="empty-state-container"><div class="empty-state-vessel">
-                        <div class="nm-icon-large" style="opacity: 0.6; margin-bottom: 32px;"><i class="fa-solid fa-magnifying-glass"></i></div>
-                        <h2>No Results Found</h2>
-                        <p>We couldn't find any accounts matching your search.</p>
-                        <div class="search-empty-actions">
-                            <button class="user-button" id="search-empty-clear-btn">Clear Filter</button>
-                        </div>
-                    </div></div>
-                </div>
-            </section>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile dropdown -->
+    <div class="dropdown-menu mobile-dropdown" id="mobile-user-dropdown">
+        <div class="dropdown-header">
+            <div class="dropdown-user-name" id="mobile-dropdown-user-name">User</div>
+            <div class="dropdown-user-email" id="mobile-dropdown-user-email">user@keyra.app</div>
+        </div>
+        <div class="dropdown-item" id="mobile-theme-toggle-btn"><i id="mobile-theme-icon" class="fa-solid fa-moon"></i><span id="mobile-theme-text">Dark Mode</span></div>
+        <div class="nm-divider"></div>
+        <div class="dropdown-item" id="mobile-logout-trigger"><i class="fa-solid fa-right-from-bracket" style="color:#ff3b30;"></i><span style="color:#ff3b30;font-weight:600;">Sign Out</span></div>
+    </div>
+
+    <div class="section-header">
+        <div class="header-main">
+            <h1 class="section-title">My Vault</h1>
+            <p class="section-subtitle">YOUR SAVED ACCOUNTS</p>
+        </div>
+        <div class="search-add-group">
+            <div class="segmented-control vault-view-toggle" id="vault-view-segmented">
+                <button class="segment" data-val="unified" title="Unified"><i class="fa-solid fa-grip-lines"></i></button>
+                <button class="segment active" data-val="compact" title="Compact"><i class="fa-solid fa-grip"></i></button>
+                <button class="segment" data-val="secure" title="Secure"><i class="fa-solid fa-shield-halved"></i></button>
+                <div class="segment-indicator"></div>
+            </div>
+            <div class="search-vessel">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="vault-search" class="form-input search-input" placeholder="Search your accounts...">
+            </div>
+            <button class="btn-primary" id="add-account-btn"><i class="fa-solid fa-plus"></i><span>Add Account</span></button>
+        </div>
+    </div>
+
+    <div class="global-timer-vessel hidden" id="global-timer-vessel">
+        <div class="global-timer-label"><i class="fa-solid fa-clock-rotate-left"></i><span>Security Sync</span></div>
+        <div class="timer-linear-vessel global-bar"><div class="timer-linear-progress" id="global-otp-timer"></div></div>
+    </div>
+
+    <div class="accounts-grid" id="accounts-grid"></div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="hidden">
+        <div class="empty-state-container"><div class="empty-state-vessel">
+            <div class="empty-state-illustration">
+                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="empty-svg">
+                    <circle cx="60" cy="60" r="54" stroke="var(--accent-primary)" stroke-width="1.5" stroke-dasharray="8 6" opacity="0.2" class="empty-ring"/>
+                    <rect x="32" y="38" width="56" height="44" rx="10" fill="var(--bg-primary)" opacity="0.9" class="empty-vault"/>
+                    <rect x="44" y="52" width="32" height="6" rx="3" fill="var(--accent-primary)" opacity="0.25" class="empty-line1"/>
+                    <rect x="44" y="63" width="20" height="6" rx="3" fill="var(--accent-primary)" opacity="0.12" class="empty-line2"/>
+                    <circle cx="60" cy="30" r="10" fill="var(--bg-primary)" opacity="0.9" class="empty-lock"/>
+                    <path d="M56 30 Q56 26 60 26 Q64 26 64 30" stroke="var(--accent-primary)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+                    <circle cx="60" cy="31" r="2" fill="var(--accent-primary)" opacity="0.6"/>
+                    <circle cx="28" cy="72" r="5" fill="var(--accent-primary)" opacity="0.1" class="empty-dot1"/>
+                    <circle cx="92" cy="48" r="4" fill="var(--accent-primary)" opacity="0.08" class="empty-dot2"/>
+                    <circle cx="85" cy="80" r="3" fill="var(--accent-primary)" opacity="0.12" class="empty-dot3"/>
+                </svg>
+            </div>
+            <h2>Your Vault is Empty</h2>
+            <p>Add your first account to get started.</p>
+            <button class="btn-primary" id="empty-add-btn"><i class="fa-solid fa-plus"></i><span>Add Account</span></button>
+        </div></div>
+    </div>
+
+    <!-- Search empty state -->
+    <div id="search-empty-state" class="hidden">
+        <div class="empty-state-container"><div class="empty-state-vessel">
+            <div class="nm-icon-large" style="opacity: 0.6; margin-bottom: 32px;"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <h2>No Results Found</h2>
+            <p>We couldn't find any accounts matching your search.</p>
+            <div class="search-empty-actions">
+                <button class="user-button" id="search-empty-clear-btn">Clear Filter</button>
+            </div>
+        </div></div>
+    </div>
+</section>
 
             <!-- Settings View -->
-            <section id="settings-view" class="view-section hidden settings-container">
-                <!-- Mobile inline header -->
-                <div class="mobile-tab-header">
-                    <div class="mobile-tab-brand">
-                        <span class="mobile-brand-name">Settings</span>
-                    </div>
-                    <div class="mobile-tab-actions">
-                        <button class="mobile-action-btn" id="mobile-lock-btn-settings" title="Lock Vault">
-                            <i class="fa-solid fa-lock"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="section-header" style="margin-bottom: var(--space-xl);">
-                    <div><h1 class="section-title">Settings</h1><p class="section-subtitle">CUSTOMIZE YOUR EXPERIENCE</p></div>
-                </div>
-                <div class="settings-grid">
-                    <div class="account-card bento-card">
-                        <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-palette"></i></div><div class="bento-title-vessel"><h3 class="bento-title">Look & Feel</h3><div class="bento-subtitle">Theme and colors</div></div></div>
-                        <div class="bento-content">
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">Accent Color</div><div class="setting-desc">Choose your favorite color</div></div>
-                                <div class="accent-color-compact">
-                                    <button class="accent-color-toggle" id="accent-color-toggle"><div class="current-accent" id="current-accent" style="background: hsl(258, 100%, 68%);"></div><span class="accent-label">Royal Purple</span><i class="fa-solid fa-chevron-down accent-chevron"></i></button>
-                                    <div class="accent-dropdown" id="accent-dropdown"><div class="accent-grid-compact">
-                                        <button class="accent-item active" data-accent="royal-purple" style="background: hsl(258, 100%, 68%);" title="Royal Purple"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="electric-blue" style="background: hsl(200, 100%, 68%);" title="Electric Blue"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="emerald-green" style="background: hsl(145, 100%, 68%);" title="Emerald Green"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="solar-orange" style="background: hsl(15, 100%, 68%);" title="Solar Orange"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="rose-quartz" style="background: hsl(330, 100%, 68%);" title="Rose Quartz"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="peach-blossom" style="background: hsl(20, 100%, 68%);" title="Peach Blossom"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="lavender-dream" style="background: hsl(270, 100%, 68%);" title="Lavender Dream"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="bubblegum" style="background: hsl(320, 100%, 68%);" title="Bubblegum"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="sky-blue" style="background: hsl(190, 100%, 68%);" title="Sky Blue"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="coral-sunset" style="background: hsl(10, 100%, 68%);" title="Coral Sunset"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="lemon-zest" style="background: hsl(45, 100%, 68%);" title="Lemon Zest"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="ocean-teal" style="background: hsl(175, 100%, 68%);" title="Ocean Teal"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="amethyst-glow" style="background: hsl(280, 100%, 68%);" title="Amethyst Glow"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="sage-serene" style="background: hsl(150, 100%, 68%);" title="Sage Serene"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="golden-hour" style="background: hsl(35, 100%, 68%);" title="Golden Hour"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="orchid-mystic" style="background: hsl(300, 100%, 68%);" title="Orchid Mystic"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="mint-fresh" style="background: hsl(160, 100%, 68%);" title="Mint Fresh"><span class="accent-check">✓</span></button>
-                                        <button class="accent-item" data-accent="turquoise-dream" style="background: hsl(180, 100%, 68%);" title="Turquoise Dream"><span class="accent-check">✓</span></button>
-                                    </div></div>
-                                </div>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">Theme</div><div class="setting-desc">Light or dark mode</div></div>
-                                <div class="segmented-control" id="theme-segmented"><button class="segment" data-val="light">Light</button><button class="segment" data-val="dark">Dark</button><button class="segment" data-val="auto">Auto</button><div class="segment-indicator"></div></div>
-                            </div>
-                            <div class="setting-row oled-setting-row" id="oled-setting-row">
-                                <div class="setting-info"><div class="setting-name">OLED Mode</div><div class="setting-desc">Pure black for OLED screens</div></div>
-                                <label class="switch"><input type="checkbox" id="oled-mode-toggle"><span class="slider round"></span></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="account-card bento-card">
-                        <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="bento-title-vessel"><h3 class="bento-title">Security</h3><div class="bento-subtitle">How you access your Vault</div></div></div>
-                        <div class="bento-content">
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">App PIN</div><div class="setting-desc">A 4-digit code to unlock the app</div></div>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="user-button" id="setup-pin-btn" style="min-width: 100px; justify-content: center;">Setup PIN</button>
-                                    <button class="user-button" id="change-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Change PIN</button>
-                                    <button class="user-button danger" id="remove-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Remove PIN</button>
-                                </div>
-                            </div>
-                            <div class="setting-row" id="biometric-setting-row" style="display: none;">
-                                <div class="setting-info"><div class="setting-name">Biometric Unlock</div><div class="setting-desc" id="biometric-setting-desc">Use fingerprint or face to unlock</div></div>
-                                <label class="switch"><input type="checkbox" id="biometric-toggle"><span class="slider round"></span></label>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">Auto-Lock App</div><div class="setting-desc">Lock automatically when inactive</div></div>
-                                <div class="segmented-control" id="autolock-segmented"><button class="segment" data-val="0">Off</button><button class="segment" data-val="1">1m</button><button class="segment" data-val="5">5m</button><button class="segment" data-val="15">15m</button><div class="segment-indicator"></div></div>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">Hide Codes</div><div class="setting-desc">Tap to reveal your security codes</div></div>
-                                <label class="switch"><input type="checkbox" id="privacy-mode-toggle"><span class="slider round"></span></label>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">Anti-Peek Protection</div><div class="setting-desc">Block screenshots and recordings</div></div>
-                                <label class="switch"><input type="checkbox" id="screen-guardian-toggle"><span class="slider round"></span></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="account-card bento-card">
-                        <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-database"></i></div><div class="bento-title-vessel"><h3 class="bento-title">Maintenance</h3><div class="bento-subtitle">Backup and Restore</div></div></div>
-                        <div class="bento-content">
-                            <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
-                                <button class="btn-primary btn-maintenance" id="btn-export-vault"><div class="btn-maintenance-icon"><i class="fa-solid fa-download"></i></div><span>Backup Vault</span></button>
-                                <button class="btn-primary btn-maintenance" id="btn-import-vault"><div class="btn-maintenance-icon"><i class="fa-solid fa-upload"></i></div><span>Restore Vault</span></button>
-                                <button class="btn-primary btn-maintenance nm-button-sync" id="btn-manual-sync"><div class="btn-maintenance-icon"><i class="fa-solid fa-rotate" id="sync-btn-icon"></i></div><span>Sync Now</span></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="account-card bento-card">
-                        <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-circle-info"></i></div><div class="bento-title-vessel"><h3 class="bento-title">About Keyra</h3><div class="bento-subtitle">Version & System Health</div></div></div>
-                        <div class="bento-content">
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">System Version</div><div class="setting-desc">Stable v1.0.0-Android</div></div>
-                                <div class="badge" style="background: var(--bg-primary); box-shadow: var(--nm-pressed); color: var(--text-secondary); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">LATEST</div>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">Last Activity</div><div class="setting-desc" id="last-action-display">No activity</div></div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; font-weight: 700;"><i class="fa-solid fa-clock"></i><span id="last-activity-display">Never</span></div>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">Cloud Sync Status</div><div class="setting-desc" id="cloud-status-display">Connected</div></div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--success); font-size: 13px; font-weight: 700;"><i class="fa-solid fa-cloud"></i><span>Active</span></div>
-                            </div>
-                        </div>
+<section id="settings-view" class="view-section hidden settings-container">
+    <!-- Mobile inline header -->
+    <div class="mobile-tab-header">
+        <div class="mobile-tab-brand">
+            <span class="mobile-brand-name">Settings</span>
+        </div>
+        <div class="mobile-tab-actions">
+            <button class="mobile-action-btn" id="mobile-lock-btn-settings" title="Lock Vault">
+                <i class="fa-solid fa-lock"></i>
+            </button>
+        </div>
+    </div>
+    <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div><h1 class="section-title">Settings</h1><p class="section-subtitle">CUSTOMIZE YOUR EXPERIENCE</p></div>
+    </div>
+    <div class="settings-grid">
+
+        <!-- Look & Feel -->
+        <div class="account-card bento-card">
+            <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-palette"></i></div><div class="bento-title-vessel"><h3 class="bento-title">Look & Feel</h3><div class="bento-subtitle">Theme and colors</div></div></div>
+            <div class="bento-content">
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Accent Color</div><div class="setting-desc">Choose your favorite color</div></div>
+                    <div class="accent-color-compact">
+                        <button class="accent-color-toggle" id="accent-color-toggle"><div class="current-accent" id="current-accent" style="background: hsl(258, 100%, 68%);"></div><span class="accent-label">Royal Purple</span><i class="fa-solid fa-chevron-down accent-chevron"></i></button>
+                        <div class="accent-dropdown" id="accent-dropdown"><div class="accent-grid-compact">
+                            <button class="accent-item active" data-accent="royal-purple" style="background: hsl(258, 100%, 68%);" title="Royal Purple"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="electric-blue" style="background: hsl(200, 100%, 68%);" title="Electric Blue"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="emerald-green" style="background: hsl(145, 100%, 68%);" title="Emerald Green"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="solar-orange" style="background: hsl(15, 100%, 68%);" title="Solar Orange"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="rose-quartz" style="background: hsl(330, 100%, 68%);" title="Rose Quartz"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="peach-blossom" style="background: hsl(20, 100%, 68%);" title="Peach Blossom"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="lavender-dream" style="background: hsl(270, 100%, 68%);" title="Lavender Dream"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="bubblegum" style="background: hsl(320, 100%, 68%);" title="Bubblegum"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="sky-blue" style="background: hsl(190, 100%, 68%);" title="Sky Blue"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="coral-sunset" style="background: hsl(10, 100%, 68%);" title="Coral Sunset"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="lemon-zest" style="background: hsl(45, 100%, 68%);" title="Lemon Zest"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="ocean-teal" style="background: hsl(175, 100%, 68%);" title="Ocean Teal"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="amethyst-glow" style="background: hsl(280, 100%, 68%);" title="Amethyst Glow"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="sage-serene" style="background: hsl(150, 100%, 68%);" title="Sage Serene"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="golden-hour" style="background: hsl(35, 100%, 68%);" title="Golden Hour"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="orchid-mystic" style="background: hsl(300, 100%, 68%);" title="Orchid Mystic"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="mint-fresh" style="background: hsl(160, 100%, 68%);" title="Mint Fresh"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="turquoise-dream" style="background: hsl(180, 100%, 68%);" title="Turquoise Dream"><span class="accent-check">✓</span></button>
+                        </div></div>
                     </div>
                 </div>
-            </section>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Theme</div><div class="setting-desc">Light or dark mode</div></div>
+                    <div class="segmented-control" id="theme-segmented"><button class="segment" data-val="light">Light</button><button class="segment" data-val="dark">Dark</button><button class="segment" data-val="auto">Auto</button><div class="segment-indicator"></div></div>
+                </div>
+                <div class="setting-row oled-setting-row" id="oled-setting-row">
+                    <div class="setting-info"><div class="setting-name">OLED Mode</div><div class="setting-desc">Pure black for OLED screens</div></div>
+                    <label class="switch"><input type="checkbox" id="oled-mode-toggle"><span class="slider round"></span></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security -->
+        <div class="account-card bento-card">
+            <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="bento-title-vessel"><h3 class="bento-title">Security</h3><div class="bento-subtitle">How you access your Vault</div></div></div>
+            <div class="bento-content">
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">App PIN</div><div class="setting-desc">A 4-digit code to unlock the app</div></div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="user-button" id="setup-pin-btn" style="min-width: 100px; justify-content: center;">Setup PIN</button>
+                        <button class="user-button" id="change-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Change PIN</button>
+                        <button class="user-button danger" id="remove-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Remove PIN</button>
+                    </div>
+                </div>
+                <div class="setting-row" id="biometric-setting-row" style="display: none;">
+                    <div class="setting-info"><div class="setting-name">Biometric Unlock</div><div class="setting-desc" id="biometric-setting-desc">Use fingerprint or face to unlock</div></div>
+                    <label class="switch"><input type="checkbox" id="biometric-toggle"><span class="slider round"></span></label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Auto-Lock App</div><div class="setting-desc">Lock automatically when inactive</div></div>
+                    <div class="segmented-control" id="autolock-segmented"><button class="segment" data-val="0">Off</button><button class="segment" data-val="1">1m</button><button class="segment" data-val="5">5m</button><button class="segment" data-val="15">15m</button><div class="segment-indicator"></div></div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Hide Codes</div><div class="setting-desc">Tap to reveal your security codes</div></div>
+                    <label class="switch"><input type="checkbox" id="privacy-mode-toggle"><span class="slider round"></span></label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Anti-Peek Protection</div><div class="setting-desc">Block screenshots and recordings</div></div>
+                    <label class="switch"><input type="checkbox" id="screen-guardian-toggle"><span class="slider round"></span></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance -->
+        <div class="account-card bento-card">
+            <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-database"></i></div><div class="bento-title-vessel"><h3 class="bento-title">Maintenance</h3><div class="bento-subtitle">Backup and Restore</div></div></div>
+            <div class="bento-content">
+                <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                    <button class="btn-primary btn-maintenance" id="btn-export-vault"><div class="btn-maintenance-icon"><i class="fa-solid fa-download"></i></div><span>Backup Vault</span></button>
+                    <button class="btn-primary btn-maintenance" id="btn-import-vault"><div class="btn-maintenance-icon"><i class="fa-solid fa-upload"></i></div><span>Restore Vault</span></button>
+                    <button class="btn-primary btn-maintenance nm-button-sync" id="btn-manual-sync"><div class="btn-maintenance-icon"><i class="fa-solid fa-rotate" id="sync-btn-icon"></i></div><span>Sync Now</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- About -->
+        <div class="account-card bento-card">
+            <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-circle-info"></i></div><div class="bento-title-vessel"><h3 class="bento-title">About Keyra</h3><div class="bento-subtitle">Version & System Health</div></div></div>
+            <div class="bento-content">
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">System Version</div><div class="setting-desc">Stable v1.0.0-Android</div></div>
+                    <div class="badge" style="background: var(--bg-primary); box-shadow: var(--nm-pressed); color: var(--text-secondary); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">LATEST</div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Last Activity</div><div class="setting-desc" id="last-action-display">No activity</div></div>
+                    <div style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; font-weight: 700;"><i class="fa-solid fa-clock"></i><span id="last-activity-display">Never</span></div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Cloud Sync Status</div><div class="setting-desc" id="cloud-status-display">Connected</div></div>
+                    <div style="display: flex; align-items: center; gap: 6px; color: var(--success); font-size: 13px; font-weight: 700;"><i class="fa-solid fa-cloud"></i><span>Active</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
 
             <!-- Account View -->
-            <section id="account-view" class="view-section hidden settings-container">
-                <!-- Mobile inline header -->
-                <div class="mobile-tab-header">
-                    <div class="mobile-tab-brand">
-                        <span class="mobile-brand-name">Account</span>
+<section id="account-view" class="view-section hidden settings-container">
+    <!-- Mobile inline header -->
+    <div class="mobile-tab-header">
+        <div class="mobile-tab-brand">
+            <span class="mobile-brand-name">Account</span>
+        </div>
+        <div class="mobile-tab-actions">
+            <button class="mobile-action-btn" id="mobile-lock-btn-account" title="Lock Vault">
+                <i class="fa-solid fa-lock"></i>
+            </button>
+        </div>
+    </div>
+    <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div><h1 class="section-title">My Account</h1><p class="section-subtitle">YOUR PROFILE AND SECURITY</p></div>
+    </div>
+    <div class="settings-grid">
+
+        <!-- Vault Identity -->
+        <div class="account-card bento-card">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-user"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Vault Identity</h3><div class="bento-subtitle">Profile & Access Email</div></div>
+            </div>
+            <div class="bento-content">
+                <div class="acc-identity-hero">
+                    <div class="acc-avatar-ring">
+                        <div class="acc-avatar-vessel"><img id="acc-avatar-img" class="hidden"><span id="acc-initials">?</span></div>
                     </div>
-                    <div class="mobile-tab-actions">
-                        <button class="mobile-action-btn" id="mobile-lock-btn-account" title="Lock Vault">
-                            <i class="fa-solid fa-lock"></i>
+                    <div class="acc-identity-info">
+                        <button class="btn-primary acc-change-photo-btn" id="btn-change-avatar">
+                            <i class="fa-solid fa-camera"></i><span>Change Photo</span>
+                        </button>
+                        <p class="acc-photo-hint">PNG, JPG or WebP · Max 2MB</p>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Vault Name</div><div class="setting-desc" id="acc-display-username">loading...</div></div>
+                    <i class="fa-solid fa-chevron-right acc-row-chevron"></i>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Primary Email</div><div class="setting-desc" id="acc-display-email">loading...</div></div>
+                    <i class="fa-solid fa-chevron-right acc-row-chevron"></i>
+                </div>
+                <!-- Pending email change -->
+                <div id="pending-email-container" class="hidden">
+                    <div class="nm-divider" style="margin: 12px 0;"></div>
+                    <div class="setting-row" style="margin-top: 0;">
+                        <div class="setting-info">
+                            <div class="acc-pending-label-row">
+                                <div class="setting-name">Pending Change</div>
+                                <div class="acc-pending-badge">not confirmed yet</div>
+                            </div>
+                            <div class="setting-desc" id="acc-display-pending-email">new@domain.com</div>
+                        </div>
+                        <button class="btn-icon acc-remove-pending-btn" id="btn-remove-pending-email" title="Cancel Change">
+                            <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
+                    <button class="btn-primary acc-verify-btn" id="btn-verify-new-email">
+                        <i class="fa-solid fa-shield-halved"></i>Verify & Activate
+                    </button>
                 </div>
-                <div class="section-header" style="margin-bottom: var(--space-xl);">
-                    <div><h1 class="section-title">My Account</h1><p class="section-subtitle">YOUR PROFILE AND SECURITY</p></div>
+            </div>
+        </div>
+
+        <!-- Display Name -->
+        <div class="account-card bento-card">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-user-gear"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Display Name</h3><div class="bento-subtitle">Personalize your vault profile</div></div>
+            </div>
+            <div class="bento-content">
+                <form id="form-change-name" class="acc-form">
+                    <div class="form-group">
+                        <label class="form-label">New Full Name</label>
+                        <input type="text" id="change-name-input" class="form-input" placeholder="Enter new name" required>
+                    </div>
+                    <button type="submit" class="btn-primary acc-form-submit">
+                        <i class="fa-solid fa-check"></i><span>Update Name</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Change Email -->
+        <div class="account-card bento-card" id="card-change-email">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-envelope"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Change Email</h3><div class="bento-subtitle">For notifications & recovery</div></div>
+            </div>
+            <div class="bento-content">
+                <form id="form-change-email" class="acc-form">
+                    <div class="form-group">
+                        <label class="form-label">New Email Address</label>
+                        <input type="email" id="change-email-input" class="form-input" placeholder="new@domain.com" required>
+                    </div>
+                    <button type="submit" class="btn-primary acc-form-submit">
+                        <i class="fa-solid fa-paper-plane"></i><span>Change Email</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Master Password -->
+        <div class="account-card bento-card">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-key"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Master Password</h3><div class="bento-subtitle">Security zone</div></div>
+            </div>
+            <div class="bento-content">
+                <form id="form-change-password" class="acc-form">
+                    <div class="form-group">
+                        <label class="form-label">New Master Password</label>
+                        <input type="password" id="change-pass-input" class="form-input" placeholder="Min 8 characters" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" id="change-pass-confirm" class="form-input" placeholder="Repeat password" required>
+                    </div>
+                    <button type="submit" class="btn-primary acc-form-submit acc-form-submit--danger">
+                        <i class="fa-solid fa-lock"></i><span>Update Master Key</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Trusted Devices -->
+        <div class="account-card bento-card">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Trusted Devices</h3><div class="bento-subtitle">Devices with vault access</div></div>
+            </div>
+            <div class="bento-content">
+                <div id="devices-list" class="devices-list">
+                    <p class="devices-empty">Loading devices...</p>
                 </div>
-                <div class="settings-grid">
-                    <!-- Vault Identity -->
-                    <div class="account-card bento-card">
-                        <div class="bento-header">
-                            <div class="bento-icon"><i class="fa-solid fa-user"></i></div>
-                            <div class="bento-title-vessel"><h3 class="bento-title">Vault Identity</h3><div class="bento-subtitle">Profile & Access Email</div></div>
-                        </div>
-                        <div class="bento-content">
-                            <!-- Avatar hero row -->
-                            <div class="acc-identity-hero">
-                                <div class="acc-avatar-ring">
-                                    <div class="acc-avatar-vessel"><img id="acc-avatar-img" class="hidden"><span id="acc-initials">?</span></div>
-                                </div>
-                                <div class="acc-identity-info">
-                                    <button class="btn-primary acc-change-photo-btn" id="btn-change-avatar">
-                                        <i class="fa-solid fa-camera"></i><span>Change Photo</span>
-                                    </button>
-                                    <p class="acc-photo-hint">PNG, JPG or WebP · Max 2MB</p>
-                                </div>
-                            </div>
-                            <!-- Info rows -->
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">Vault Name</div><div class="setting-desc" id="acc-display-username">loading...</div></div>
-                                <i class="fa-solid fa-chevron-right acc-row-chevron"></i>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info"><div class="setting-name">Primary Email</div><div class="setting-desc" id="acc-display-email">loading...</div></div>
-                                <i class="fa-solid fa-chevron-right acc-row-chevron"></i>
-                            </div>
-                            <!-- Pending email change -->
-                            <div id="pending-email-container" class="hidden">
-                                <div class="nm-divider" style="margin: 12px 0;"></div>
-                                <div class="setting-row" style="margin-top: 0;">
-                                    <div class="setting-info">
-                                        <div class="acc-pending-label-row">
-                                            <div class="setting-name">Pending Change</div>
-                                            <div class="acc-pending-badge">not confirmed yet</div>
-                                        </div>
-                                        <div class="setting-desc" id="acc-display-pending-email">new@domain.com</div>
-                                    </div>
-                                    <button class="btn-icon acc-remove-pending-btn" id="btn-remove-pending-email" title="Cancel Change">
-                                        <i class="fa-solid fa-trash-can"></i>
-                                    </button>
-                                </div>
-                                <button class="btn-primary acc-verify-btn" id="btn-verify-new-email">
-                                    <i class="fa-solid fa-shield-halved"></i>Verify & Activate
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+            </div>
+        </div>
 
-                    <!-- Display Name -->
-                    <div class="account-card bento-card">
-                        <div class="bento-header">
-                            <div class="bento-icon"><i class="fa-solid fa-user-gear"></i></div>
-                            <div class="bento-title-vessel"><h3 class="bento-title">Display Name</h3><div class="bento-subtitle">Personalize your vault profile</div></div>
-                        </div>
-                        <div class="bento-content">
-                            <form id="form-change-name" class="acc-form">
-                                <div class="form-group">
-                                    <label class="form-label">New Full Name</label>
-                                    <input type="text" id="change-name-input" class="form-input" placeholder="Enter new name" required>
-                                </div>
-                                <button type="submit" class="btn-primary acc-form-submit">
-                                    <i class="fa-solid fa-check"></i><span>Update Name</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+    </div>
+</section>
 
-                    <!-- Change Email -->
-                    <div class="account-card bento-card" id="card-change-email">
-                        <div class="bento-header">
-                            <div class="bento-icon"><i class="fa-solid fa-envelope"></i></div>
-                            <div class="bento-title-vessel"><h3 class="bento-title">Change Email</h3><div class="bento-subtitle">For notifications & recovery</div></div>
-                        </div>
-                        <div class="bento-content">
-                            <form id="form-change-email" class="acc-form">
-                                <div class="form-group">
-                                    <label class="form-label">New Email Address</label>
-                                    <input type="email" id="change-email-input" class="form-input" placeholder="new@domain.com" required>
-                                </div>
-                                <button type="submit" class="btn-primary acc-form-submit">
-                                    <i class="fa-solid fa-paper-plane"></i><span>Change Email</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Master Password -->
-                    <div class="account-card bento-card">
-                        <div class="bento-header">
-                            <div class="bento-icon"><i class="fa-solid fa-key"></i></div>
-                            <div class="bento-title-vessel"><h3 class="bento-title">Master Password</h3><div class="bento-subtitle">Security zone</div></div>
-                        </div>
-                        <div class="bento-content">
-                            <form id="form-change-password" class="acc-form">
-                                <div class="form-group">
-                                    <label class="form-label">New Master Password</label>
-                                    <input type="password" id="change-pass-input" class="form-input" placeholder="Min 8 characters" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Confirm New Password</label>
-                                    <input type="password" id="change-pass-confirm" class="form-input" placeholder="Repeat password" required>
-                                </div>
-                                <button type="submit" class="btn-primary acc-form-submit acc-form-submit--danger">
-                                    <i class="fa-solid fa-lock"></i><span>Update Master Key</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Trusted Devices -->
-                    <div class="account-card bento-card">
-                        <div class="bento-header">
-                            <div class="bento-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
-                            <div class="bento-title-vessel"><h3 class="bento-title">Trusted Devices</h3><div class="bento-subtitle">Devices with vault access</div></div>
-                        </div>
-                        <div class="bento-content">
-                            <div id="devices-list" class="devices-list">
-                                <p class="devices-empty">Loading devices...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </main>
 
-        <div id="modal-overlay" class="modal-overlay"></div>
+        <!-- Generic modal overlay (populated dynamically) -->
+<div id="modal-overlay" class="modal-overlay"></div>
 
-        <div id="modal-logout" class="modal-overlay">
-            <div class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="modal-icon-vessel danger">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                        </div>
-                        <div class="modal-title-vessel">
-                            <h2 class="danger">Sign Out?</h2>
-                            <p>YOUR VAULT WILL BE LOCKED</p>
-                        </div>
-                    </div>
-                    <div class="modal-divider"></div>
-                    <div class="modal-body">
-                        <p class="modal-help-text">You will be signed out and your vault will be locked. Make sure your data is synced before leaving.</p>
-                    </div>
+<!-- Logout confirmation modal -->
+<div id="modal-logout" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon-vessel danger">
+                    <i class="fa-solid fa-right-from-bracket"></i>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn-danger" id="btn-confirm-logout">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        Sign Out
-                    </button>
-                    <button class="user-button" id="btn-cancel-logout">Discard</button>
+                <div class="modal-title-vessel">
+                    <h2 class="danger">Sign Out?</h2>
+                    <p>YOUR VAULT WILL BE LOCKED</p>
+                </div>
+            </div>
+            <div class="modal-divider"></div>
+            <div class="modal-body">
+                <p class="modal-help-text">You will be signed out and your vault will be locked. Make sure your data is synced before leaving.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-danger" id="btn-confirm-logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Sign Out
+            </button>
+            <button class="user-button" id="btn-cancel-logout">Discard</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation Bar (mobile) -->
+<nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-tab active" data-tab="vault">
+        <div class="bottom-nav-tab-icon"><i class="fa-solid fa-box-archive"></i></div>
+        <span>Vault</span>
+    </button>
+    <button class="bottom-nav-tab" data-tab="settings">
+        <div class="bottom-nav-tab-icon"><i class="fa-solid fa-gear"></i></div>
+        <span>Settings</span>
+    </button>
+    <button class="bottom-nav-tab" data-tab="account">
+        <div class="bottom-nav-tab-icon"><i class="fa-solid fa-user"></i></div>
+        <span>Account</span>
+    </button>
+</nav>
+
+    </div>
+
+    <!-- Lock Screen PIN -->
+<div id="lock-vessel" class="modal-overlay pin-overlay">
+    <div class="pin-vessel animate-fade-in">
+        <div class="pin-bg-blob" aria-hidden="true"></div>
+
+        <div class="pin-brand">
+            <div class="pin-avatar-ring">
+                <div class="pin-avatar-inner" id="pin-avatar">
+                    <img id="pin-avatar-img" class="hidden" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                    <img id="pin-avatar-fallback" src="/logo.png" class="app-logo-medium nm-logo" style="width:60%;height:auto;">
                 </div>
             </div>
         </div>
 
-        <!-- Lock Screen PIN -->
-        <div id="lock-vessel" class="modal-overlay pin-overlay">
-            <div class="pin-vessel animate-fade-in">
-                <!-- Decorative accent blob -->
-                <div class="pin-bg-blob" aria-hidden="true"></div>
+        <div class="pin-header">
+            <h2 class="pin-title" id="pin-greeting">Vault Locked</h2>
+            <p class="pin-subtitle">Enter your PIN to continue</p>
+        </div>
 
-                <!-- Avatar + greeting -->
-                <div class="pin-brand">
-                    <div class="pin-avatar-ring">
-                        <div class="pin-avatar-inner" id="pin-avatar">
-                            <img id="pin-avatar-img" class="hidden" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
-                            <img id="pin-avatar-fallback" src="/logo.png" class="app-logo-medium nm-logo" style="width:60%;height:auto;">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pin-header">
-                    <h2 class="pin-title" id="pin-greeting">Vault Locked</h2>
-                    <p class="pin-subtitle">Enter your PIN to continue</p>
-                </div>
-
-                <!-- PIN dots -->
-                <div class="pin-input-vessel">
-                    <div class="pin-indicators">
-                        <div class="pin-dot" data-digit="1"></div>
-                        <div class="pin-dot" data-digit="2"></div>
-                        <div class="pin-dot" data-digit="3"></div>
-                        <div class="pin-dot" data-digit="4"></div>
-                    </div>
-                    <input type="password" inputmode="numeric" id="unlock-pin" maxlength="4" class="pin-input-hidden" autocomplete="off">
-                    <div class="pin-helper">4-digit security code</div>
-                </div>
-
-                <!-- Visual numpad -->
-                <div class="pin-numpad" id="pin-numpad">
-                    <button class="pin-key" data-key="1"><span>1</span></button>
-                    <button class="pin-key" data-key="2"><span>2</span></button>
-                    <button class="pin-key" data-key="3"><span>3</span></button>
-                    <button class="pin-key" data-key="4"><span>4</span></button>
-                    <button class="pin-key" data-key="5"><span>5</span></button>
-                    <button class="pin-key" data-key="6"><span>6</span></button>
-                    <button class="pin-key" data-key="7"><span>7</span></button>
-                    <button class="pin-key" data-key="8"><span>8</span></button>
-                    <button class="pin-key" data-key="9"><span>9</span></button>
-                    <button class="pin-key pin-key-biometric hidden" id="btn-biometric-unlock" type="button">
-                        <i class="fa-solid fa-fingerprint"></i>
-                    </button>
-                    <button class="pin-key" data-key="0"><span>0</span></button>
-                    <button class="pin-key pin-key-delete" id="pin-key-delete" type="button">
-                        <i class="fa-solid fa-delete-left"></i>
-                    </button>
-                </div>
-
-                <div class="pin-footer-actions">
-                    <button type="button" id="btn-forgot-pin" class="forgot-pin-link">
-                        <i class="fa-solid fa-key"></i>
-                        <span>Forgot PIN?</span>
-                    </button>
-                </div>
+        <div class="pin-input-vessel">
+            <div class="pin-indicators">
+                <div class="pin-dot" data-digit="1"></div>
+                <div class="pin-dot" data-digit="2"></div>
+                <div class="pin-dot" data-digit="3"></div>
+                <div class="pin-dot" data-digit="4"></div>
             </div>
+            <input type="password" inputmode="numeric" id="unlock-pin" maxlength="4" class="pin-input-hidden" autocomplete="off">
+            <div class="pin-helper">4-digit security code</div>
         </div>
 
-        <!-- Forgot PIN Modal -->
-        <div id="modal-forgot-pin" class="modal-overlay hidden">
-            <div class="modal recovery-modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button id="cancel-forgot-pin-btn" class="modal-back-btn" title="Back to PIN Entry">
-                            <i class="fa-solid fa-arrow-left"></i>
-                        </button>
-                        <div class="modal-icon-vessel danger"><i class="fa-solid fa-key"></i></div>
-                        <div class="modal-title-vessel">
-                            <h2 class="danger">Reset PIN?</h2>
-                            <p>SECURITY ACTION REQUIRED</p>
-                        </div>
-                    </div>
-                    <div class="modal-divider"></div>
-                    <div id="forgot-pin-main-view" class="modal-body">
-                        <div class="modal-entity-badge">
-                            <div class="entity-icon"><i class="fa-solid fa-unlock-keyhole"></i></div>
-                            <div class="entity-info">
-                                <span class="entity-name">Reset Identity PIN</span>
-                                <span class="entity-label">Requires Verification</span>
-                            </div>
-                        </div>
-                        <p class="modal-help-text spaced-top">Enter your master password to verify your identity and reset your PIN.</p>
-                        <form id="form-forgot-pin" class="recovery-form hidden">
-                            <div class="form-group">
-                                <label class="form-label">Master Password</label>
-                                <input type="password" id="forgot-pin-password" class="form-input" placeholder="Enter your master password" autocomplete="current-password" required>
-                            </div>
-                            <p id="forgot-pin-error" class="hidden recovery-error"></p>
-                        </form>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-danger" id="confirm-forgot-pin-btn">
-                        <i class="fa-solid fa-trash-can"></i>
-                        Reset PIN &amp; Sign Out
-                    </button>
-                </div>
-            </div>
+        <div class="pin-numpad" id="pin-numpad">
+            <button class="pin-key" data-key="1"><span>1</span></button>
+            <button class="pin-key" data-key="2"><span>2</span></button>
+            <button class="pin-key" data-key="3"><span>3</span></button>
+            <button class="pin-key" data-key="4"><span>4</span></button>
+            <button class="pin-key" data-key="5"><span>5</span></button>
+            <button class="pin-key" data-key="6"><span>6</span></button>
+            <button class="pin-key" data-key="7"><span>7</span></button>
+            <button class="pin-key" data-key="8"><span>8</span></button>
+            <button class="pin-key" data-key="9"><span>9</span></button>
+            <button class="pin-key pin-key-biometric hidden" id="btn-biometric-unlock" type="button">
+                <i class="fa-solid fa-fingerprint"></i>
+            </button>
+            <button class="pin-key" data-key="0"><span>0</span></button>
+            <button class="pin-key pin-key-delete" id="pin-key-delete" type="button">
+                <i class="fa-solid fa-delete-left"></i>
+            </button>
         </div>
 
-        <!-- Simulation Toast -->
-        <div id="simulation-toast" class="hidden nm-card simulation-toast">
-            <div class="simulation-toast-header"><i class="fa-solid fa-envelope"></i> SECURE INBOUND CODE</div>
-            <div style="font-size: 16px; font-weight: 600;">Code: <strong id="sim-code" style="color: var(--accent-primary); letter-spacing: 4px; font-size: 26px; font-family: 'Outfit'; margin-left: 16px;">000000</strong></div>
+        <div class="pin-footer-actions">
+            <button type="button" id="btn-forgot-pin" class="forgot-pin-link">
+                <i class="fa-solid fa-key"></i>
+                <span>Forgot PIN?</span>
+            </button>
         </div>
+    </div>
+</div>
 
-        <!-- Global Loading Overlay -->
-        <div id="loading-overlay" class="modal-overlay hidden" style="z-index: 99999;">
-            <div class="loading-content">
-                <div class="nm-spinner-vessel"><div class="nm-spinner"></div><div class="nm-spinner-inner"></div></div>
-                <h2 id="loading-title" class="loading-title">Processing</h2>
-                <p id="loading-subtitle" class="loading-subtitle">VAULT SECURITY SYNCHRONIZATION</p>
-            </div>
-        </div>
-
-        <!-- Search Overlay (full-screen) -->
-        <div id="search-overlay" class="search-overlay hidden">
-            <div class="search-overlay-bar">
-                <button class="search-overlay-back" id="search-overlay-back">
+<!-- Forgot PIN Modal -->
+<div id="modal-forgot-pin" class="modal-overlay hidden">
+    <div class="modal recovery-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="cancel-forgot-pin-btn" class="modal-back-btn" title="Back to PIN Entry">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
-                <div class="search-overlay-input-vessel">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="search-overlay-input" class="search-overlay-input" placeholder="Search accounts..." autocomplete="off">
-                    <button class="search-overlay-clear hidden" id="search-overlay-clear">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+                <div class="modal-icon-vessel danger"><i class="fa-solid fa-key"></i></div>
+                <div class="modal-title-vessel">
+                    <h2 class="danger">Reset PIN?</h2>
+                    <p>SECURITY ACTION REQUIRED</p>
                 </div>
             </div>
-            <div class="search-overlay-results" id="search-overlay-results"></div>
+            <div class="modal-divider"></div>
+            <div id="forgot-pin-main-view" class="modal-body">
+                <div class="modal-entity-badge">
+                    <div class="entity-icon"><i class="fa-solid fa-unlock-keyhole"></i></div>
+                    <div class="entity-info">
+                        <span class="entity-name">Reset Identity PIN</span>
+                        <span class="entity-label">Requires Verification</span>
+                    </div>
+                </div>
+                <p class="modal-help-text spaced-top">Enter your master password to verify your identity and reset your PIN.</p>
+                <form id="form-forgot-pin" class="recovery-form hidden">
+                    <div class="form-group">
+                        <label class="form-label">Master Password</label>
+                        <input type="password" id="forgot-pin-password" class="form-input" placeholder="Enter your master password" autocomplete="current-password" required>
+                    </div>
+                    <p id="forgot-pin-error" class="hidden recovery-error"></p>
+                </form>
+            </div>
         </div>
-
-        <!-- Bottom Navigation Bar (mobile) -->
-        <nav class="bottom-nav" id="bottom-nav">
-            <button class="bottom-nav-tab active" data-tab="vault">
-                <div class="bottom-nav-tab-icon"><i class="fa-solid fa-box-archive"></i></div>
-                <span>Vault</span>
+        <div class="modal-footer">
+            <button class="btn-danger" id="confirm-forgot-pin-btn">
+                <i class="fa-solid fa-trash-can"></i>
+                Reset PIN &amp; Sign Out
             </button>
-            <button class="bottom-nav-tab" data-tab="settings">
-                <div class="bottom-nav-tab-icon"><i class="fa-solid fa-gear"></i></div>
-                <span>Settings</span>
-            </button>
-            <button class="bottom-nav-tab" data-tab="account">
-                <div class="bottom-nav-tab-icon"><i class="fa-solid fa-user"></i></div>
-                <span>Account</span>
-            </button>
-        </nav>
+        </div>
     </div>
+</div>
 
-    <!-- Toast container outside app-container to avoid overflow:hidden clipping -->
-    <div id="toast-container" class="toast-container"></div>
-
-    <div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" title="Cloud Sync Active">
-        <i class="fa-solid fa-cloud-arrow-up sync-icon"></i><span>Syncing...</span>
-    </div>
-
-    <!-- Connectivity indicator -->
-    <div id="connectivity-indicator" class="connectivity-indicator online" aria-live="polite" aria-label="Connection status">
-        <span class="connectivity-dot"></span>
-        <span class="connectivity-label">Online</span>
-    </div>
 
     <script type="module" src="/src/renderer/app.ts"></script>
 </body>
+
 </html>

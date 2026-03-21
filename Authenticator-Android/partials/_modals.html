@@ -1,0 +1,46 @@
+<!-- Generic modal overlay (populated dynamically) -->
+<div id="modal-overlay" class="modal-overlay"></div>
+
+<!-- Logout confirmation modal -->
+<div id="modal-logout" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon-vessel danger">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </div>
+                <div class="modal-title-vessel">
+                    <h2 class="danger">Sign Out?</h2>
+                    <p>YOUR VAULT WILL BE LOCKED</p>
+                </div>
+            </div>
+            <div class="modal-divider"></div>
+            <div class="modal-body">
+                <p class="modal-help-text">You will be signed out and your vault will be locked. Make sure your data is synced before leaving.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-danger" id="btn-confirm-logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Sign Out
+            </button>
+            <button class="user-button" id="btn-cancel-logout">Discard</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation Bar (mobile) -->
+<nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-tab active" data-tab="vault">
+        <div class="bottom-nav-tab-icon"><i class="fa-solid fa-box-archive"></i></div>
+        <span>Vault</span>
+    </button>
+    <button class="bottom-nav-tab" data-tab="settings">
+        <div class="bottom-nav-tab-icon"><i class="fa-solid fa-gear"></i></div>
+        <span>Settings</span>
+    </button>
+    <button class="bottom-nav-tab" data-tab="account">
+        <div class="bottom-nav-tab-icon"><i class="fa-solid fa-user"></i></div>
+        <span>Account</span>
+    </button>
+</nav>

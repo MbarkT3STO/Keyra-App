@@ -1,0 +1,41 @@
+<!-- Navbar: visible on desktop, hidden on mobile (bottom nav takes over) -->
+<header class="navbar">
+    <div class="navbar-wrapper">
+        <div class="navbar-section navbar-left">
+            <div class="navbar-brand">
+                <div class="brand-icon"><img src="/logo.png" class="app-logo-small nm-logo"></div>
+                <span class="brand-text">Keyra</span>
+            </div>
+        </div>
+        <div class="navbar-section navbar-center">
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="vault"><i class="fa-solid fa-box-archive"></i><span>My Vault</span></button>
+                <button class="nav-tab" data-tab="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+            </nav>
+        </div>
+        <div class="navbar-section navbar-right">
+            <div class="user-menu">
+                <button class="user-button" id="user-dropdown-btn">
+                    <div class="user-avatar" id="user-avatar">
+                        <img id="navbar-avatar-img" class="hidden">
+                        <span id="navbar-avatar-initials">?</span>
+                    </div>
+                    <span class="user-name" id="user-name-display">User</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-menu" id="user-dropdown">
+                    <div class="dropdown-header">
+                        <div class="dropdown-user-name" id="dropdown-user-name">User</div>
+                        <div class="dropdown-user-email" id="dropdown-user-email">user@keyra.app</div>
+                    </div>
+                    <div class="dropdown-item" id="account-settings-btn"><i class="fa-solid fa-user"></i><span>Account</span></div>
+                    <div class="nm-divider"></div>
+                    <div class="dropdown-item" id="lock-vault-btn"><i class="fa-solid fa-lock"></i><span>Lock Vault</span></div>
+                    <div class="dropdown-item" id="theme-toggle-btn"><i id="theme-icon-lucide" class="fa-solid fa-moon"></i><span id="theme-text">Dark Mode</span></div>
+                    <div class="nm-divider"></div>
+                    <div class="dropdown-item" id="btn-logout-trigger"><i class="fa-solid fa-right-from-bracket" style="color: #ff3b30;"></i><span style="color: #ff3b30; font-weight: 600;">Sign Out</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

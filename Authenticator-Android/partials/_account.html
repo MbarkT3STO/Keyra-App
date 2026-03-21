@@ -1,0 +1,142 @@
+<!-- Account View -->
+<section id="account-view" class="view-section hidden settings-container">
+    <!-- Mobile inline header -->
+    <div class="mobile-tab-header">
+        <div class="mobile-tab-brand">
+            <span class="mobile-brand-name">Account</span>
+        </div>
+        <div class="mobile-tab-actions">
+            <button class="mobile-action-btn" id="mobile-lock-btn-account" title="Lock Vault">
+                <i class="fa-solid fa-lock"></i>
+            </button>
+        </div>
+    </div>
+    <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div><h1 class="section-title">My Account</h1><p class="section-subtitle">YOUR PROFILE AND SECURITY</p></div>
+    </div>
+    <div class="settings-grid">
+
+        <!-- Vault Identity -->
+        <div class="account-card bento-card">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-user"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Vault Identity</h3><div class="bento-subtitle">Profile & Access Email</div></div>
+            </div>
+            <div class="bento-content">
+                <div class="acc-identity-hero">
+                    <div class="acc-avatar-ring">
+                        <div class="acc-avatar-vessel"><img id="acc-avatar-img" class="hidden"><span id="acc-initials">?</span></div>
+                    </div>
+                    <div class="acc-identity-info">
+                        <button class="btn-primary acc-change-photo-btn" id="btn-change-avatar">
+                            <i class="fa-solid fa-camera"></i><span>Change Photo</span>
+                        </button>
+                        <p class="acc-photo-hint">PNG, JPG or WebP · Max 2MB</p>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Vault Name</div><div class="setting-desc" id="acc-display-username">loading...</div></div>
+                    <i class="fa-solid fa-chevron-right acc-row-chevron"></i>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Primary Email</div><div class="setting-desc" id="acc-display-email">loading...</div></div>
+                    <i class="fa-solid fa-chevron-right acc-row-chevron"></i>
+                </div>
+                <!-- Pending email change -->
+                <div id="pending-email-container" class="hidden">
+                    <div class="nm-divider" style="margin: 12px 0;"></div>
+                    <div class="setting-row" style="margin-top: 0;">
+                        <div class="setting-info">
+                            <div class="acc-pending-label-row">
+                                <div class="setting-name">Pending Change</div>
+                                <div class="acc-pending-badge">not confirmed yet</div>
+                            </div>
+                            <div class="setting-desc" id="acc-display-pending-email">new@domain.com</div>
+                        </div>
+                        <button class="btn-icon acc-remove-pending-btn" id="btn-remove-pending-email" title="Cancel Change">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <button class="btn-primary acc-verify-btn" id="btn-verify-new-email">
+                        <i class="fa-solid fa-shield-halved"></i>Verify & Activate
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Display Name -->
+        <div class="account-card bento-card">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-user-gear"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Display Name</h3><div class="bento-subtitle">Personalize your vault profile</div></div>
+            </div>
+            <div class="bento-content">
+                <form id="form-change-name" class="acc-form">
+                    <div class="form-group">
+                        <label class="form-label">New Full Name</label>
+                        <input type="text" id="change-name-input" class="form-input" placeholder="Enter new name" required>
+                    </div>
+                    <button type="submit" class="btn-primary acc-form-submit">
+                        <i class="fa-solid fa-check"></i><span>Update Name</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Change Email -->
+        <div class="account-card bento-card" id="card-change-email">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-envelope"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Change Email</h3><div class="bento-subtitle">For notifications & recovery</div></div>
+            </div>
+            <div class="bento-content">
+                <form id="form-change-email" class="acc-form">
+                    <div class="form-group">
+                        <label class="form-label">New Email Address</label>
+                        <input type="email" id="change-email-input" class="form-input" placeholder="new@domain.com" required>
+                    </div>
+                    <button type="submit" class="btn-primary acc-form-submit">
+                        <i class="fa-solid fa-paper-plane"></i><span>Change Email</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Master Password -->
+        <div class="account-card bento-card">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-key"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Master Password</h3><div class="bento-subtitle">Security zone</div></div>
+            </div>
+            <div class="bento-content">
+                <form id="form-change-password" class="acc-form">
+                    <div class="form-group">
+                        <label class="form-label">New Master Password</label>
+                        <input type="password" id="change-pass-input" class="form-input" placeholder="Min 8 characters" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" id="change-pass-confirm" class="form-input" placeholder="Repeat password" required>
+                    </div>
+                    <button type="submit" class="btn-primary acc-form-submit acc-form-submit--danger">
+                        <i class="fa-solid fa-lock"></i><span>Update Master Key</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Trusted Devices -->
+        <div class="account-card bento-card">
+            <div class="bento-header">
+                <div class="bento-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <div class="bento-title-vessel"><h3 class="bento-title">Trusted Devices</h3><div class="bento-subtitle">Devices with vault access</div></div>
+            </div>
+            <div class="bento-content">
+                <div id="devices-list" class="devices-list">
+                    <p class="devices-empty">Loading devices...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>

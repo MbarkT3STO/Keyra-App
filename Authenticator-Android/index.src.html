@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <!-- Capacitor: allow capacitor:// and https:// -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self' capacitor: https:;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' capacitor: https:;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+        font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+        img-src 'self' data: blob: capacitor: https:;
+        connect-src 'self' capacitor: https://*.netlify.app https://*.github.com https://api.github.com;
+        frame-src 'none';
+        object-src 'none';
+    ">
+
+    <title>Keyra Authenticator</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/src/css/themes.css">
+    <link rel="stylesheet" href="/src/css/neumorphism.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+    <link rel="stylesheet" href="/src/css/components.css">
+    <link rel="stylesheet" href="/src/css/animations.css">
+    <link rel="stylesheet" href="/src/css/mobile.css">
+</head>
+
+<body>
+    <!--#include file="partials/_splash.html" -->
+    <!--#include file="partials/_auth.html" -->
+    <!--#include file="partials/_overlays.html" -->
+
+    <div class="app-container">
+        <!--#include file="partials/_navbar.html" -->
+
+        <main class="main-content">
+            <!--#include file="partials/_vault.html" -->
+            <!--#include file="partials/_settings.html" -->
+            <!--#include file="partials/_account.html" -->
+        </main>
+
+        <!--#include file="partials/_modals.html" -->
+    </div>
+
+    <!--#include file="partials/_lock.html" -->
+
+    <script type="module" src="/src/renderer/app.ts"></script>
+</body>
+
+</html>

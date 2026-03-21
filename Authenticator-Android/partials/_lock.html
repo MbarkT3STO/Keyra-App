@@ -1,0 +1,99 @@
+<!-- Lock Screen PIN -->
+<div id="lock-vessel" class="modal-overlay pin-overlay">
+    <div class="pin-vessel animate-fade-in">
+        <div class="pin-bg-blob" aria-hidden="true"></div>
+
+        <div class="pin-brand">
+            <div class="pin-avatar-ring">
+                <div class="pin-avatar-inner" id="pin-avatar">
+                    <img id="pin-avatar-img" class="hidden" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                    <img id="pin-avatar-fallback" src="/logo.png" class="app-logo-medium nm-logo" style="width:60%;height:auto;">
+                </div>
+            </div>
+        </div>
+
+        <div class="pin-header">
+            <h2 class="pin-title" id="pin-greeting">Vault Locked</h2>
+            <p class="pin-subtitle">Enter your PIN to continue</p>
+        </div>
+
+        <div class="pin-input-vessel">
+            <div class="pin-indicators">
+                <div class="pin-dot" data-digit="1"></div>
+                <div class="pin-dot" data-digit="2"></div>
+                <div class="pin-dot" data-digit="3"></div>
+                <div class="pin-dot" data-digit="4"></div>
+            </div>
+            <input type="password" inputmode="numeric" id="unlock-pin" maxlength="4" class="pin-input-hidden" autocomplete="off">
+            <div class="pin-helper">4-digit security code</div>
+        </div>
+
+        <div class="pin-numpad" id="pin-numpad">
+            <button class="pin-key" data-key="1"><span>1</span></button>
+            <button class="pin-key" data-key="2"><span>2</span></button>
+            <button class="pin-key" data-key="3"><span>3</span></button>
+            <button class="pin-key" data-key="4"><span>4</span></button>
+            <button class="pin-key" data-key="5"><span>5</span></button>
+            <button class="pin-key" data-key="6"><span>6</span></button>
+            <button class="pin-key" data-key="7"><span>7</span></button>
+            <button class="pin-key" data-key="8"><span>8</span></button>
+            <button class="pin-key" data-key="9"><span>9</span></button>
+            <button class="pin-key pin-key-biometric hidden" id="btn-biometric-unlock" type="button">
+                <i class="fa-solid fa-fingerprint"></i>
+            </button>
+            <button class="pin-key" data-key="0"><span>0</span></button>
+            <button class="pin-key pin-key-delete" id="pin-key-delete" type="button">
+                <i class="fa-solid fa-delete-left"></i>
+            </button>
+        </div>
+
+        <div class="pin-footer-actions">
+            <button type="button" id="btn-forgot-pin" class="forgot-pin-link">
+                <i class="fa-solid fa-key"></i>
+                <span>Forgot PIN?</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Forgot PIN Modal -->
+<div id="modal-forgot-pin" class="modal-overlay hidden">
+    <div class="modal recovery-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="cancel-forgot-pin-btn" class="modal-back-btn" title="Back to PIN Entry">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="modal-icon-vessel danger"><i class="fa-solid fa-key"></i></div>
+                <div class="modal-title-vessel">
+                    <h2 class="danger">Reset PIN?</h2>
+                    <p>SECURITY ACTION REQUIRED</p>
+                </div>
+            </div>
+            <div class="modal-divider"></div>
+            <div id="forgot-pin-main-view" class="modal-body">
+                <div class="modal-entity-badge">
+                    <div class="entity-icon"><i class="fa-solid fa-unlock-keyhole"></i></div>
+                    <div class="entity-info">
+                        <span class="entity-name">Reset Identity PIN</span>
+                        <span class="entity-label">Requires Verification</span>
+                    </div>
+                </div>
+                <p class="modal-help-text spaced-top">Enter your master password to verify your identity and reset your PIN.</p>
+                <form id="form-forgot-pin" class="recovery-form hidden">
+                    <div class="form-group">
+                        <label class="form-label">Master Password</label>
+                        <input type="password" id="forgot-pin-password" class="form-input" placeholder="Enter your master password" autocomplete="current-password" required>
+                    </div>
+                    <p id="forgot-pin-error" class="hidden recovery-error"></p>
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-danger" id="confirm-forgot-pin-btn">
+                <i class="fa-solid fa-trash-can"></i>
+                Reset PIN &amp; Sign Out
+            </button>
+        </div>
+    </div>
+</div>

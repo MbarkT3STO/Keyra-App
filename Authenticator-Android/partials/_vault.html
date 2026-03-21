@@ -1,0 +1,94 @@
+<!-- Vault View -->
+<section id="vault-view" class="view-section">
+    <!-- Mobile inline header -->
+    <div class="mobile-tab-header">
+        <div class="mobile-tab-brand">
+            <img src="/logo.png" class="app-logo-small nm-logo mobile-brand-logo">
+            <span class="mobile-brand-name">Keyra</span>
+        </div>
+        <div class="mobile-tab-actions">
+            <button class="mobile-action-btn" id="mobile-lock-btn" title="Lock Vault">
+                <i class="fa-solid fa-lock"></i>
+            </button>
+            <button class="mobile-action-btn mobile-avatar-btn" id="mobile-avatar-btn">
+                <div class="user-avatar" id="mobile-user-avatar">
+                    <img id="mobile-avatar-img" class="hidden">
+                    <span id="mobile-avatar-initials">?</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile dropdown -->
+    <div class="dropdown-menu mobile-dropdown" id="mobile-user-dropdown">
+        <div class="dropdown-header">
+            <div class="dropdown-user-name" id="mobile-dropdown-user-name">User</div>
+            <div class="dropdown-user-email" id="mobile-dropdown-user-email">user@keyra.app</div>
+        </div>
+        <div class="dropdown-item" id="mobile-theme-toggle-btn"><i id="mobile-theme-icon" class="fa-solid fa-moon"></i><span id="mobile-theme-text">Dark Mode</span></div>
+        <div class="nm-divider"></div>
+        <div class="dropdown-item" id="mobile-logout-trigger"><i class="fa-solid fa-right-from-bracket" style="color:#ff3b30;"></i><span style="color:#ff3b30;font-weight:600;">Sign Out</span></div>
+    </div>
+
+    <div class="section-header">
+        <div class="header-main">
+            <h1 class="section-title">My Vault</h1>
+            <p class="section-subtitle">YOUR SAVED ACCOUNTS</p>
+        </div>
+        <div class="search-add-group">
+            <div class="segmented-control vault-view-toggle" id="vault-view-segmented">
+                <button class="segment" data-val="unified" title="Unified"><i class="fa-solid fa-grip-lines"></i></button>
+                <button class="segment active" data-val="compact" title="Compact"><i class="fa-solid fa-grip"></i></button>
+                <button class="segment" data-val="secure" title="Secure"><i class="fa-solid fa-shield-halved"></i></button>
+                <div class="segment-indicator"></div>
+            </div>
+            <div class="search-vessel">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="vault-search" class="form-input search-input" placeholder="Search your accounts...">
+            </div>
+            <button class="btn-primary" id="add-account-btn"><i class="fa-solid fa-plus"></i><span>Add Account</span></button>
+        </div>
+    </div>
+
+    <div class="global-timer-vessel hidden" id="global-timer-vessel">
+        <div class="global-timer-label"><i class="fa-solid fa-clock-rotate-left"></i><span>Security Sync</span></div>
+        <div class="timer-linear-vessel global-bar"><div class="timer-linear-progress" id="global-otp-timer"></div></div>
+    </div>
+
+    <div class="accounts-grid" id="accounts-grid"></div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="hidden">
+        <div class="empty-state-container"><div class="empty-state-vessel">
+            <div class="empty-state-illustration">
+                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="empty-svg">
+                    <circle cx="60" cy="60" r="54" stroke="var(--accent-primary)" stroke-width="1.5" stroke-dasharray="8 6" opacity="0.2" class="empty-ring"/>
+                    <rect x="32" y="38" width="56" height="44" rx="10" fill="var(--bg-primary)" opacity="0.9" class="empty-vault"/>
+                    <rect x="44" y="52" width="32" height="6" rx="3" fill="var(--accent-primary)" opacity="0.25" class="empty-line1"/>
+                    <rect x="44" y="63" width="20" height="6" rx="3" fill="var(--accent-primary)" opacity="0.12" class="empty-line2"/>
+                    <circle cx="60" cy="30" r="10" fill="var(--bg-primary)" opacity="0.9" class="empty-lock"/>
+                    <path d="M56 30 Q56 26 60 26 Q64 26 64 30" stroke="var(--accent-primary)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+                    <circle cx="60" cy="31" r="2" fill="var(--accent-primary)" opacity="0.6"/>
+                    <circle cx="28" cy="72" r="5" fill="var(--accent-primary)" opacity="0.1" class="empty-dot1"/>
+                    <circle cx="92" cy="48" r="4" fill="var(--accent-primary)" opacity="0.08" class="empty-dot2"/>
+                    <circle cx="85" cy="80" r="3" fill="var(--accent-primary)" opacity="0.12" class="empty-dot3"/>
+                </svg>
+            </div>
+            <h2>Your Vault is Empty</h2>
+            <p>Add your first account to get started.</p>
+            <button class="btn-primary" id="empty-add-btn"><i class="fa-solid fa-plus"></i><span>Add Account</span></button>
+        </div></div>
+    </div>
+
+    <!-- Search empty state -->
+    <div id="search-empty-state" class="hidden">
+        <div class="empty-state-container"><div class="empty-state-vessel">
+            <div class="nm-icon-large" style="opacity: 0.6; margin-bottom: 32px;"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <h2>No Results Found</h2>
+            <p>We couldn't find any accounts matching your search.</p>
+            <div class="search-empty-actions">
+                <button class="user-button" id="search-empty-clear-btn">Clear Filter</button>
+            </div>
+        </div></div>
+    </div>
+</section>

@@ -1,0 +1,56 @@
+<!-- Privacy blur overlay -->
+<div id="privacy-blur-overlay" class="privacy-blur-overlay hidden">
+    <div class="privacy-blur-content">
+        <div class="brand-vessel" style="margin-bottom: 24px;">
+            <img src="/logo.png" class="app-logo-large nm-logo">
+        </div>
+        <h2 style="font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px;">Vault Hidden</h2>
+        <p style="opacity: 0.7; font-weight: 600;">We've hidden your data to keep it private.</p>
+    </div>
+</div>
+
+<!-- Global Loading Overlay -->
+<div id="loading-overlay" class="modal-overlay hidden" style="z-index: 99999;">
+    <div class="loading-content">
+        <div class="nm-spinner-vessel"><div class="nm-spinner"></div><div class="nm-spinner-inner"></div></div>
+        <h2 id="loading-title" class="loading-title">Processing</h2>
+        <p id="loading-subtitle" class="loading-subtitle">VAULT SECURITY SYNCHRONIZATION</p>
+    </div>
+</div>
+
+<!-- Search Overlay (full-screen) -->
+<div id="search-overlay" class="search-overlay hidden">
+    <div class="search-overlay-bar">
+        <button class="search-overlay-back" id="search-overlay-back">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="search-overlay-input-vessel">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-overlay-input" class="search-overlay-input" placeholder="Search accounts..." autocomplete="off">
+            <button class="search-overlay-clear hidden" id="search-overlay-clear">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+    <div class="search-overlay-results" id="search-overlay-results"></div>
+</div>
+
+<!-- Simulation Toast -->
+<div id="simulation-toast" class="hidden nm-card simulation-toast">
+    <div class="simulation-toast-header"><i class="fa-solid fa-envelope"></i> SECURE INBOUND CODE</div>
+    <div style="font-size: 16px; font-weight: 600;">Code: <strong id="sim-code" style="color: var(--accent-primary); letter-spacing: 4px; font-size: 26px; font-family: 'Outfit'; margin-left: 16px;">000000</strong></div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Cloud sync indicator -->
+<div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" title="Cloud Sync Active">
+    <i class="fa-solid fa-cloud-arrow-up sync-icon"></i><span>Syncing...</span>
+</div>
+
+<!-- Connectivity indicator -->
+<div id="connectivity-indicator" class="connectivity-indicator online" aria-live="polite" aria-label="Connection status">
+    <span class="connectivity-dot"></span>
+    <span class="connectivity-label">Online</span>
+</div>

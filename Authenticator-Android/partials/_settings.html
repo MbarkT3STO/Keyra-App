@@ -1,0 +1,123 @@
+<!-- Settings View -->
+<section id="settings-view" class="view-section hidden settings-container">
+    <!-- Mobile inline header -->
+    <div class="mobile-tab-header">
+        <div class="mobile-tab-brand">
+            <span class="mobile-brand-name">Settings</span>
+        </div>
+        <div class="mobile-tab-actions">
+            <button class="mobile-action-btn" id="mobile-lock-btn-settings" title="Lock Vault">
+                <i class="fa-solid fa-lock"></i>
+            </button>
+        </div>
+    </div>
+    <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div><h1 class="section-title">Settings</h1><p class="section-subtitle">CUSTOMIZE YOUR EXPERIENCE</p></div>
+    </div>
+    <div class="settings-grid">
+
+        <!-- Look & Feel -->
+        <div class="account-card bento-card">
+            <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-palette"></i></div><div class="bento-title-vessel"><h3 class="bento-title">Look & Feel</h3><div class="bento-subtitle">Theme and colors</div></div></div>
+            <div class="bento-content">
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Accent Color</div><div class="setting-desc">Choose your favorite color</div></div>
+                    <div class="accent-color-compact">
+                        <button class="accent-color-toggle" id="accent-color-toggle"><div class="current-accent" id="current-accent" style="background: hsl(258, 100%, 68%);"></div><span class="accent-label">Royal Purple</span><i class="fa-solid fa-chevron-down accent-chevron"></i></button>
+                        <div class="accent-dropdown" id="accent-dropdown"><div class="accent-grid-compact">
+                            <button class="accent-item active" data-accent="royal-purple" style="background: hsl(258, 100%, 68%);" title="Royal Purple"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="electric-blue" style="background: hsl(200, 100%, 68%);" title="Electric Blue"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="emerald-green" style="background: hsl(145, 100%, 68%);" title="Emerald Green"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="solar-orange" style="background: hsl(15, 100%, 68%);" title="Solar Orange"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="rose-quartz" style="background: hsl(330, 100%, 68%);" title="Rose Quartz"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="peach-blossom" style="background: hsl(20, 100%, 68%);" title="Peach Blossom"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="lavender-dream" style="background: hsl(270, 100%, 68%);" title="Lavender Dream"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="bubblegum" style="background: hsl(320, 100%, 68%);" title="Bubblegum"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="sky-blue" style="background: hsl(190, 100%, 68%);" title="Sky Blue"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="coral-sunset" style="background: hsl(10, 100%, 68%);" title="Coral Sunset"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="lemon-zest" style="background: hsl(45, 100%, 68%);" title="Lemon Zest"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="ocean-teal" style="background: hsl(175, 100%, 68%);" title="Ocean Teal"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="amethyst-glow" style="background: hsl(280, 100%, 68%);" title="Amethyst Glow"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="sage-serene" style="background: hsl(150, 100%, 68%);" title="Sage Serene"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="golden-hour" style="background: hsl(35, 100%, 68%);" title="Golden Hour"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="orchid-mystic" style="background: hsl(300, 100%, 68%);" title="Orchid Mystic"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="mint-fresh" style="background: hsl(160, 100%, 68%);" title="Mint Fresh"><span class="accent-check">✓</span></button>
+                            <button class="accent-item" data-accent="turquoise-dream" style="background: hsl(180, 100%, 68%);" title="Turquoise Dream"><span class="accent-check">✓</span></button>
+                        </div></div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Theme</div><div class="setting-desc">Light or dark mode</div></div>
+                    <div class="segmented-control" id="theme-segmented"><button class="segment" data-val="light">Light</button><button class="segment" data-val="dark">Dark</button><button class="segment" data-val="auto">Auto</button><div class="segment-indicator"></div></div>
+                </div>
+                <div class="setting-row oled-setting-row" id="oled-setting-row">
+                    <div class="setting-info"><div class="setting-name">OLED Mode</div><div class="setting-desc">Pure black for OLED screens</div></div>
+                    <label class="switch"><input type="checkbox" id="oled-mode-toggle"><span class="slider round"></span></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security -->
+        <div class="account-card bento-card">
+            <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="bento-title-vessel"><h3 class="bento-title">Security</h3><div class="bento-subtitle">How you access your Vault</div></div></div>
+            <div class="bento-content">
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">App PIN</div><div class="setting-desc">A 4-digit code to unlock the app</div></div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="user-button" id="setup-pin-btn" style="min-width: 100px; justify-content: center;">Setup PIN</button>
+                        <button class="user-button" id="change-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Change PIN</button>
+                        <button class="user-button danger" id="remove-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Remove PIN</button>
+                    </div>
+                </div>
+                <div class="setting-row" id="biometric-setting-row" style="display: none;">
+                    <div class="setting-info"><div class="setting-name">Biometric Unlock</div><div class="setting-desc" id="biometric-setting-desc">Use fingerprint or face to unlock</div></div>
+                    <label class="switch"><input type="checkbox" id="biometric-toggle"><span class="slider round"></span></label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Auto-Lock App</div><div class="setting-desc">Lock automatically when inactive</div></div>
+                    <div class="segmented-control" id="autolock-segmented"><button class="segment" data-val="0">Off</button><button class="segment" data-val="1">1m</button><button class="segment" data-val="5">5m</button><button class="segment" data-val="15">15m</button><div class="segment-indicator"></div></div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Hide Codes</div><div class="setting-desc">Tap to reveal your security codes</div></div>
+                    <label class="switch"><input type="checkbox" id="privacy-mode-toggle"><span class="slider round"></span></label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Anti-Peek Protection</div><div class="setting-desc">Block screenshots and recordings</div></div>
+                    <label class="switch"><input type="checkbox" id="screen-guardian-toggle"><span class="slider round"></span></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance -->
+        <div class="account-card bento-card">
+            <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-database"></i></div><div class="bento-title-vessel"><h3 class="bento-title">Maintenance</h3><div class="bento-subtitle">Backup and Restore</div></div></div>
+            <div class="bento-content">
+                <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                    <button class="btn-primary btn-maintenance" id="btn-export-vault"><div class="btn-maintenance-icon"><i class="fa-solid fa-download"></i></div><span>Backup Vault</span></button>
+                    <button class="btn-primary btn-maintenance" id="btn-import-vault"><div class="btn-maintenance-icon"><i class="fa-solid fa-upload"></i></div><span>Restore Vault</span></button>
+                    <button class="btn-primary btn-maintenance nm-button-sync" id="btn-manual-sync"><div class="btn-maintenance-icon"><i class="fa-solid fa-rotate" id="sync-btn-icon"></i></div><span>Sync Now</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- About -->
+        <div class="account-card bento-card">
+            <div class="bento-header"><div class="bento-icon"><i class="fa-solid fa-circle-info"></i></div><div class="bento-title-vessel"><h3 class="bento-title">About Keyra</h3><div class="bento-subtitle">Version & System Health</div></div></div>
+            <div class="bento-content">
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">System Version</div><div class="setting-desc">Stable v1.0.0-Android</div></div>
+                    <div class="badge" style="background: var(--bg-primary); box-shadow: var(--nm-pressed); color: var(--text-secondary); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">LATEST</div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Last Activity</div><div class="setting-desc" id="last-action-display">No activity</div></div>
+                    <div style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; font-weight: 700;"><i class="fa-solid fa-clock"></i><span id="last-activity-display">Never</span></div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-name">Cloud Sync Status</div><div class="setting-desc" id="cloud-status-display">Connected</div></div>
+                    <div style="display: flex; align-items: center; gap: 6px; color: var(--success); font-size: 13px; font-weight: 700;"><i class="fa-solid fa-cloud"></i><span>Active</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>

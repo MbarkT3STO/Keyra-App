@@ -1,0 +1,108 @@
+<!-- Auth Overlay -->
+<div id="auth-vessel" class="modal-overlay show auth-overlay">
+    <div class="modal auth-modal animate-fade-in">
+
+        <!-- Brand header -->
+        <div class="auth-brand">
+            <div class="auth-logo-vessel">
+                <img src="/logo.png" class="app-logo-large nm-logo">
+            </div>
+            <h1 class="auth-title">Keyra</h1>
+            <p class="auth-subtitle">YOUR VAULT IS SECURE</p>
+        </div>
+
+        <!-- Login Box -->
+        <div id="auth-login-box" class="auth-state-transition">
+            <form id="form-login" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">Vault Name</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="Your username" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Master Key</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="btn-primary auth-submit-btn">
+                    <i class="fa-solid fa-lock-open"></i>
+                    <span>Unlock Vault</span>
+                </button>
+                <div id="login-error" class="auth-error-msg"></div>
+            </form>
+            <div class="auth-switch-row">
+                <span class="auth-switch-text">First time?</span>
+                <button id="btn-show-signup" class="auth-switch-btn">Create your Vault</button>
+            </div>
+        </div>
+
+        <!-- Signup Box -->
+        <div id="auth-signup-box" class="auth-state-transition hidden">
+            <form id="form-signup" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="signup-username" class="form-input" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="signup-email" class="form-input" placeholder="name@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Master Password</label>
+                    <input type="password" id="signup-password" class="form-input" placeholder="Min 8 characters" required>
+                </div>
+                <button type="submit" class="btn-primary auth-submit-btn">
+                    <i class="fa-solid fa-vault"></i>
+                    <span>Create Vault</span>
+                </button>
+                <div id="signup-error" class="auth-error-msg"></div>
+            </form>
+            <div class="auth-switch-row">
+                <span class="auth-switch-text">Already have a vault?</span>
+                <button id="btn-show-login" class="auth-switch-btn">Sign In</button>
+            </div>
+        </div>
+
+        <!-- Verify Box -->
+        <div id="auth-verify-box" class="auth-state-transition hidden">
+            <div class="auth-verify-header">
+                <div class="auth-verify-icon-vessel">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <h2 class="auth-verify-title">Verify it's You</h2>
+                <p class="auth-verify-desc">Enter the 6-digit code we sent to your email.</p>
+            </div>
+            <form id="form-verify" class="auth-form">
+                <input type="hidden" id="verify-email-field">
+                <div class="auth-digits-row">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                    <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
+                </div>
+                <button type="submit" class="btn-primary auth-submit-btn">
+                    <i class="fa-solid fa-shield-check"></i>
+                    <span>Verify & Unlock</span>
+                </button>
+                <div id="verify-error" class="auth-error-msg"></div>
+            </form>
+            <div class="auth-verify-actions">
+                <button id="btn-resend-code" class="auth-switch-btn">
+                    Resend Code <span id="resend-timer" class="auth-resend-timer"></span>
+                </button>
+                <button id="btn-show-login-from-verify" class="auth-back-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Login
+                </button>
+            </div>
+        </div>
+
+        <!-- Auth Loading -->
+        <div id="auth-loading-overlay" class="auth-loading-overlay hidden">
+            <div class="auth-loader-content">
+                <div class="auth-spinner-ring"><div class="auth-spinner-inner"></div></div>
+                <p id="auth-loading-text" class="auth-loader-label">Unlocking Vault...</p>
+                <p class="auth-loader-sublabel">SECURE CONNECTION</p>
+            </div>
+        </div>
+    </div>
+</div>
