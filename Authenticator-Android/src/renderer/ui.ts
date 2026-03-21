@@ -803,7 +803,23 @@ export class UIManager {
                 dropdown.classList.remove('show');
                 toggle.classList.remove('active');
                 toggle.parentElement?.classList.remove('open');
+                dropdown.style.position = '';
+                dropdown.style.top = '';
+                dropdown.style.left = '';
+                dropdown.style.width = '';
             } else {
+                // Position fixed, centered under the toggle button
+                const rect = (toggle as HTMLElement).getBoundingClientRect();
+                const dropdownWidth = 264; // 6 cols × ~36px + padding
+                const viewportWidth = window.innerWidth;
+                let left = rect.left + rect.width / 2 - dropdownWidth / 2;
+                // Clamp so it doesn't overflow viewport edges (8px margin)
+                left = Math.max(8, Math.min(left, viewportWidth - dropdownWidth - 8));
+                dropdown.style.position = 'fixed';
+                dropdown.style.top = `${rect.bottom + 8}px`;
+                dropdown.style.left = `${left}px`;
+                dropdown.style.width = `${dropdownWidth}px`;
+                dropdown.style.right = 'auto';
                 dropdown.classList.add('show');
                 toggle.classList.add('active');
                 toggle.parentElement?.classList.add('open');
@@ -815,12 +831,29 @@ export class UIManager {
                 dropdown.classList.remove('show');
                 (toggle as HTMLElement).classList.remove('active');
                 toggle.parentElement?.classList.remove('open');
+                dropdown.style.position = '';
+                dropdown.style.top = '';
+                dropdown.style.left = '';
+                dropdown.style.width = '';
             }
         };
 
         // Add event listeners
         toggle.addEventListener('click', this.handleToggleClick);
         document.addEventListener('click', this.handleDocumentClick);
+
+        // Close dropdown on scroll (fixed position would drift otherwise)
+        document.querySelector('.settings-container')?.addEventListener('scroll', () => {
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+                (toggle as HTMLElement).classList.remove('active');
+                toggle.parentElement?.classList.remove('open');
+                dropdown.style.position = '';
+                dropdown.style.top = '';
+                dropdown.style.left = '';
+                dropdown.style.width = '';
+            }
+        }, { passive: true });
 
         // Handle color selection
         document.querySelectorAll('.accent-item').forEach(item => {

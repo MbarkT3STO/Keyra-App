@@ -1518,12 +1518,12 @@ input:checked+.slider:before {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 8px;
-    padding: 16px;
+    padding: 12px;
 }
 
 .accent-item {
-    width: 28px;
-    height: 28px;
+    width: 100%;
+    aspect-ratio: 1;
     border-radius: 50%;
     border: none;
     cursor: pointer;
@@ -1621,21 +1621,6 @@ input:checked+.slider:before {
     .accent-dropdown {
         max-height: 240px;
     }
-
-    .accent-grid-compact {
-        grid-template-columns: repeat(5, 1fr);
-        gap: 6px;
-        padding: 12px;
-    }
-
-    .accent-item {
-        width: 24px;
-        height: 24px;
-    }
-
-    .accent-check {
-        font-size: 9px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -1662,21 +1647,6 @@ input:checked+.slider:before {
     .accent-dropdown {
         max-height: 200px;
     }
-
-    .accent-grid-compact {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 4px;
-        padding: 10px;
-    }
-
-    .accent-item {
-        width: 20px;
-        height: 20px;
-    }
-
-    .accent-check {
-        font-size: 8px;
-    }
 }
 
 @media (max-width: 380px) {
@@ -1699,21 +1669,6 @@ input:checked+.slider:before {
     .accent-chevron {
         font-size: 9px;
     }
-
-    .accent-grid-compact {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 3px;
-        padding: 8px;
-    }
-
-    .accent-item {
-        width: 18px;
-        height: 18px;
-    }
-
-    .accent-check {
-        font-size: 7px;
-    }
 }
 
 @media (max-width: 320px) {
@@ -1735,21 +1690,6 @@ input:checked+.slider:before {
 
     .accent-chevron {
         font-size: 8px;
-    }
-
-    .accent-grid-compact {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2px;
-        padding: 6px;
-    }
-
-    .accent-item {
-        width: 16px;
-        height: 16px;
-    }
-
-    .accent-check {
-        font-size: 6px;
     }
 }
 
