@@ -1,0 +1,727 @@
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import jsQR from 'jsqr';
+
+export interface AccountManagerHost {
+    userId: string;
+    getStorageKey(key: string): string;
+    updateLastActivity(action: string): void;
+    showToast(message: string, type: 'info' | 'success' | 'error'): void;
+    showModal(content: string): void;
+    hideModal(): void;
+    applySettings(settings: any, saveLocal?: boolean): void;
+    showEditModal(account: any): void;
+    showDeleteConfirm(account: any): void;
+    showOtpModal(account: any): void;
+    showAddModal(): void;
+    privacyMode: boolean;
+    vaultViewStyle: 'unified' | 'compact' | 'secure';
+    accounts: any[];
+    searchQuery: string;
+    timerInterval: any;
+}
+
+/** Close every open card dropdown */
+function closeAllCardDropdowns() {
+    document.querySelectorAll<HTMLElement>('.card-dropdown.show').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll<HTMLElement>('.btn-card-more.active').forEach(b => b.classList.remove('active'));
+}
+
+export class AccountManager {
+    private host: AccountManagerHost;
+
+    constructor(host: AccountManagerHost) {
+        this.host = host;
+    }
+
+    // ─── Public API ────────────────────────────────────────────────────────────
+
+    public async loadInitialData(): Promise<void> {
+        this.showSkeletonLoaders();
+        try {
+            const user = await (window as any).api.getCurrentUser();
+
+            if (user) {
+                const settings = { ...(user.settings || {}), autolock: user.autolock };
+                this.host.applySettings(settings, true);
+            }
+
+            const ids = ['user-name-display', 'dropdown-user-name', 'mobile-dropdown-user-name'];
+            const emailIds = ['dropdown-user-email', 'mobile-dropdown-user-email'];
+            ids.forEach(id => { const el = document.getElementById(id); if (el && user) el.textContent = user.username; });
+            emailIds.forEach(id => { const el = document.getElementById(id); if (el && user) el.textContent = user.email || ''; });
+
+            if (user) {
+                this.syncAvatar('navbar-avatar-img', 'navbar-avatar-initials', user);
+                this.syncAvatar('mobile-avatar-img', 'mobile-avatar-initials', user);
+            }
+
+            await this.refreshAccounts();
+        } catch (err) {
+            console.error('Initial load failed', err);
+        }
+    }
+
+    public async refreshAccounts(): Promise<void> {
+        this.showSkeletonLoaders();
+        this.host.accounts = await (window as any).api.getAccounts();
+        await new Promise(resolve => setTimeout(resolve, 300));
+        this.renderAccounts();
+    }
+
+    public renderAccounts() {
+        const grid = document.getElementById('accounts-grid');
+        const emptyState = document.getElementById('empty-state');
+        const searchEmptyState = document.getElementById('search-empty-state');
+        const searchTermSpan = document.getElementById('empty-search-term');
+
+        if (!grid || !emptyState || !searchEmptyState) return;
+
+        const filtered = this.host.accounts.filter(acc =>
+            acc.issuer.toLowerCase().includes(this.host.searchQuery) ||
+            acc.account.toLowerCase().includes(this.host.searchQuery)
+        );
+
+        if (this.host.accounts.length === 0) {
+            grid.classList.add('hidden');
+            searchEmptyState.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+        } else if (filtered.length === 0) {
+            grid.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            searchEmptyState.classList.remove('hidden');
+            if (searchTermSpan) searchTermSpan.textContent = this.host.searchQuery;
+        } else {
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            searchEmptyState.classList.add('hidden');
+            grid.innerHTML = '';
+            filtered.forEach((acc, index) => grid.appendChild(this.createAccountCard(acc, index)));
+        }
+
+        if (document.body.classList.contains('vault-is-locked')) {
+            this.clearAllOTPCodes();
+        }
+    }
+
+    public startTimer() {
+        if (this.host.timerInterval) clearInterval(this.host.timerInterval);
+        this.host.timerInterval = setInterval(async () => {
+            const remaining = await (window as any).api.getRemainingSeconds();
+            document.querySelectorAll<HTMLElement>('.account-card').forEach((card, i) => {
+                if (this.host.accounts[i]) this.updateCardOTP(card, this.host.accounts[i].secret, remaining);
+            });
+        }, 1000);
+    }
+
+    public clearAllOTPCodes() {
+        document.querySelectorAll('.otp-code').forEach(el => { el.textContent = '••••••'; });
+    }
+
+    // ─── Private helpers ───────────────────────────────────────────────────────
+
+    private showSkeletonLoaders(count: number = 6) {
+        const grid = document.getElementById('accounts-grid');
+        const emptyState = document.getElementById('empty-state');
+        const searchEmptyState = document.getElementById('search-empty-state');
+        if (!grid) return;
+        emptyState?.classList.add('hidden');
+        searchEmptyState?.classList.add('hidden');
+        grid.classList.remove('hidden');
+        grid.innerHTML = '';
+        for (let i = 0; i < count; i++) grid.appendChild(this.createSkeletonCard(i));
+    }
+
+    private createSkeletonCard(index: number): HTMLElement {
+        const card = document.createElement('div');
+        card.className = 'skeleton-card';
+        card.style.animationDelay = `${index * 0.06}s`;
+        card.innerHTML = `
+            <div class="skeleton-header">
+                <div class="skeleton-icon skeleton-shimmer"></div>
+                <div class="skeleton-text-group">
+                    <div class="skeleton-text title skeleton-shimmer"></div>
+                    <div class="skeleton-text subtitle skeleton-shimmer"></div>
+                </div>
+            </div>
+            <div class="skeleton-otp skeleton-shimmer"></div>
+            <div class="skeleton-button skeleton-shimmer"></div>
+        `;
+        return card;
+    }
+
+    private createAccountCard(account: any, index: number): HTMLElement {
+        const card = document.createElement('div');
+        card.className = 'account-card';
+        card.style.animationDelay = `${index * 0.06}s`;
+
+        card.innerHTML = `
+            <div class="card-actions">
+                <button class="btn-card-more" title="More options">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <div class="card-dropdown">
+                    <div class="card-dropdown-item edit-btn">
+                        <i class="fa-solid fa-sliders"></i>
+                        Edit
+                    </div>
+                    <div class="card-dropdown-item danger delete-btn">
+                        <i class="fa-solid fa-trash-can"></i>
+                        Delete
+                    </div>
+                </div>
+            </div>
+            <div class="account-header">
+                <div class="account-icon">
+                    <i class="${this.getIcon(account.issuer)}"></i>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div class="service-name">${account.issuer}</div>
+                    <div class="account-identity">${account.account}</div>
+                </div>
+            </div>
+            <div class="otp-box">
+                ${this.host.vaultViewStyle !== 'secure' ? `
+                <div class="otp-code ${this.host.privacyMode ? 'privacy-hidden' : ''}" data-id="${account.id}" style="cursor: pointer;" title="Click to copy">
+                    ${this.host.privacyMode ? '••••••' : '------'}
+                </div>
+                ` : `
+                <button class="btn-primary secure-view-btn" style="width: 100%; height: 50px;">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Secure View</span>
+                </button>
+                `}
+                ${this.host.vaultViewStyle === 'compact' ? `
+                <div class="timer-linear-vessel" style="position: absolute; bottom: 0; left: 0; right: 0;">
+                    <div class="timer-linear-progress"></div>
+                </div>
+                ` : this.host.vaultViewStyle === 'unified' || this.host.vaultViewStyle === 'secure' ? '' : `
+                <div class="timer-container" style="position: absolute; right: 12px; width: 24px; height: 24px;">
+                    <svg viewBox="0 0 60 60">
+                        <circle cx="30" cy="30" r="26" fill="none" class="timer-bg" style="stroke: var(--bg-secondary); stroke-width: 4;"></circle>
+                        <circle class="timer-progress" cx="30" cy="30" r="26" fill="none" stroke-dasharray="163.36" stroke-dashoffset="0" style="stroke: var(--accent-primary); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear;"></circle>
+                    </svg>
+                </div>
+                `}
+            </div>
+            ${this.host.vaultViewStyle !== 'secure' ? `
+            <div class="card-copy-row">
+                <button class="btn-primary copy-btn">
+                    <i class="fa-solid fa-copy"></i>
+                    <span class="btn-text">Secure Copy</span>
+                </button>
+            </div>
+            ` : ''}
+        `;
+
+        // 3-dot dropdown
+        const moreBtn = card.querySelector('.btn-card-more') as HTMLElement;
+        const dropdown = card.querySelector('.card-dropdown') as HTMLElement;
+        moreBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.classList.contains('show');
+            closeAllCardDropdowns();
+            if (!isOpen) { dropdown.classList.add('show'); moreBtn.classList.add('active'); }
+        });
+
+        // OTP code tap to copy
+        const codeElement = card.querySelector('.otp-code') as HTMLElement;
+        codeElement?.addEventListener('click', async () => {
+            if (document.body.classList.contains('vault-is-locked')) {
+                this.host.showToast('Vault Locked - Enter PIN to Access', 'error');
+                return;
+            }
+            const otp = await (window as any).api.generateTOTP(account.secret);
+            this.copyOTPToClipboard(otp, codeElement);
+        });
+
+        // Full card tap to copy
+        card.addEventListener('click', async (e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('.card-actions, .copy-btn, .secure-view-btn')) return;
+            if (document.body.classList.contains('vault-is-locked')) return;
+            if (this.host.vaultViewStyle === 'secure') return;
+            const otp = await (window as any).api.generateTOTP(account.secret);
+            this.copyOTPToClipboard(otp, (card.querySelector('.otp-code') as HTMLElement) || card);
+        });
+
+        // Copy button
+        const copyBtn = card.querySelector('.copy-btn') as HTMLElement;
+        if (copyBtn) copyBtn.onclick = async () => {
+            if (document.body.classList.contains('vault-is-locked')) {
+                this.host.showToast('Vault Locked - Enter PIN to Access', 'error');
+                return;
+            }
+            const otpCode = await (window as any).api.generateTOTP(account.secret);
+            await navigator.clipboard.writeText(otpCode);
+            Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+            const ripple = document.createElement('span');
+            ripple.className = 'copy-ripple';
+            copyBtn.appendChild(ripple);
+            copyBtn.classList.add('copied');
+            const btnText = copyBtn.querySelector('.btn-text');
+            const originalText = btnText?.textContent;
+            if (btnText) btnText.textContent = 'Copied!';
+            setTimeout(() => {
+                ripple.remove();
+                copyBtn.classList.remove('copied');
+                if (btnText) btnText.textContent = originalText || 'Secure Copy';
+            }, 700);
+            this.host.showToast('Code copied!', 'success');
+        };
+
+        card.querySelector('.edit-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (document.body.classList.contains('vault-is-locked')) {
+                this.host.showToast('Vault Locked - Enter PIN to Access', 'error'); return;
+            }
+            this.host.showEditModal(account);
+        });
+
+        card.querySelector('.delete-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (document.body.classList.contains('vault-is-locked')) {
+                this.host.showToast('Vault Locked - Enter PIN to Access', 'error'); return;
+            }
+            this.host.showDeleteConfirm(account);
+        });
+
+        card.querySelector('.secure-view-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (document.body.classList.contains('vault-is-locked')) {
+                this.host.showToast('Vault Locked - Enter PIN to Access', 'error'); return;
+            }
+            this.host.showOtpModal(account);
+        });
+
+        this.updateCardOTP(card, account.secret, 30);
+        return card;
+    }
+
+    private async updateCardOTP(card: HTMLElement, secret: string, remainingSeconds: number) {
+        const codeElement = card.querySelector('.otp-code') as HTMLElement;
+
+        if (document.body.classList.contains('vault-is-locked')) {
+            if (codeElement) codeElement.textContent = '••••••';
+            return;
+        }
+
+        if (codeElement) {
+            if (this.host.privacyMode) {
+                if (codeElement.textContent !== '••••••') codeElement.textContent = '••••••';
+            } else {
+                const otp = await (window as any).api.generateTOTP(secret);
+                const displayOtp = otp.substring(0, 3) + ' ' + otp.substring(3);
+                if (codeElement.textContent !== displayOtp) codeElement.textContent = displayOtp;
+            }
+        }
+
+        if (this.host.vaultViewStyle === 'unified') {
+            const globalBar = document.getElementById('global-otp-timer') as HTMLElement;
+            if (globalBar) {
+                const scale = remainingSeconds / 30;
+                globalBar.style.transform = `scaleX(${scale})`;
+                globalBar.classList.toggle('timer-warning', remainingSeconds <= 10 && remainingSeconds > 5);
+                globalBar.classList.toggle('timer-danger', remainingSeconds <= 5);
+                if (remainingSeconds > 10) globalBar.style.backgroundColor = '';
+            }
+        } else if (this.host.vaultViewStyle === 'compact') {
+            const progressBar = card.querySelector('.timer-linear-progress') as HTMLElement;
+            if (progressBar) {
+                const scale = remainingSeconds / 30;
+                progressBar.style.transform = `scaleX(${scale})`;
+                progressBar.classList.toggle('timer-warning', remainingSeconds <= 10 && remainingSeconds > 5);
+                progressBar.classList.toggle('timer-danger', remainingSeconds <= 5);
+                if (remainingSeconds > 10) progressBar.style.backgroundColor = '';
+            }
+        } else {
+            const progressCircle = card.querySelector('.timer-progress') as HTMLElement;
+            if (progressCircle) {
+                progressCircle.style.strokeDashoffset = (163.36 * (1 - remainingSeconds / 30)).toString();
+                progressCircle.style.stroke = remainingSeconds <= 5 ? '#ff3b30' : remainingSeconds <= 10 ? '#ff9500' : 'var(--accent-primary)';
+            }
+        }
+    }
+
+    private copyOTPToClipboard(otp: string, element: HTMLElement) {
+        navigator.clipboard.writeText(otp).then(() => {
+            Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+            this.showCopyFeedback(element);
+            this.host.updateLastActivity('OTP copied');
+            this.host.showToast('Code copied!', 'success');
+        }).catch(() => {
+            this.host.showToast('Failed to copy', 'error');
+        });
+    }
+
+    private showCopyFeedback(element: HTMLElement) {
+        const originalText = element.textContent;
+        const originalColor = element.style.color;
+        element.textContent = 'Copied!';
+        element.style.color = '#28a745';
+        element.style.transform = 'scale(1.1)';
+        element.style.transition = 'all 0.2s ease';
+        setTimeout(() => {
+            element.textContent = originalText;
+            element.style.color = originalColor;
+            element.style.transform = 'scale(1)';
+        }, 1000);
+
+        const copyBtn = element.closest('.copy-btn') as HTMLElement;
+        if (copyBtn) {
+            copyBtn.classList.add('copied');
+            const ripple = document.createElement('span');
+            ripple.className = 'copy-ripple';
+            copyBtn.appendChild(ripple);
+            setTimeout(() => { ripple.remove(); copyBtn.classList.remove('copied'); }, 600);
+        }
+    }
+
+    private syncAvatar(imgId: string, initialsId: string, user: any) {
+        const img = document.getElementById(imgId) as HTMLImageElement;
+        const initials = document.getElementById(initialsId);
+        if (!img || !initials) return;
+        if (user.profilePicture) {
+            img.src = user.profilePicture;
+            img.classList.remove('hidden');
+            initials.classList.add('hidden');
+        } else {
+            img.classList.add('hidden');
+            initials.classList.remove('hidden');
+            initials.textContent = user.username.charAt(0).toUpperCase();
+        }
+    }
+
+    // ─── Add / Edit Modals ─────────────────────────────────────────────────────
+
+    public showAddModal() {
+        const content = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
+                        <i class="fa-solid fa-circle-plus"></i>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2>Add Token</h2>
+                        <p>SAVE DIGITAL IDENTITY</p>
+                    </div>
+                </div>
+                <div class="modal-divider"></div>
+                <div class="modal-body">
+                    <div class="add-modal-tabs">
+                        <button class="add-modal-tab active" id="tab-scan">
+                            <i class="fa-solid fa-qrcode"></i> Scan QR
+                        </button>
+                        <button class="add-modal-tab" id="tab-manual">
+                            <i class="fa-solid fa-keyboard"></i> Manual
+                        </button>
+                    </div>
+
+                    <!-- QR Scanner pane -->
+                    <div id="pane-scan">
+                        <div class="qr-scanner-vessel" id="qr-vessel">
+                            <video id="qr-video" playsinline muted autoplay></video>
+                            <canvas id="qr-canvas"></canvas>
+                            <div class="qr-scanner-frame">
+                                <div class="qr-frame-bl"></div>
+                                <div class="qr-frame-br"></div>
+                            </div>
+                            <div class="qr-scan-line"></div>
+                            <div class="qr-scanner-hint">Point camera at a TOTP QR code</div>
+                        </div>
+                        <div id="qr-error" class="qr-error-banner hidden">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span id="qr-error-text">Camera unavailable</span>
+                        </div>
+                    </div>
+
+                    <!-- Manual entry pane -->
+                    <div id="pane-manual" class="hidden">
+                        <div class="form-group">
+                            <label class="form-label">Service</label>
+                            <input type="text" id="new-issuer" class="form-input" placeholder="e.g. GitHub, Google">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account</label>
+                            <input type="text" id="new-account" class="form-input" placeholder="name@domain.com" inputmode="email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">TOTP Secret</label>
+                            <input type="text" id="new-secret" class="form-input" placeholder="Enter secret key" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary hidden" id="save-new-account">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Save Token
+                </button>
+                <button class="user-button" id="cancel-add-btn" style="justify-content: center;">Cancel</button>
+            </div>
+        `;
+        this.host.showModal(content);
+
+        // ── Tab switching ──────────────────────────────────────────────────────
+        let stream: MediaStream | null = null;
+        let rafId: number | null = null;
+
+        const stopCamera = () => {
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        };
+
+        const showError = (msg: string) => {
+            const err = document.getElementById('qr-error');
+            const txt = document.getElementById('qr-error-text');
+            if (err) err.classList.remove('hidden');
+            if (txt) txt.textContent = msg;
+        };
+
+        const startCamera = async () => {
+            const video = document.getElementById('qr-video') as HTMLVideoElement;
+            const canvas = document.getElementById('qr-canvas') as HTMLCanvasElement;
+            if (!video || !canvas) return;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+                await video.play();
+                const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+
+                const tick = () => {
+                    // Stop if modal closed
+                    if (!document.getElementById('qr-video')) { stopCamera(); return; }
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        ctx.drawImage(video, 0, 0);
+                        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+                        if (code?.data) {
+                            handleScannedQR(code.data);
+                            return; // stop loop on success
+                        }
+                    }
+                    rafId = requestAnimationFrame(tick);
+                };
+                rafId = requestAnimationFrame(tick);
+            } catch (err: any) {
+                const msg = err?.name === 'NotAllowedError'
+                    ? 'Camera permission denied'
+                    : 'Camera unavailable — use Manual entry';
+                showError(msg);
+            }
+        };
+
+        const handleScannedQR = async (data: string) => {
+            stopCamera();
+            try {
+                if (!data.startsWith('otpauth://')) throw new Error('Not a valid OTP QR code');
+                const parsed = await (window as any).api.parseURI(data);
+                // Show success overlay briefly
+                const vessel = document.getElementById('qr-vessel');
+                if (vessel) {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'qr-scanner-success';
+                    overlay.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${parsed.issuer} detected</span>`;
+                    vessel.appendChild(overlay);
+                }
+                Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+                await new Promise(r => setTimeout(r, 900));
+                const res = await (window as any).api.saveAccount({
+                    id: Date.now().toString(),
+                    issuer: parsed.issuer,
+                    account: parsed.account,
+                    secret: parsed.secret
+                });
+                this.host.accounts = res.accounts || [];
+                this.renderAccounts();
+                this.host.hideModal();
+                this.host.showToast(`${parsed.issuer} added!`, 'success');
+                this.host.updateLastActivity('Added token via QR');
+            } catch (err: any) {
+                showError(err?.message || 'Invalid QR code — try Manual entry');
+                // Restart camera after bad scan
+                setTimeout(() => startCamera(), 1500);
+            }
+        };
+
+        // Start camera immediately on scan tab
+        startCamera();
+
+        document.getElementById('tab-scan')?.addEventListener('click', () => {
+            document.getElementById('tab-scan')?.classList.add('active');
+            document.getElementById('tab-manual')?.classList.remove('active');
+            document.getElementById('pane-scan')?.classList.remove('hidden');
+            document.getElementById('pane-manual')?.classList.add('hidden');
+            document.getElementById('save-new-account')?.classList.add('hidden');
+            startCamera();
+        });
+
+        document.getElementById('tab-manual')?.addEventListener('click', () => {
+            document.getElementById('tab-manual')?.classList.add('active');
+            document.getElementById('tab-scan')?.classList.remove('active');
+            document.getElementById('pane-manual')?.classList.remove('hidden');
+            document.getElementById('pane-scan')?.classList.add('hidden');
+            document.getElementById('save-new-account')?.classList.remove('hidden');
+            stopCamera();
+        });
+
+        // ── Manual save ────────────────────────────────────────────────────────
+        const saveAction = async () => {
+            const issuer = (document.getElementById('new-issuer') as HTMLInputElement).value.trim();
+            const account = (document.getElementById('new-account') as HTMLInputElement).value.trim();
+            const secret = (document.getElementById('new-secret') as HTMLInputElement).value.replace(/\s/g, '').toUpperCase();
+            if (!issuer || !secret) {
+                this.host.showToast('Service and Secret are required', 'error');
+                return;
+            }
+            const res = await (window as any).api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
+            this.host.accounts = res.accounts || [];
+            this.renderAccounts();
+            this.host.hideModal();
+            this.host.showToast('Account saved!', 'success');
+            this.host.updateLastActivity('Added token');
+        };
+
+        document.getElementById('save-new-account')?.addEventListener('click', saveAction);
+        ['new-issuer', 'new-account', 'new-secret'].forEach(id => {
+            document.getElementById(id)?.addEventListener('keypress', (e) => { if (e.key === 'Enter') saveAction(); });
+        });
+
+        document.getElementById('cancel-add-btn')?.addEventListener('click', () => {
+            stopCamera();
+            this.host.hideModal();
+        });
+
+        // Stop camera if modal is dismissed via backdrop tap or back button
+        const overlay = document.getElementById('modal-overlay');
+        if (overlay) {
+            const observer = new MutationObserver(() => {
+                if (!overlay.classList.contains('show')) {
+                    stopCamera();
+                    observer.disconnect();
+                }
+            });
+            observer.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+        }
+    }
+
+    public showEditModal(account: any) {
+        const content = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2>Edit Identity</h2>
+                        <p>UPDATE SERVICE DETAILS</p>
+                    </div>
+                </div>
+                <div class="modal-divider"></div>
+                <div class="modal-body">
+                    <div class="modal-entity-badge">
+                        <div class="entity-icon"><i class="fa-solid fa-shield"></i></div>
+                        <div class="entity-info">
+                            <span class="entity-name">${account.issuer}</span>
+                            <span class="entity-label">${account.account || 'Vault Token'}</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Service</label>
+                        <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account</label>
+                        <input type="text" id="edit-account" class="form-input" value="${account.account}" inputmode="email">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="update-account">
+                    <i class="fa-solid fa-check"></i>
+                    Save Changes
+                </button>
+                <button class="user-button" id="cancel-edit-btn" style="justify-content: center;">Cancel</button>
+            </div>
+        `;
+        this.host.showModal(content);
+
+        const updateAction = async () => {
+            const issuer = (document.getElementById('edit-issuer') as HTMLInputElement).value.trim();
+            const accName = (document.getElementById('edit-account') as HTMLInputElement).value.trim();
+            if (!issuer) return;
+            const res = await (window as any).api.saveAccount({ ...account, issuer, account: accName });
+            this.host.accounts = res.accounts || [];
+            this.renderAccounts();
+            this.host.hideModal();
+            this.host.showToast('Account updated!', 'success');
+            this.host.updateLastActivity('Edited token');
+        };
+
+        document.getElementById('update-account')?.addEventListener('click', updateAction);
+        ['edit-issuer', 'edit-account'].forEach(id => {
+            document.getElementById(id)?.addEventListener('keypress', (e) => { if (e.key === 'Enter') updateAction(); });
+        });
+        document.getElementById('cancel-edit-btn')?.addEventListener('click', () => this.host.hideModal());
+    }
+
+    public getIcon(issuer: string): string {
+        const name = issuer.toLowerCase();
+        const icons: Record<string, string> = {
+            'google': 'fa-brands fa-google', 'github': 'fa-brands fa-github',
+            'microsoft': 'fa-brands fa-microsoft', 'apple': 'fa-brands fa-apple',
+            'amazon': 'fa-brands fa-amazon', 'facebook': 'fa-brands fa-facebook',
+            'twitter': 'fa-brands fa-x-twitter', 'discord': 'fa-brands fa-discord',
+            'slack': 'fa-brands fa-slack', 'instagram': 'fa-brands fa-instagram',
+            'linkedin': 'fa-brands fa-linkedin', 'twitch': 'fa-brands fa-twitch',
+            'spotify': 'fa-brands fa-spotify', 'steam': 'fa-brands fa-steam',
+            'dropbox': 'fa-brands fa-dropbox', 'reddit': 'fa-brands fa-reddit',
+            'bitbucket': 'fa-brands fa-bitbucket', 'gitlab': 'fa-brands fa-gitlab',
+            'wordpress': 'fa-brands fa-wordpress', 'paypal': 'fa-brands fa-paypal',
+            'stripe': 'fa-brands fa-stripe', 'shopify': 'fa-brands fa-shopify',
+            'netflix': 'fa-solid fa-tv', 'binance': 'fa-solid fa-coins',
+            'coinbase': 'fa-solid fa-wallet', 'heroku': 'fa-solid fa-server',
+            'digitalocean': 'fa-brands fa-digital-ocean', 'cloudflare': 'fa-solid fa-shield-halved',
+            'vercel': 'fa-solid fa-globe', 'netlify': 'fa-solid fa-globe',
+            'firebase': 'fa-solid fa-fire', 'medium': 'fa-brands fa-medium',
+            'patreon': 'fa-brands fa-patreon', 'protonmail': 'fa-solid fa-envelope',
+            'nordvpn': 'fa-solid fa-shield-halved', 'expressvpn': 'fa-solid fa-shield-halved',
+            'bitwarden': 'fa-solid fa-lock', '1password': 'fa-solid fa-key',
+            'lastpass': 'fa-solid fa-key', 'uber': 'fa-brands fa-uber',
+            'airbnb': 'fa-brands fa-airbnb', 'notion': 'fa-solid fa-file-lines',
+            'zoom': 'fa-solid fa-video', 'trello': 'fa-brands fa-trello',
+            'figma': 'fa-brands fa-figma', 'adobe': 'fa-brands fa-adobe',
+            'epic': 'fa-solid fa-gamepad', 'canva': 'fa-solid fa-pen-ruler',
+            'asana': 'fa-solid fa-check-square', 'clickup': 'fa-solid fa-layer-group',
+            'lyft': 'fa-brands fa-lyft',
+        };
+        if (icons[name]) return icons[name];
+
+        const keywords: [RegExp, string][] = [
+            [/aws|amazon|cloud/i, 'fa-solid fa-cloud'],
+            [/azure|microsoft/i, 'fa-solid fa-cloud'],
+            [/server|host|vps|deploy/i, 'fa-solid fa-server'],
+            [/db|database|mongo|sql|redis/i, 'fa-solid fa-database'],
+            [/mail|email|outlook|gmail/i, 'fa-solid fa-envelope'],
+            [/chat|message|messenger/i, 'fa-solid fa-comment'],
+            [/social|network/i, 'fa-solid fa-share-nodes'],
+            [/bank|finance|money|wallet|pay/i, 'fa-solid fa-wallet'],
+            [/crypto|coin|token|eth|btc/i, 'fa-solid fa-coins'],
+            [/card|credit|debit/i, 'fa-solid fa-credit-card'],
+            [/auth|security|protect|shield|vault/i, 'fa-solid fa-shield-halved'],
+            [/key|password|pass|login|access/i, 'fa-solid fa-key'],
+            [/code|dev|git|build|repo/i, 'fa-solid fa-code'],
+            [/video|movie|tv|stream|youtube/i, 'fa-solid fa-video'],
+            [/music|audio|song|sound/i, 'fa-solid fa-music'],
+            [/game|play|xbox|psn/i, 'fa-solid fa-gamepad'],
+            [/shop|store|cart|ebay|buy/i, 'fa-solid fa-cart-shopping'],
+            [/user|account|profile|id/i, 'fa-solid fa-user'],
+            [/work|corp|company|office/i, 'fa-solid fa-briefcase'],
+        ];
+        for (const [pattern, icon] of keywords) {
+            if (pattern.test(name)) return icon;
+        }
+        return 'fa-solid fa-shield';
+    }
+}

@@ -691,6 +691,47 @@ export async function confirmEmailChange(code: string): Promise<{ success: boole
     return { success: true, message: "Email changed successfully." };
 }
 
+export async function pollForUpdates(): Promise<{ changed: boolean, settings?: any }> {
+    if (!currentUser) return { changed: false };
+
+    try {
+        const cloudData = await getUserData(currentUser.username);
+        if (!cloudData) return { changed: false };
+
+        // Compare vault data to detect remote changes
+        const vaultChanged = cloudData.encryptedVaultData &&
+            cloudData.encryptedVaultData !== currentUser.encryptedVaultData;
+
+        const settingsChanged = cloudData["Web Settings"] &&
+            JSON.stringify(cloudData["Web Settings"]) !== JSON.stringify(currentUser["Web Settings"]);
+
+        if (!vaultChanged && !settingsChanged) return { changed: false };
+
+        // Merge in the updated cloud data
+        const users = await getUsers();
+        const userIndex = users.findIndex(u => u.id === currentUser!.id);
+        if (userIndex !== -1) {
+            const merged: UserRecord = {
+                ...users[userIndex],
+                ...cloudData,
+                hash: users[userIndex].hash,
+                salt: users[userIndex].salt,
+            };
+            users[userIndex] = merged;
+            await saveUsers(users);
+            currentUser = merged;
+        }
+
+        return {
+            changed: true,
+            settings: cloudData["Web Settings"] ?? undefined
+        };
+    } catch (e) {
+        console.error('pollForUpdates failed:', e);
+        return { changed: false };
+    }
+}
+
 export async function resendEmailChangeCode(): Promise<{ success: boolean, message: string, code?: string }> {
     if (!currentUser) throw new Error("No active user session.");
     

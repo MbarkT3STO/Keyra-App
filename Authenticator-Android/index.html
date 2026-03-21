@@ -303,7 +303,7 @@
                         <h2>No Results Found</h2>
                         <p>We couldn't find any accounts matching your search.</p>
                         <div class="search-empty-actions">
-                            <button class="user-button" onclick="document.getElementById('vault-search').value='';document.getElementById('vault-search').dispatchEvent(new Event('input'));">Clear Filter</button>
+                            <button class="user-button" id="search-empty-clear-btn">Clear Filter</button>
                         </div>
                     </div></div>
                 </div>
@@ -738,6 +738,12 @@
 
     <div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" title="Cloud Sync Active">
         <i class="fa-solid fa-cloud-arrow-up sync-icon"></i><span>Syncing...</span>
+    </div>
+
+    <!-- Connectivity indicator -->
+    <div id="connectivity-indicator" class="connectivity-indicator online" aria-live="polite" aria-label="Connection status">
+        <span class="connectivity-dot"></span>
+        <span class="connectivity-label">Online</span>
     </div>
 
     <script type="module" src="/src/renderer/app.ts"></script>

@@ -5,8 +5,22 @@ import { errorHandler } from '../core/errorHandler';
 import { App } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard } from '@capacitor/keyboard';
+import { ConnectivityManager } from './managers/ConnectivityManager';
 
 let inactivityTimer: any = null;
+
+function initConnectivity() {
+    // Standalone connectivity monitor — runs before login, no host needed
+    const showToast = (msg: string, type: 'info' | 'success' | 'error') => {
+        (window as any).ui?.showToast(msg, type);
+    };
+    const manualSync = async () => {
+        await (window as any).ui?.manualSync?.();
+    };
+    const cm = new ConnectivityManager({ showToast, manualSync });
+    cm.init();
+    (window as any).__connectivityManager = cm;
+}
 
 function resetInactivityTimer() {
     if (inactivityTimer) clearTimeout(inactivityTimer);
@@ -64,6 +78,10 @@ async function initCapacitor() {
 
     // Handle Android back button
     App.addListener('backButton', ({ canGoBack }) => {
+        if ((window as any).__isSearchOverlayOpen?.()) {
+            (window as any).__closeSearchOverlay?.();
+            return;
+        }
         const modalOverlay = document.getElementById('modal-overlay');
         if (modalOverlay?.classList.contains('show')) {
             (window as any).ui?.hideModal();
@@ -74,23 +92,14 @@ async function initCapacitor() {
         }
     });
 
-    // Handle app going to background (privacy blur)
-    App.addListener('appStateChange', ({ isActive }) => {
-        const privacyOverlay = document.getElementById('privacy-blur-overlay');
-        const ui = (window as any).ui;
-        const authVessel = document.getElementById('auth-vessel');
-        if (!isActive && ui?.screenGuardian && authVessel?.classList.contains('hidden')) {
-            privacyOverlay?.classList.remove('hidden');
-        } else if (isActive) {
-            privacyOverlay?.classList.add('hidden');
-        }
-    });
+    // appStateChange is handled by PrivacyManager.initAppStateListener()
 }
 
 async function init() {
     errorHandler.init();
     await initCapacitor();
     setupAuthUI();
+    initConnectivity();
 
     setAppInitCallback(async (resumed: boolean) => {
         try {

@@ -12,6 +12,7 @@ declare global {
             logout(): Promise<void>;
             getCurrentUser(): Promise<{ id: string, username: string, email: string, pendingEmail?: string } | null>;
             updateUserSettings(settings: any): Promise<void>;
+            pollForUpdates(): Promise<{ changed: boolean, settings?: any }>;
 
             // Account Management
             changeUsername(newName: string): Promise<{ success: boolean, message: string }>;

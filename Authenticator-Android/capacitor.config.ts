@@ -15,6 +15,11 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: 'default',
       backgroundColor: '#ffffff'
+    },
+    PrivacyScreen: {
+      // Disabled at startup — PrivacyManager enables it programmatically
+      // based on the user's screenGuardian setting
+      enable: false
     }
   }
 };

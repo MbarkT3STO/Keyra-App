@@ -35,6 +35,7 @@ export const bridge = {
     getCurrentUser: async () => auth.getCurrentUser(),
     updateUserSettings: async (settings: any) => syncWrapper(() => auth.updateUserSettings(settings), "Saving Changes", "SYNCHRONIZING SECURE DATA"),
     verifyMasterPassword: async (password: string) => syncWrapper(() => auth.verifyMasterPassword(password), "Verifying", "MASTER KEY VALIDATION"),
+    pollForUpdates: async () => auth.pollForUpdates(),
 
     encryptPIN: (pin: string) => auth.encryptPIN(pin),
     decryptPIN: (encryptedPin: string) => auth.decryptPIN(encryptedPin),

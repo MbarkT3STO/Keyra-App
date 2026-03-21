@@ -2918,3 +2918,95 @@ body.keyboard-open .auth-overlay {
         transform: scale(0.97) !important;
     }
 }
+
+/* ── CONNECTIVITY INDICATOR ─────────────────────────────────────────────────── */
+
+.connectivity-indicator {
+    position: fixed;
+    /* Sits just above the bottom nav on mobile, bottom-right on desktop */
+    bottom: calc(var(--mobile-bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 12px);
+    right: 16px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px 6px 9px;
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    box-shadow:
+        4px 4px 10px var(--nm-shadow-dark),
+        -4px -4px 10px var(--nm-shadow-light);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    color: var(--text-secondary);
+    pointer-events: none;
+    user-select: none;
+    transform: translateY(12px);
+    opacity: 0;
+    transition:
+        opacity 0.35s ease,
+        transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.3s ease;
+}
+
+@media (min-width: 769px) {
+    .connectivity-indicator {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+/* visible state */
+.connectivity-indicator.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── Status dot ── */
+.connectivity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ── Online ── */
+.connectivity-indicator.online .connectivity-dot {
+    background: #34c759;
+    box-shadow: 0 0 6px rgba(52, 199, 89, 0.7);
+}
+
+.connectivity-indicator.online .connectivity-label {
+    color: #34c759;
+}
+
+/* ── Offline ── */
+.connectivity-indicator.offline {
+    box-shadow:
+        inset 4px 4px 10px var(--nm-shadow-dark),
+        inset -4px -4px 10px var(--nm-shadow-light);
+}
+
+.connectivity-indicator.offline .connectivity-dot {
+    background: #ff3b30;
+    box-shadow: 0 0 6px rgba(255, 59, 48, 0.6);
+    animation: connectivity-pulse 1.6s ease-in-out infinite;
+}
+
+.connectivity-indicator.offline .connectivity-label {
+    color: #ff3b30;
+}
+
+@keyframes connectivity-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.75); }
+}
+
+/* ── Auto-hide online pill ── */
+.connectivity-indicator.online.auto-hide {
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+}
