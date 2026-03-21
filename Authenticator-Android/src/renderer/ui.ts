@@ -1,5 +1,6 @@
 // import { syncVault } from './store';
 import { rateLimiter } from '../core/rateLimiter';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 export class UIManager {
     private currentTheme: 'light' | 'dark' = 'light';
@@ -391,6 +392,15 @@ export class UIManager {
     private setupEventListeners() {
         // Tab Navigation
         document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const tabName = target.getAttribute('data-tab') as 'vault' | 'settings';
+                this.switchTab(tabName);
+            });
+        });
+
+        // Bottom nav tabs (mobile)
+        document.querySelectorAll('.bottom-nav-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
                 const target = e.currentTarget as HTMLElement;
                 const tabName = target.getAttribute('data-tab') as 'vault' | 'settings';
@@ -1076,6 +1086,10 @@ export class UIManager {
         document.querySelectorAll('.nav-tab').forEach(t => {
             t.classList.toggle('active', t.getAttribute('data-tab') === tab);
         });
+        // Sync bottom nav active state
+        document.querySelectorAll('.bottom-nav-tab').forEach(t => {
+            t.classList.toggle('active', t.getAttribute('data-tab') === tab);
+        });
         const vaultView = document.getElementById('vault-view');
         const settingsView = document.getElementById('settings-view');
         const accountView = document.getElementById('account-view');
@@ -1328,6 +1342,9 @@ export class UIManager {
 
     private copyOTPToClipboard(otp: string, element: HTMLElement) {
         navigator.clipboard.writeText(otp).then(() => {
+            // Haptic feedback on mobile
+            Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+
             // Show visual feedback
             this.showCopyFeedback(element);
 
