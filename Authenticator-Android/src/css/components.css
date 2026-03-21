@@ -1959,63 +1959,14 @@ input:checked+.slider:before {
 
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   CLOUD SYNC INDICATOR — Pure Neumorphic Top-Center Pill
+   SYNC INDICATOR — Inline header icon (mobile + desktop)
    ───────────────────────────────────────────────────────────────────────────── */
 
-.cloud-sync-indicator {
-    position: fixed;
-    top: calc(env(safe-area-inset-top) + 12px);
-    left: 50%;
-    transform: translateX(-50%) translateY(-120%);
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 0 22px 0 8px;
-    height: 48px;
-    background: var(--bg-primary);
-    border: none;
-    border-radius: var(--radius-full);
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--accent-primary);
-    box-shadow:
-        8px 8px 20px var(--nm-shadow-dark),
-        -8px -8px 20px var(--nm-shadow-light);
-    pointer-events: none;
-    z-index: 2500;
-    /* hidden: slid up above viewport */
-    opacity: 0;
-    visibility: hidden;
-    transition:
-        opacity 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
-        transform 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
-        visibility 0s linear 0.38s;
-}
-
-/* visible state */
-.cloud-sync-indicator:not(.hidden) {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-    visibility: visible;
-    transition:
-        opacity 0.42s cubic-bezier(0.34, 1.4, 0.64, 1),
-        transform 0.42s cubic-bezier(0.34, 1.4, 0.64, 1),
-        visibility 0s linear 0s;
-}
-
-.cloud-sync-indicator.hidden {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-120%);
-    visibility: hidden;
-}
-
-/* Icon vessel — neumorphic inset circle */
-.sync-icon-vessel {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+/* Desktop navbar sync icon vessel */
+.navbar-sync-indicator {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
     background: var(--bg-primary);
     box-shadow:
         inset 4px 4px 8px var(--nm-shadow-dark),
@@ -2024,25 +1975,44 @@ input:checked+.slider:before {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    margin-right: 10px;
+    /* hidden → visible transition */
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.sync-icon-vessel i {
+.navbar-sync-indicator.hidden {
+    opacity: 0;
+    transform: scale(0.7);
+    pointer-events: none;
+}
+
+.navbar-sync-indicator i {
     font-size: 15px;
-    line-height: 1;
     color: var(--accent-primary);
-    animation: syncSpin 1s linear infinite;
+    animation: syncSpin 0.9s linear infinite;
+}
+
+/* Mobile sync btn — reuses .mobile-action-btn, just adds the spin */
+.mobile-action-btn.sync-btn i {
+    color: var(--accent-primary);
+    animation: syncSpin 0.9s linear infinite;
+}
+
+.mobile-action-btn.sync-btn {
+    box-shadow:
+        inset 4px 4px 8px var(--nm-shadow-dark),
+        inset -4px -4px 8px var(--nm-shadow-light);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mobile-action-btn.sync-btn.hidden {
+    display: none;
 }
 
 @keyframes syncSpin {
     to { transform: rotate(360deg); }
-}
-
-.sync-label {
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent-primary);
 }
 
 

@@ -242,14 +242,6 @@
 <!-- Toast container -->
 <div id="toast-container" class="toast-container"></div>
 
-<!-- Cloud sync indicator -->
-<div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" aria-live="polite" aria-label="Cloud sync in progress">
-    <div class="sync-icon-vessel">
-        <i class="fa-solid fa-rotate"></i>
-    </div>
-    <span class="sync-label">Syncing</span>
-</div>
-
 <!-- Connectivity indicator — fixed position, visually anchored to header -->
 <div id="connectivity-indicator" class="connectivity-indicator online" aria-live="polite" aria-label="Connection status">
     <span class="connectivity-dot"></span>
@@ -274,6 +266,10 @@
             </nav>
         </div>
         <div class="navbar-section navbar-right">
+            <!-- Sync icon — visible only during active sync -->
+            <div class="navbar-sync-indicator hidden" id="navbar-sync-indicator" aria-label="Syncing">
+                <i class="fa-solid fa-rotate"></i>
+            </div>
             <div class="user-menu">
                 <button class="user-button" id="user-dropdown-btn">
                     <div class="user-avatar" id="user-avatar">
@@ -319,6 +315,10 @@
             <span class="mobile-brand-name">Keyra</span>
         </div>
         <div class="mobile-tab-actions">
+            <!-- Sync icon — visible only during active sync -->
+            <div class="mobile-action-btn sync-btn hidden" id="mobile-sync-indicator" aria-label="Syncing">
+                <i class="fa-solid fa-rotate"></i>
+            </div>
             <button class="mobile-action-btn" id="mobile-lock-btn" title="Lock Vault">
                 <i class="fa-solid fa-lock"></i>
             </button>

@@ -29,10 +29,11 @@ export class SyncManager {
         if (isSyncing) this.syncCount++;
         else this.syncCount = Math.max(0, this.syncCount - 1);
 
-        const indicator = document.getElementById('cloud-sync-indicator');
-        if (indicator) {
-            indicator.classList.toggle('hidden', this.syncCount === 0);
-        }
+        const active = this.syncCount > 0;
+        // Mobile header indicator
+        document.getElementById('mobile-sync-indicator')?.classList.toggle('hidden', !active);
+        // Desktop navbar indicator
+        document.getElementById('navbar-sync-indicator')?.classList.toggle('hidden', !active);
     }
 
     // ─── Last Sync Display ─────────────────────────────────────────────────────
