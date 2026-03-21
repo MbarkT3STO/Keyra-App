@@ -1,12 +1,13 @@
+import { Buffer } from 'buffer';
 import { getUsers, saveUsers, getUserData, syncUserData, renameUserFolder } from './storage';
 import type { UserRecord, DeviceRecord } from './storage';
-import { hashPassword, verifyPassword, deriveKey, encryptVault, decryptVault, exportKey, importKey } from './crypto';
+import { hashPassword, verifyPassword, deriveKey, encryptVault, decryptVault } from './crypto';
 import type { AuthenticatorAccount } from './crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { sendActivationEmail } from './mailer';
 
 let currentUser: UserRecord | null = null;
-let currentKey: CryptoKey | null = null;
+let currentKey: Buffer | null = null;
 
 async function deliverActivationCode(email: string, code: string) {
     return sendActivationEmail({ to: email, subject: 'Activate Your Keyra Vault', code });
@@ -44,18 +45,14 @@ export async function signup(username: string, email: string, password: string):
     if (users.find(u => u.username === username || u.email === email)) {
         return { success: false, message: "Username or email already exists." };
     }
-
-    const { hash, salt } = await hashPassword(password);
+    const { hash, salt } = hashPassword(password);
     const activationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-    const initialKey = await deriveKey(password, salt);
-    const encryptedVaultData = await encryptVault(JSON.stringify([]), initialKey);
-
+    const initialKey = deriveKey(password, salt);
+    const encryptedVaultData = encryptVault(JSON.stringify([]), initialKey);
     const newUser: UserRecord = {
         id: uuidv4(), username, email, hash, salt,
         isActivated: false, activationCode, encryptedVaultData, autolock: '0'
     };
-
     users.push(newUser);
     await saveUsers(users);
     await syncUserData(username, newUser);
@@ -93,7 +90,6 @@ export async function verifyEmail(email: string, code: string): Promise<{ succes
 export async function login(username: string, password: string): Promise<{ success: boolean, message: string }> {
     const users = await getUsers();
     let user = users.find(u => u.username === username);
-
     if (!user) {
         const cloudData = await getUserData(username);
         if (cloudData) {
@@ -102,18 +98,15 @@ export async function login(username: string, password: string): Promise<{ succe
             await saveUsers(users);
         }
     }
-
     if (!user) return { success: false, message: "Invalid credentials." };
     if (!user.isActivated) return { success: false, message: "Please verify your email first." };
-    if (!await verifyPassword(password, user.hash, user.salt)) {
+    if (!verifyPassword(password, user.hash, user.salt)) {
         return { success: false, message: "Invalid credentials." };
     }
-
     try {
-        const key = await deriveKey(password, user.salt);
-        const decryptedJson = await decryptVault(user.encryptedVaultData, key);
-        JSON.parse(decryptedJson); // validate
-
+        const key = deriveKey(password, user.salt);
+        const decryptedJson = decryptVault(user.encryptedVaultData, key);
+        JSON.parse(decryptedJson);
         const cloudData = await getUserData(username);
         if (cloudData) {
             const mergedUser: UserRecord = {
@@ -127,11 +120,9 @@ export async function login(username: string, password: string): Promise<{ succe
         } else {
             currentUser = user;
         }
-
         currentKey = key;
-        const exportedKey = await exportKey(key);
         localStorage.setItem('active_session_user', currentUser.username);
-        localStorage.setItem('active_session_key', exportedKey);
+        localStorage.setItem('active_session_key', key.toString('base64'));
         localStorage.setItem('active_session_timestamp', Date.now().toString());
         registerCurrentDevice().catch(() => {});
         return { success: true, message: "Login successful." };
@@ -143,20 +134,18 @@ export async function login(username: string, password: string): Promise<{ succe
 
 export async function verifyMasterPassword(password: string): Promise<{ success: boolean, message: string }> {
     if (!currentUser) return { success: false, message: "No active user session." };
-    if (!await verifyPassword(password, currentUser.hash, currentUser.salt)) {
+    if (!verifyPassword(password, currentUser.hash, currentUser.salt)) {
         return { success: false, message: "Incorrect password." };
     }
     return { success: true, message: "Password verified." };
 }
 
-// ─── PIN Encryption/Decryption ────────────────────────────────────────────────
-
-export async function encryptPIN(pin: string): Promise<string> {
+export function encryptPIN(pin: string): string {
     if (!currentKey) throw new Error("No active user session.");
     return encryptVault(pin, currentKey);
 }
 
-export async function decryptPIN(encryptedPin: string): Promise<string> {
+export function decryptPIN(encryptedPin: string): string {
     if (!currentKey) throw new Error("No active user session.");
     return decryptVault(encryptedPin, currentKey);
 }
@@ -165,7 +154,6 @@ export async function checkSession(): Promise<{ success: boolean, message: strin
     const savedUser = localStorage.getItem('active_session_user');
     const savedKey = localStorage.getItem('active_session_key');
     const sessionTimestamp = localStorage.getItem('active_session_timestamp');
-
     if (savedUser && savedKey) {
         if (sessionTimestamp) {
             const sessionAge = Date.now() - parseInt(sessionTimestamp);
@@ -174,7 +162,6 @@ export async function checkSession(): Promise<{ success: boolean, message: strin
                 return { success: false, message: "Session expired. Please login again." };
             }
         }
-
         try {
             const users = await getUsers();
             let user = users.find(u => u.username === savedUser);
@@ -192,16 +179,13 @@ export async function checkSession(): Promise<{ success: boolean, message: strin
                 } else {
                     currentUser = user;
                 }
-
-                currentKey = await importKey(savedKey);
+                currentKey = Buffer.from(savedKey, 'base64');
                 localStorage.setItem('active_session_timestamp', Date.now().toString());
-
                 const deviceId = getCurrentDeviceId();
                 if ((currentUser.revokedDevices || []).includes(deviceId)) {
                     logout();
                     return { success: false, message: "This device has been revoked." };
                 }
-
                 registerCurrentDevice().catch(() => {});
                 return { success: true, message: "Session resumed." };
             }
@@ -226,7 +210,7 @@ export async function getActiveAccounts(): Promise<AuthenticatorAccount[]> {
         const users = await getUsers();
         const freshUser = users.find(u => u.id === currentUser!.id);
         if (!freshUser) throw new Error("User missing from storage");
-        const jsonStr = await decryptVault(freshUser.encryptedVaultData, currentKey);
+        const jsonStr = decryptVault(freshUser.encryptedVaultData, currentKey);
         return JSON.parse(jsonStr) as AuthenticatorAccount[];
     } catch (err) {
         console.error("getActiveAccounts failed:", err);
@@ -239,7 +223,7 @@ export async function saveActiveAccounts(accounts: AuthenticatorAccount[]): Prom
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
     if (userIndex === -1) throw new Error("User missing from storage.");
-    const newEncryptedVault = await encryptVault(JSON.stringify(accounts), currentKey);
+    const newEncryptedVault = encryptVault(JSON.stringify(accounts), currentKey);
     users[userIndex].encryptedVaultData = newEncryptedVault;
     currentUser.encryptedVaultData = newEncryptedVault;
     await saveUsers(users);
@@ -251,49 +235,35 @@ export async function updateUserSettings(settings: any): Promise<void> {
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
     if (userIndex === -1) throw new Error("User missing from storage.");
-
     if (settings["Android Settings"]) { users[userIndex]["Android Settings"] = settings["Android Settings"]; currentUser["Android Settings"] = settings["Android Settings"]; }
     if (settings["Web Settings"]) { users[userIndex]["Web Settings"] = settings["Web Settings"]; currentUser["Web Settings"] = settings["Web Settings"]; }
     if (settings["Desktop Settings"]) { users[userIndex]["Desktop Settings"] = settings["Desktop Settings"]; currentUser["Desktop Settings"] = settings["Desktop Settings"]; }
-
     const hasNamespace = settings["Android Settings"] || settings["Web Settings"] || settings["Desktop Settings"];
     if (!hasNamespace) { users[userIndex]["Android Settings"] = settings; currentUser["Android Settings"] = settings; }
-
     await saveUsers(users);
     await syncUserData(currentUser.username, users[userIndex]);
 }
 
-export async function getBackupData(): Promise<{
+export function getBackupData(): {
     version: string; timestamp: number; accountCount: number;
     salt: string; encryptedVaultData: string; encryptedSettings?: string; checksum: string;
-}> {
+} {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
-
     const settings = {
         autolock: currentUser.autolock,
         "Desktop Settings": currentUser["Desktop Settings"],
         "Web Settings": currentUser["Web Settings"],
         "Android Settings": currentUser["Android Settings"]
     };
-
-    const encryptedSettings = await encryptVault(JSON.stringify(settings), currentKey);
-
+    const encryptedSettings = encryptVault(JSON.stringify(settings), currentKey);
     let accountCount = 0;
     try {
-        const decrypted = await decryptVault(currentUser.encryptedVaultData, currentKey);
+        const decrypted = decryptVault(currentUser.encryptedVaultData, currentKey);
         const accounts = JSON.parse(decrypted);
         accountCount = Array.isArray(accounts) ? accounts.length : 0;
     } catch {}
-
-    const backup = {
-        version: "1.2.0", timestamp: Date.now(), accountCount,
-        salt: currentUser.salt,
-        encryptedVaultData: currentUser.encryptedVaultData,
-        encryptedSettings
-    };
-
-    const checksumData = backup.salt + backup.encryptedVaultData + backup.encryptedSettings;
-    const checksum = generateChecksum(checksumData);
+    const backup = { version: "1.2.0", timestamp: Date.now(), accountCount, salt: currentUser.salt, encryptedVaultData: currentUser.encryptedVaultData, encryptedSettings };
+    const checksum = generateChecksum(backup.salt + backup.encryptedVaultData + backup.encryptedSettings);
     return { ...backup, checksum };
 }
 
@@ -318,8 +288,7 @@ export function verifyBackupFile(backupData: any): {
         const hasChecksum = !!backupData.checksum;
         let checksumValid = false;
         if (hasChecksum) {
-            const checksumData = backupData.salt + backupData.encryptedVaultData + (backupData.encryptedSettings || '');
-            checksumValid = generateChecksum(checksumData) === backupData.checksum;
+            checksumValid = generateChecksum(backupData.salt + backupData.encryptedVaultData + (backupData.encryptedSettings || '')) === backupData.checksum;
         }
         return { valid: true, version: backupData.version || "1.0.0", timestamp: backupData.timestamp, accountCount: backupData.accountCount, encrypted, hasChecksum, checksumValid: hasChecksum ? checksumValid : undefined };
     } catch {
@@ -333,17 +302,16 @@ export async function importVaultData(
 ): Promise<{ success: boolean, message: string }> {
     if (!currentUser || !currentKey) throw new Error("No active user session.");
     try {
-        const key = await deriveKey(password, salt);
-        const decryptedJson = await decryptVault(encryptedVaultData, key);
+        const key = deriveKey(password, salt);
+        const decryptedJson = decryptVault(encryptedVaultData, key);
         const accounts = JSON.parse(decryptedJson) as AuthenticatorAccount[];
         await saveActiveAccounts(accounts);
-
         const users = await getUsers();
         const userIndex = users.findIndex(u => u.id === currentUser!.id);
         if (userIndex !== -1) {
             if (encryptedSettings) {
                 try {
-                    const decryptedSettings = JSON.parse(await decryptVault(encryptedSettings, key));
+                    const decryptedSettings = JSON.parse(decryptVault(encryptedSettings, key));
                     if (decryptedSettings.autolock !== undefined) { users[userIndex].autolock = decryptedSettings.autolock; currentUser.autolock = decryptedSettings.autolock; }
                     if (decryptedSettings["Desktop Settings"]) { users[userIndex]["Desktop Settings"] = decryptedSettings["Desktop Settings"]; currentUser["Desktop Settings"] = decryptedSettings["Desktop Settings"]; }
                     if (decryptedSettings["Web Settings"]) { users[userIndex]["Web Settings"] = decryptedSettings["Web Settings"]; currentUser["Web Settings"] = decryptedSettings["Web Settings"]; }
@@ -374,15 +342,15 @@ export async function changePassword(newPassword: string): Promise<{ success: bo
         const userIndex = users.findIndex(u => u.id === currentUser!.id);
         if (userIndex === -1) throw new Error("User missing from storage.");
         const accounts = await getActiveAccounts();
-        const { hash, salt } = await hashPassword(newPassword);
-        const newKey = await deriveKey(newPassword, salt);
-        const newEncryptedVault = await encryptVault(JSON.stringify(accounts), newKey);
+        const { hash, salt } = hashPassword(newPassword);
+        const newKey = deriveKey(newPassword, salt);
+        const newEncryptedVault = encryptVault(JSON.stringify(accounts), newKey);
         users[userIndex].hash = hash; users[userIndex].salt = salt; users[userIndex].encryptedVaultData = newEncryptedVault;
         currentUser.hash = hash; currentUser.salt = salt; currentUser.encryptedVaultData = newEncryptedVault;
         currentKey = newKey;
         await saveUsers(users);
         await syncUserData(currentUser.username, users[userIndex]);
-        localStorage.setItem('active_session_key', await exportKey(newKey));
+        localStorage.setItem('active_session_key', newKey.toString('base64'));
         return { success: true, message: "Password changed successfully." };
     } catch (err) {
         console.error("Password change failed:", err);
