@@ -454,11 +454,16 @@ input, textarea {
 /* ── 9. MODALS — BOTTOM SHEET ──────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
+    /* Backdrop: blur + dim */
     .modal-overlay {
         align-items: flex-end;
         padding: 0;
+        background: hsla(var(--h), 20%, 5%, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
     }
 
+    /* Sheet */
     .modal {
         max-width: 100%;
         width: 100%;
@@ -468,36 +473,168 @@ input, textarea {
         margin: 0;
         max-height: 92dvh;
         transform: translateY(100%);
-        padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+        opacity: 1;
+        transition:
+            transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+            opacity 0.25s ease;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 28px);
         box-shadow:
-            0 -8px 32px var(--nm-shadow-dark),
+            0 -12px 48px var(--nm-shadow-dark),
             0 -1px 0 var(--nm-shadow-light);
+        display: flex;
+        flex-direction: column;
     }
 
     .modal-overlay.show .modal {
         transform: translateY(0);
+        opacity: 1;
     }
 
-    /* Drag handle */
+    .modal.hiding {
+        transform: translateY(100%);
+        opacity: 0;
+        transition:
+            transform 0.38s cubic-bezier(0.4, 0, 1, 1),
+            opacity 0.22s ease;
+    }
+
+    /* ── Drag handle ── */
     .modal::before {
         content: '';
         display: block;
-        width: 40px;
-        height: 4px;
+        width: 48px;
+        height: 5px;
         border-radius: var(--radius-full);
         background: var(--nm-shadow-dark);
-        opacity: 0.25;
-        margin: 12px auto 0;
+        opacity: 0.3;
+        margin: 14px auto 0;
         flex-shrink: 0;
     }
 
+    /* ── Modal content wrapper ── */
     .modal-content {
-        padding: 16px 20px 8px;
+        padding: 20px 20px 8px;
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
     }
 
+    /* ── Modal header: icon + title side by side ── */
+    .modal-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    /* ── Icon vessel: neumorphic raised + accent tint ── */
+    .modal-icon-vessel {
+        width: 52px !important;
+        height: 52px !important;
+        min-width: 52px;
+        border-radius: 16px !important;
+        background: var(--bg-primary) !important;
+        box-shadow:
+            6px 6px 14px var(--nm-shadow-dark),
+            -6px -6px 14px var(--nm-shadow-light) !important;
+        background-image: radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 70%) !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .modal-icon-vessel i {
+        font-size: 22px !important;
+    }
+
+    .modal-icon-vessel.danger {
+        background-image: radial-gradient(circle at 30% 30%, rgba(255,59,48,0.12), transparent 70%) !important;
+    }
+
+    /* ── Brand icon (legacy large icon) — shrink on mobile ── */
+    .modal-brand-icon {
+        width: 52px !important;
+        height: 52px !important;
+        min-width: 52px !important;
+        border-radius: 16px !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        box-shadow:
+            6px 6px 14px var(--nm-shadow-dark),
+            -6px -6px 14px var(--nm-shadow-light) !important;
+        background-image: radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 70%) !important;
+    }
+
+    .modal-brand-icon i {
+        font-size: 22px !important;
+    }
+
+    /* ── Title vessel ── */
+    .modal-title-vessel {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .modal-title-vessel h2 {
+        font-size: 20px !important;
+        font-weight: 900 !important;
+        letter-spacing: -0.5px !important;
+        margin: 0 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .modal-title-vessel p {
+        font-size: 10px !important;
+        letter-spacing: 1px !important;
+        margin: 0 !important;
+    }
+
+    /* ── Divider ── */
+    .modal-divider {
+        margin: 10px 0;
+    }
+
+    /* ── Entity badge ── */
+    .modal-entity-badge {
+        padding: 12px 14px;
+        border-radius: 14px;
+        margin-bottom: 14px;
+    }
+
+    /* ── Form inputs ── */
+    .modal-content .form-input {
+        height: 52px;
+        padding: 0 18px;
+        border-radius: 16px;
+        font-size: 15px;
+    }
+
+    .modal-content .form-group {
+        margin-bottom: 10px;
+    }
+
+    .modal-content .form-label {
+        font-size: 10px;
+        margin-bottom: 5px;
+    }
+
+    /* ── Footer ── */
     .modal-footer {
         padding: 0 20px;
-        margin-top: 12px;
+        margin-top: 16px;
+        gap: 10px;
+        flex-shrink: 0;
     }
 
     .modal-footer .btn-primary,
@@ -505,6 +642,250 @@ input, textarea {
     .modal-footer .btn-danger {
         height: var(--mobile-btn-h);
         border-radius: var(--radius-full);
+        font-size: 15px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .modal-footer .btn-primary {
+        flex: 2;
+    }
+
+    /* ── Help text ── */
+    .modal-help-text {
+        font-size: 12px !important;
+        line-height: 1.5;
+        margin-top: 6px;
+    }
+
+    /* ── PIN setup modal ── */
+    .pin-steps-modal {
+        padding: 20px 20px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .pin-progress-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        padding: 4px 0;
+    }
+
+    .pin-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .pin-step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--bg-primary);
+        box-shadow:
+            4px 4px 10px var(--nm-shadow-dark),
+            -4px -4px 10px var(--nm-shadow-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 900;
+        color: var(--text-tertiary);
+        transition: all 0.3s ease;
+    }
+
+    .pin-step.active .pin-step-number {
+        background: var(--accent-primary);
+        color: white;
+        box-shadow: 0 4px 12px var(--aura-1);
+    }
+
+    .pin-step.completed .pin-step-number {
+        background: var(--accent-primary);
+        color: white;
+        box-shadow: 0 4px 12px var(--aura-1);
+    }
+
+    .pin-step-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .pin-step.active .pin-step-label,
+    .pin-step.completed .pin-step-label {
+        color: var(--accent-primary);
+    }
+
+    .pin-step-line {
+        flex: 1;
+        height: 2px;
+        background: var(--nm-shadow-dark);
+        opacity: 0.2;
+        margin: 0 8px;
+        margin-bottom: 18px;
+        border-radius: 2px;
+        transition: background 0.3s ease, opacity 0.3s ease;
+    }
+
+    .pin-step-line.active {
+        background: var(--accent-primary);
+        opacity: 0.5;
+    }
+
+    .pin-step-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    /* Pin setup header row */
+    .pin-step-content .pin-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        text-align: left;
+        margin-bottom: 0;
+    }
+
+    .pin-brand-icon {
+        width: 52px !important;
+        height: 52px !important;
+        min-width: 52px !important;
+        border-radius: 16px !important;
+        margin: 0 !important;
+        background: var(--bg-primary) !important;
+        box-shadow:
+            6px 6px 14px var(--nm-shadow-dark),
+            -6px -6px 14px var(--nm-shadow-light) !important;
+        background-image: radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 70%) !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .pin-brand-icon i {
+        font-size: 22px !important;
+        color: var(--accent-primary);
+    }
+
+    .pin-step-content .pin-title {
+        font-size: 20px !important;
+        font-weight: 900 !important;
+        letter-spacing: -0.5px !important;
+        margin: 0 !important;
+    }
+
+    .pin-step-content .pin-subtitle {
+        font-size: 10px !important;
+        letter-spacing: 1px !important;
+        margin: 0 !important;
+        color: var(--text-tertiary) !important;
+        text-transform: uppercase;
+    }
+
+    .pin-input-container {
+        width: 100%;
+    }
+
+    .pin-actions {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        padding-bottom: 4px;
+    }
+
+    .pin-continue-btn {
+        flex: 2 !important;
+        height: var(--mobile-btn-h) !important;
+        border-radius: var(--radius-full) !important;
+        font-size: 15px !important;
+    }
+
+    .pin-cancel-btn,
+    .pin-back-btn {
+        flex: 1 !important;
+        height: var(--mobile-btn-h) !important;
+        border-radius: var(--radius-full) !important;
+        justify-content: center !important;
+        font-size: 14px !important;
+    }
+
+    /* ── OTP modal ── */
+    .otp-modal-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .otp-modal-icon {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        border-radius: 16px;
+        background: var(--bg-primary);
+        box-shadow:
+            6px 6px 14px var(--nm-shadow-dark),
+            -6px -6px 14px var(--nm-shadow-light);
+        background-image: radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 70%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .otp-modal-icon i {
+        font-size: 22px;
+        color: var(--accent-primary);
+    }
+
+    /* ── Delete confirm modal ── */
+    .delete-modal-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--bg-primary);
+        box-shadow:
+            6px 6px 14px var(--nm-shadow-dark),
+            -6px -6px 14px var(--nm-shadow-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 14px;
+        flex-shrink: 0;
+    }
+
+    /* ── Export/Import modals ── */
+    .export-modal-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .export-option-card {
+        border-radius: 14px !important;
+        padding: 12px 14px !important;
+    }
+
+    /* ── Email verify modal ── */
+    .email-verify-code-input {
+        height: 64px !important;
+        font-size: 28px !important;
+        letter-spacing: 10px !important;
+        border-radius: 16px !important;
+        text-align: center;
     }
 }
 
@@ -1564,5 +1945,176 @@ body.keyboard-open .auth-overlay {
     .search-vessel .search-input {
         cursor: pointer;
         caret-color: transparent;
+    }
+}
+
+/* ── 27. OTP MODAL RING ──────────────────────────────────────────────────────── */
+
+.otp-modal-ring-vessel {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.otp-modal-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.otp-modal-ring-inner {
+    position: relative;
+    text-align: center;
+}
+
+.otp-modal-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    color: var(--accent-primary);
+    line-height: 1;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.otp-modal-timer {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    transition: color 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .otp-modal-ring-vessel {
+        width: 160px;
+        height: 160px;
+    }
+
+    .otp-modal-code {
+        font-size: 24px;
+        letter-spacing: 5px;
+    }
+}
+
+/* ── 28. MODAL BACK BUTTON ───────────────────────────────────────────────────── */
+
+.modal-back-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 12px;
+    background: var(--bg-primary);
+    box-shadow:
+        4px 4px 10px var(--nm-shadow-dark),
+        -4px -4px 10px var(--nm-shadow-light);
+    border: none;
+    color: var(--text-secondary);
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: box-shadow 0.12s ease, transform 0.12s ease, color 0.12s ease;
+}
+
+.modal-back-btn:active {
+    box-shadow: var(--nm-shadow-in-sm);
+    transform: scale(0.91);
+    color: var(--accent-primary);
+}
+
+/* ── 29. RECOVERY / FORGOT-PIN MODAL ─────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    /* Override recovery-modal desktop max-width — it's a bottom sheet like all others */
+    .recovery-modal {
+        max-width: 100% !important;
+    }
+
+    /* recovery-footer is now replaced by standard modal-footer — keep legacy compat */
+    .recovery-footer {
+        padding: 0 20px !important;
+        flex-direction: row !important;
+        gap: 10px !important;
+    }
+
+    .recovery-btn {
+        height: var(--mobile-btn-h) !important;
+        border-radius: var(--radius-full) !important;
+        font-size: 15px !important;
+        min-height: unset !important;
+    }
+
+    /* Password input inside recovery form */
+    .recovery-form .form-input {
+        height: 52px;
+        border-radius: 16px;
+        font-size: 15px;
+    }
+
+    .recovery-error {
+        font-size: 12px;
+        margin-top: 4px;
+    }
+}
+
+/* ── 30. MODAL HEADER — BACK BUTTON VARIANT ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+    /* When modal-header has 3 children (back-btn + icon + title), tighten gap */
+    .modal-header:has(.modal-back-btn) {
+        gap: 10px;
+    }
+
+    /* Disabled/loading state for modal buttons */
+    .modal-footer .btn-primary:disabled,
+    .modal-footer .btn-danger:disabled {
+        opacity: 0.45;
+        pointer-events: none;
+    }
+
+    /* Import modal — password input */
+    #import-pass {
+        height: 52px !important;
+        border-radius: 16px !important;
+        font-size: 15px !important;
+    }
+
+    /* Email verify code input */
+    #email-verify-code {
+        height: 64px !important;
+        font-size: 28px !important;
+        letter-spacing: 10px !important;
+        border-radius: 16px !important;
+        text-align: center;
+        color: var(--accent-primary) !important;
+        font-weight: 900 !important;
+    }
+
+    /* Export option cards — active/selected state */
+    .export-option-card.selected {
+        border-color: var(--accent-primary) !important;
+        box-shadow:
+            6px 6px 14px var(--nm-shadow-dark),
+            -6px -6px 14px var(--nm-shadow-light),
+            0 0 0 2px var(--accent-soft) !important;
+    }
+
+    /* Modal scrollbar hidden on mobile */
+    .modal-content::-webkit-scrollbar {
+        display: none;
+    }
+
+    .modal-content {
+        scrollbar-width: none;
     }
 }

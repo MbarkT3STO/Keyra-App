@@ -1886,51 +1886,58 @@ export class UIManager {
     private showModal(content: string) {
         const overlay = document.getElementById('modal-overlay');
         if (!overlay) return;
-        overlay.innerHTML = `<div class="modal animate-fade-in">${content}</div>`;
+        overlay.innerHTML = `<div class="modal">${content}</div>`;
+        // Force reflow so the browser registers the initial transform before adding .show
+        overlay.getBoundingClientRect();
         overlay.classList.add('show');
     }
 
     public hideModal() {
         const overlay = document.getElementById('modal-overlay');
         if (!overlay) return;
+        const modal = overlay.querySelector('.modal');
+        if (modal) modal.classList.add('hiding');
         overlay.classList.remove('show');
-        setTimeout(() => overlay.innerHTML = '', 300);
+        setTimeout(() => {
+            overlay.innerHTML = '';
+        }, 420);
     }
 
     private showAddModal() {
         const content = `
-            <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
-                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
-                    <div class="modal-brand-icon" style="width: 140px !important; height: 140px !important; margin-bottom: 48px !important;">
-                        <i class="fa-solid fa-circle-plus" style="font-size: 72px !important;"></i>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
+                        <i class="fa-solid fa-circle-plus"></i>
                     </div>
-                    <div>
-                        <h2 style="font-weight: 950; font-size: clamp(28px, 5vw, 36px); color: var(--text-primary); letter-spacing: -1.5px; margin-bottom: 8px;">Add Token</h2>
-                        <div class="modal-help-text" style="font-weight: 750; opacity: 0.8; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">SAVE DIGITAL IDENTITY</div>
+                    <div class="modal-title-vessel">
+                        <h2>Add Token</h2>
+                        <p>SAVE DIGITAL IDENTITY</p>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Service</label>
-                    <input type="text" id="new-issuer" class="form-input" placeholder="e.g. GitHub, Google">
+                <div class="modal-divider"></div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Service</label>
+                        <input type="text" id="new-issuer" class="form-input" placeholder="e.g. GitHub, Google">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account</label>
+                        <input type="text" id="new-account" class="form-input" placeholder="name@domain.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">TOTP Secret</label>
+                        <input type="text" id="new-secret" class="form-input" placeholder="Enter secret key">
+                        <div class="modal-help-text">Input derived from manual entry or registry backup</div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Account</label>
-                    <input type="text" id="new-account" class="form-input" placeholder="name@domain.com">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">TOTP Secret</label>
-                    <input type="text" id="new-secret" class="form-input" placeholder="Enter secret key">
-                    <div class="modal-help-text">Input derived from manual entry or registry backup</div>
-                </div>
-                
-                <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl);">
-                    <button class="btn-primary" id="save-new-account" style="flex: 2; height: var(--btn-h-lg); font-size: 17px;">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        Save Token
-                    </button>
-                    <button class="user-button" id="cancel-add-btn" style="flex: 1; justify-content: center; height: var(--btn-h-lg); font-weight: 800;">Cancel</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="save-new-account">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Save Token
+                </button>
+                <button class="user-button" id="cancel-add-btn">Cancel</button>
             </div>
         `;
         this.showModal(content);
@@ -1952,43 +1959,41 @@ export class UIManager {
 
     private showEditModal(account: any) {
         const content = `
-            <div style="padding: clamp(var(--space-md), 8vw, var(--space-xl));">
-                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
-                    <div class="modal-brand-icon" style="width: 140px !important; height: 140px !important; margin-bottom: 48px !important;">
-                        <i class="fa-solid fa-sliders" style="font-size: 72px !important;"></i>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
+                        <i class="fa-solid fa-sliders"></i>
                     </div>
-                    <div>
-                        <h2 style="font-weight: 950; font-size: clamp(28px, 5vw, 36px); color: var(--text-primary); letter-spacing: -1.5px; margin-bottom: 8px;">Edit Identity</h2>
-                        <div class="modal-help-text" style="font-weight: 750; opacity: 0.8; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">UPDATE SERVICE DETAILS</div>
-                    </div>
-                </div>
-                
-                <div class="modal-entity-badge" style="margin-bottom: 20px;">
-                    <div class="entity-icon">
-                        <i class="fa-solid fa-shield"></i>
-                    </div>
-                    <div class="entity-info">
-                        <span class="entity-name">${account.issuer}</span>
-                        <span class="entity-label">${account.account || 'Vault Token'}</span>
+                    <div class="modal-title-vessel">
+                        <h2>Edit Identity</h2>
+                        <p>UPDATE SERVICE DETAILS</p>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">Service</label>
-                    <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
+                <div class="modal-divider"></div>
+                <div class="modal-body">
+                    <div class="modal-entity-badge">
+                        <div class="entity-icon"><i class="fa-solid fa-shield"></i></div>
+                        <div class="entity-info">
+                            <span class="entity-name">${account.issuer}</span>
+                            <span class="entity-label">${account.account || 'Vault Token'}</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Service</label>
+                        <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account</label>
+                        <input type="text" id="edit-account" class="form-input" value="${account.account}">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Account</label>
-                    <input type="text" id="edit-account" class="form-input" value="${account.account}">
-                </div>
-                
-                <div style="display: flex; gap: var(--space-md); margin-top: var(--space-xl);">
-                    <button class="btn-primary" id="update-account" style="flex: 2; height: var(--btn-h-lg); font-size: 17px;">
-                        <i class="fa-solid fa-check"></i>
-                        Save Changes
-                    </button>
-                    <button class="user-button" id="cancel-edit-btn" style="flex: 1; justify-content: center; height: var(--btn-h-lg); font-weight: 800;">Cancel</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="update-account">
+                    <i class="fa-solid fa-check"></i>
+                    Save Changes
+                </button>
+                <button class="user-button" id="cancel-edit-btn">Cancel</button>
             </div>
         `;
         this.showModal(content);
@@ -2487,16 +2492,16 @@ export class UIManager {
                         <div class="pin-step-label">Confirm PIN</div>
                     </div>
                 </div>
-
                 <div class="pin-step-content">
                     <div class="pin-header">
-                        <div class="pin-brand-icon" style="width: 140px !important; height: 140px !important; margin-bottom: 48px !important;">
-                            <i class="fa-solid fa-shield-halved" style="font-size: 72px !important;"></i>
+                        <div class="pin-brand-icon">
+                            <i class="fa-solid fa-shield-halved"></i>
                         </div>
-                        <h2 class="pin-title">Set Master PIN</h2>
-                        <p class="pin-subtitle">ESTABLISH 4-DIGIT VAULT KEY</p>
+                        <div>
+                            <h2 class="pin-title">Set Master PIN</h2>
+                            <p class="pin-subtitle">ESTABLISH 4-DIGIT VAULT KEY</p>
+                        </div>
                     </div>
-
                     <div class="pin-input-container">
                         <div class="pin-input-vessel">
                             <div class="pin-indicators">
@@ -2509,19 +2514,14 @@ export class UIManager {
                         </div>
                         <div class="pin-helper">Choose New PIN</div>
                     </div>
-
                     <div class="pin-actions">
                         <button class="btn-primary pin-continue-btn" id="pin-step1-continue" disabled>
                             <i class="fa-solid fa-arrow-right"></i>
                             Next Phase
                         </button>
-                        <button class="user-button pin-cancel-btn" id="pin-step1-cancel">
-                            Cancel
-                        </button>
+                        <button class="user-button pin-cancel-btn" id="pin-step1-cancel">Cancel</button>
                     </div>
-                    <p class="modal-help-text" style="text-align: center; margin-top: 20px;">
-                        Keep this code safe. It is required to unlock your identities.
-                    </p>
+                    <p class="modal-help-text" style="text-align: center;">Keep this code safe. It is required to unlock your identities.</p>
                 </div>
             </div>
         `;
@@ -2543,16 +2543,16 @@ export class UIManager {
                         <div class="pin-step-label">Confirm PIN</div>
                     </div>
                 </div>
-
                 <div class="pin-step-content">
                     <div class="pin-header">
-                        <div class="pin-brand-icon" style="width: 140px !important; height: 140px !important; margin-bottom: 48px !important;">
-                            <i class="fa-solid fa-circle-check" style="font-size: 72px !important;"></i>
+                        <div class="pin-brand-icon">
+                            <i class="fa-solid fa-circle-check"></i>
                         </div>
-                        <h2 class="pin-title">Verify PIN</h2>
-                        <p class="pin-subtitle">RE-ENTER KEY TO CONFIRM</p>
+                        <div>
+                            <h2 class="pin-title">Verify PIN</h2>
+                            <p class="pin-subtitle">RE-ENTER KEY TO CONFIRM</p>
+                        </div>
                     </div>
-
                     <div class="pin-input-container">
                         <div class="pin-input-vessel">
                             <div class="pin-indicators">
@@ -2565,7 +2565,6 @@ export class UIManager {
                         </div>
                         <div class="pin-helper">Confirm New PIN</div>
                     </div>
-
                     <div class="pin-actions">
                         <button class="btn-primary pin-continue-btn" id="pin-step2-continue" disabled>
                             <i class="fa-solid fa-shield-halved"></i>
@@ -2576,9 +2575,7 @@ export class UIManager {
                             Back
                         </button>
                     </div>
-                    <p class="modal-help-text" style="text-align: center; margin-top: 20px;">
-                        Passwords must match exactly to synchronize security.
-                    </p>
+                    <p class="modal-help-text" style="text-align: center;">Passwords must match exactly to synchronize security.</p>
                 </div>
             </div>
         `;
@@ -2670,9 +2667,7 @@ export class UIManager {
                         <p>VAULT WILL BE UNPROTECTED</p>
                     </div>
                 </div>
-                
                 <div class="modal-divider"></div>
-                
                 <div class="modal-body">
                     <div class="modal-entity-badge">
                         <div class="entity-icon">
@@ -2683,17 +2678,15 @@ export class UIManager {
                             <span class="entity-label">Active Protection</span>
                         </div>
                     </div>
-                    
                     <p class="modal-help-text">Removing the PIN means anyone with access to this device can view your identities. This action is immediate.</p>
                 </div>
-                
-                <div class="modal-footer">
-                    <button class="btn-danger" id="confirm-remove-pin">
-                        <i class="fa-solid fa-trash-can"></i>
-                        Remove Security
-                    </button>
-                    <button class="user-button" id="cancel-remove-pin" style="justify-content: center;">Keep PIN Active</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-danger" id="confirm-remove-pin">
+                    <i class="fa-solid fa-trash-can"></i>
+                    Remove Security
+                </button>
+                <button class="user-button" id="cancel-remove-pin">Keep PIN Active</button>
             </div>
         `;
         this.showModal(content);
@@ -2858,34 +2851,34 @@ export class UIManager {
 
     private showDeleteConfirm(account: any) {
         const content = `
-            <div style="padding: clamp(32px, 8vw, 48px); text-align: center;">
-                <div style="margin: 0 auto 24px; width: 96px; height: 96px; border-radius: 50%; background: var(--bg-primary); box-shadow: var(--nm-shadow-out); display: flex; align-items: center; justify-content: center;">
-                    <i class="fa-solid fa-trash-can" style="font-size: 36px; color: #ff3b30;"></i>
-                </div>
-                <h2 style="font-weight: 850; font-size: 24px; margin-bottom: 4px; color: var(--text-primary);" class="danger">Delete Token?</h2>
-                <div class="modal-help-text" style="font-weight: 800; opacity: 0.8; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; margin-bottom: 24px;">PERMANENT ACTION</div>
-                
-                <div class="modal-entity-badge" style="margin-bottom: 32px;">
-                    <div class="entity-icon">
-                        <i class="fa-solid fa-shield"></i>
-                    </div>
-                    <div class="entity-info">
-                        <span class="entity-name">${account.issuer}</span>
-                        <span class="entity-label">${account.account || 'Vault Token'}</span>
-                    </div>
-                </div>
-
-                <p class="modal-help-text" style="font-size: 14px; margin-bottom: 40px; line-height: 1.6;">
-                    Removing this token is permanent. You will lose access to its OTP codes.
-                </p>
-                
-                <div style="display: flex; gap: 16px;">
-                    <button class="btn-primary danger" id="confirm-delete" style="flex: 1; height: var(--btn-h-lg);">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel danger">
                         <i class="fa-solid fa-trash-can"></i>
-                        Delete Token
-                    </button>
-                    <button class="user-button" id="cancel-delete-btn" style="flex: 1; justify-content: center; height: var(--btn-h-lg);">Keep Token</button>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2 class="danger">Delete Token?</h2>
+                        <p>PERMANENT ACTION</p>
+                    </div>
                 </div>
+                <div class="modal-divider"></div>
+                <div class="modal-body">
+                    <div class="modal-entity-badge">
+                        <div class="entity-icon"><i class="fa-solid fa-shield"></i></div>
+                        <div class="entity-info">
+                            <span class="entity-name">${account.issuer}</span>
+                            <span class="entity-label">${account.account || 'Vault Token'}</span>
+                        </div>
+                    </div>
+                    <p class="modal-help-text">Removing this token is permanent. You will lose access to its OTP codes.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-danger" id="confirm-delete">
+                    <i class="fa-solid fa-trash-can"></i>
+                    Delete Token
+                </button>
+                <button class="user-button" id="cancel-delete-btn">Keep Token</button>
             </div>
         `;
         this.showModal(content);
@@ -2906,38 +2899,39 @@ export class UIManager {
         const offset = circumference - (remaining / 30) * circumference;
 
         const content = `
-            <div style="padding: clamp(var(--space-xl), 10vw, var(--space-2xl)); text-align: center;">
-                <div style="display: flex; align-items: center; gap: var(--space-xl); margin-bottom: 48px; text-align: left;">
-                    <div class="modal-brand-icon" style="width: 140px !important; height: 140px !important; flex-shrink: 0; margin: 0 !important;">
-                        <i class="${this.getIcon(account.issuer)}" style="font-size: 72px !important;"></i>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
+                        <i class="${this.getIcon(account.issuer)}"></i>
                     </div>
-                    <div>
-                        <h2 style="font-weight: 950; font-size: clamp(28px, 5vw, 36px); color: var(--text-primary); letter-spacing: -1.5px; margin-bottom: 8px;">${account.issuer}</h2>
-                        <div style="color: var(--text-secondary); font-size: 16px; font-weight: 750; letter-spacing: 0.5px; opacity: 0.8;">${account.account}</div>
-                    </div>
-                </div>
-
-                <div style="position: relative; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); width: 220px; height: 220px;">
-                    <svg viewBox="0 0 120 120" style="position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg);">
-                        <circle cx="60" cy="60" r="54" fill="none" stroke="var(--bg-secondary)" stroke-width="5"></circle>
-                        <circle class="otp-modal-circle" cx="60" cy="60" r="54" fill="none"
-                            stroke="var(--accent-primary)" stroke-width="7" stroke-linecap="round"
-                            stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
-                            style="transition: stroke-dashoffset 1s linear;"></circle>
-                    </svg>
-                    <div style="position: relative; text-align: center; width: 100%; padding: 0 24px; box-sizing: border-box;">
-                        <div class="otp-modal-code" style="font-size: clamp(24px, 6vw, 30px); font-weight: 900; letter-spacing: 6px; color: var(--accent-primary); line-height: 1; white-space: nowrap;">${formatted}</div>
-                        <div class="otp-modal-timer" style="font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-top: 6px;">${remaining}s</div>
+                    <div class="modal-title-vessel">
+                        <h2>${account.issuer}</h2>
+                        <p>${account.account || 'VAULT TOKEN'}</p>
                     </div>
                 </div>
-
-                <div style="display: flex; gap: var(--space-md);">
-                    <button class="btn-primary otp-modal-copy-btn" style="flex: 2; height: var(--btn-h-lg); font-size: 16px;">
-                        <i class="fa-solid fa-copy"></i>
-                        <span>Copy Code</span>
-                    </button>
-                    <button class="user-button" id="otp-modal-close" style="flex: 1; justify-content: center; height: var(--btn-h-lg); font-weight: 800;">Close</button>
+                <div class="modal-divider"></div>
+                <div class="modal-body">
+                    <div class="otp-modal-ring-vessel">
+                        <svg viewBox="0 0 120 120" class="otp-modal-svg">
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="var(--bg-secondary)" stroke-width="5"></circle>
+                            <circle class="otp-modal-circle" cx="60" cy="60" r="54" fill="none"
+                                stroke="var(--accent-primary)" stroke-width="7" stroke-linecap="round"
+                                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+                                style="transition: stroke-dashoffset 1s linear;"></circle>
+                        </svg>
+                        <div class="otp-modal-ring-inner">
+                            <div class="otp-modal-code">${formatted}</div>
+                            <div class="otp-modal-timer">${remaining}s</div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary otp-modal-copy-btn">
+                    <i class="fa-solid fa-copy"></i>
+                    Copy Code
+                </button>
+                <button class="user-button" id="otp-modal-close">Close</button>
             </div>
         `;
         this.showModal(content);
@@ -3163,102 +3157,91 @@ export class UIManager {
     
     private showExportOptionsModal() {
         const content = `
-            <div class="custom-scrollbar" style="max-height: 85vh; overflow-y: auto; padding: clamp(24px, 5vw, 32px); max-width: 580px; margin: 0 auto;">
-                <!-- Header -->
-                <div style="display: flex; align-items: flex-start; gap: 18px; margin-bottom: 24px;">
-                    <div class="account-icon nm-icon-large" style="width: 64px; height: 64px; flex-shrink: 0;">
-                        <i class="fa-solid fa-download" style="font-size: 28px;"></i>
-                    </div>
-                    <div style="flex: 1; min-width: 0;">
-                        <h2 style="font-weight: 900; font-size: clamp(20px, 4vw, 24px); color: var(--text-primary); margin: 0 0 6px 0; line-height: 1.2;">Export Vault</h2>
-                        <p style="font-size: 12px; color: var(--text-secondary); font-weight: 600; line-height: 1.4;">Choose your preferred export format</p>
-                    </div>
-                </div>
-                
-                <!-- Export Format Options -->
-                <div style="display: grid; gap: 10px; margin-bottom: 20px;">
-                    <!-- Full Encrypted Backup -->
-                    <button class="export-option-card" data-format="encrypted" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
-                        <div class="export-option-icon">
-                            <i class="fa-solid fa-lock" style="font-size: 18px; color: var(--accent-primary);"></i>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Full Encrypted Backup</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Complete vault with settings (.keyra)</div>
-                        </div>
-                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
-                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
-                        </div>
-                    </button>
-                    
-                    <!-- QR Codes PDF -->
-                    <button class="export-option-card" data-format="qr-pdf" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
-                        <div class="export-option-icon">
-                            <i class="fa-solid fa-qrcode" style="font-size: 18px; color: var(--accent-primary);"></i>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">QR Codes (PDF)</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Printable QR codes for each account</div>
-                        </div>
-                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
-                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
-                        </div>
-                    </button>
-                    
-                    <!-- Plain JSON -->
-                    <button class="export-option-card" data-format="json" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
-                        <div class="export-option-icon">
-                            <i class="fa-solid fa-file-code" style="font-size: 18px; color: #ff9500;"></i>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Plain JSON</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Unencrypted JSON for migration (.json)</div>
-                        </div>
-                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
-                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
-                        </div>
-                    </button>
-                    
-                    <!-- Text File -->
-                    <button class="export-option-card" data-format="text" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 12px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
-                        <div class="export-option-icon">
-                            <i class="fa-solid fa-file-lines" style="font-size: 18px; color: var(--text-secondary);"></i>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Text File</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3;">Human-readable text format (.txt)</div>
-                        </div>
-                        <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease;">
-                            <i class="fa-solid fa-check" style="font-size: 11px; color: var(--success);"></i>
-                        </div>
-                    </button>
-                </div>
-                
-                <!-- Account Selection Toggle -->
-                <div id="export-selection-container" style="background: var(--bg-primary); border-radius: 12px; padding: 14px; box-shadow: var(--nm-shadow-in-sm); margin-bottom: 20px; display: none;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div style="flex: 1; min-width: 0; margin-right: 12px;">
-                            <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Export Selection</div>
-                            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Choose specific accounts or export all</div>
-                        </div>
-                        <label class="switch" style="flex-shrink: 0;">
-                            <input type="checkbox" id="export-selective" checked>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-                    <div id="export-accounts-list" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bg-secondary);">
-                        <!-- Account checkboxes will be inserted here -->
-                    </div>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-primary" id="confirm-export" style="flex: 2; height: 52px; font-size: 14px; font-weight: 800; border-radius: 12px;">
+            <div class="modal-content" style="max-height: 85dvh; overflow-y: auto;">
+                <div class="modal-header">
+                    <div class="modal-icon-vessel">
                         <i class="fa-solid fa-download"></i>
-                        <span>Export Vault</span>
-                    </button>
-                    <button class="user-button" id="cancel-export" style="flex: 1; justify-content: center; height: 52px; font-weight: 800; border-radius: 12px;">Cancel</button>
+                    </div>
+                    <div class="modal-title-vessel">
+                        <h2>Export Vault</h2>
+                        <p>CHOOSE EXPORT FORMAT</p>
+                    </div>
                 </div>
+                <div class="modal-divider"></div>
+                <div class="modal-body">
+                    <!-- Export Format Options -->
+                    <div style="display: grid; gap: 10px; margin-bottom: 16px;">
+                        <button class="export-option-card" data-format="encrypted" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 14px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--bg-primary); box-shadow: var(--nm-shadow-in-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fa-solid fa-lock" style="font-size: 16px; color: var(--accent-primary);"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Full Encrypted Backup</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Complete vault with settings (.keyra)</div>
+                            </div>
+                            <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease; flex-shrink: 0;">
+                                <i class="fa-solid fa-check" style="font-size: 11px; color: white;"></i>
+                            </div>
+                        </button>
+                        <button class="export-option-card" data-format="qr-pdf" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 14px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--bg-primary); box-shadow: var(--nm-shadow-in-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fa-solid fa-qrcode" style="font-size: 16px; color: var(--accent-primary);"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">QR Codes (PDF)</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Printable QR codes for each account</div>
+                            </div>
+                            <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease; flex-shrink: 0;">
+                                <i class="fa-solid fa-check" style="font-size: 11px; color: white;"></i>
+                            </div>
+                        </button>
+                        <button class="export-option-card" data-format="json" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 14px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--bg-primary); box-shadow: var(--nm-shadow-in-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fa-solid fa-file-code" style="font-size: 16px; color: #ff9500;"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Plain JSON</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Unencrypted JSON for migration (.json)</div>
+                            </div>
+                            <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease; flex-shrink: 0;">
+                                <i class="fa-solid fa-check" style="font-size: 11px; color: white;"></i>
+                            </div>
+                        </button>
+                        <button class="export-option-card" data-format="text" style="display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-primary); border: 2px solid transparent; border-radius: 14px; box-shadow: var(--nm-shadow-out); cursor: pointer; transition: all 0.2s ease; text-align: left; width: 100%;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--bg-primary); box-shadow: var(--nm-shadow-in-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fa-solid fa-file-lines" style="font-size: 16px; color: var(--text-secondary);"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Text File</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Human-readable text format (.txt)</div>
+                            </div>
+                            <div class="export-check" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease; flex-shrink: 0;">
+                                <i class="fa-solid fa-check" style="font-size: 11px; color: white;"></i>
+                            </div>
+                        </button>
+                    </div>
+                    <!-- Account Selection Toggle -->
+                    <div id="export-selection-container" style="background: var(--bg-primary); border-radius: 14px; padding: 14px; box-shadow: var(--nm-shadow-in-sm); margin-bottom: 4px; display: none;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                                <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 3px;">Export Selection</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">Choose specific accounts or export all</div>
+                            </div>
+                            <label class="switch" style="flex-shrink: 0;">
+                                <input type="checkbox" id="export-selective" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div id="export-accounts-list" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bg-secondary);"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="confirm-export">
+                    <i class="fa-solid fa-download"></i>
+                    Export Vault
+                </button>
+                <button class="user-button" id="cancel-export">Cancel</button>
             </div>
         `;
         

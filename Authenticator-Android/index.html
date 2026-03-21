@@ -452,13 +452,28 @@
         <div id="modal-overlay" class="modal-overlay"></div>
 
         <div id="modal-logout" class="modal-overlay">
-            <div class="modal animate-fade-in" style="padding: clamp(32px, 8vw, 48px); text-align: center;">
-                <div style="margin: 0 auto 24px; width: 96px; height: 96px; border-radius: 50%; background: var(--bg-primary); box-shadow: var(--nm-raised); display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-right-from-bracket" style="font-size: 36px; color: #ff3b30;"></i></div>
-                <h2 style="margin-bottom: 12px; font-weight: 850; font-size: 26px;">Sign Out?</h2>
-                <div class="modal-help-text" style="font-size: 16px; margin-bottom: 40px;">YOUR VAULT WILL BE LOCKED</div>
-                <div style="display: flex; gap: 16px;">
-                    <button class="btn-primary danger" id="btn-confirm-logout" style="flex: 1; height: 56px;">Sign Out</button>
-                    <button class="user-button" id="btn-cancel-logout" style="flex: 1; justify-content: center; height: 56px;">Discard</button>
+            <div class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-icon-vessel danger">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </div>
+                        <div class="modal-title-vessel">
+                            <h2 class="danger">Sign Out?</h2>
+                            <p>YOUR VAULT WILL BE LOCKED</p>
+                        </div>
+                    </div>
+                    <div class="modal-divider"></div>
+                    <div class="modal-body">
+                        <p class="modal-help-text">You will be signed out and your vault will be locked. Make sure your data is synced before leaving.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-danger" id="btn-confirm-logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Sign Out
+                    </button>
+                    <button class="user-button" id="btn-cancel-logout">Discard</button>
                 </div>
             </div>
         </div>
@@ -527,21 +542,42 @@
 
         <!-- Forgot PIN Modal -->
         <div id="modal-forgot-pin" class="modal-overlay hidden">
-            <div class="modal animate-fade-in recovery-modal">
-                <button id="cancel-forgot-pin-btn" class="auth-close-btn modal-top-left" title="Back to PIN Entry"><i class="fa-solid fa-arrow-left"></i></button>
-                <div id="forgot-pin-main-view" class="modal-content">
-                    <div class="modal-header"><div class="modal-icon-vessel danger"><i class="fa-solid fa-key"></i></div><div class="modal-title-vessel"><h2 class="danger">Reset PIN?</h2><p>SECURITY ACTION REQUIRED</p></div></div>
+            <div class="modal recovery-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button id="cancel-forgot-pin-btn" class="modal-back-btn" title="Back to PIN Entry">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <div class="modal-icon-vessel danger"><i class="fa-solid fa-key"></i></div>
+                        <div class="modal-title-vessel">
+                            <h2 class="danger">Reset PIN?</h2>
+                            <p>SECURITY ACTION REQUIRED</p>
+                        </div>
+                    </div>
                     <div class="modal-divider"></div>
-                    <div class="modal-body">
-                        <div class="modal-entity-badge"><div class="entity-icon"><i class="fa-solid fa-unlock-keyhole"></i></div><div class="entity-info"><span class="entity-name">Reset Identity PIN</span><span class="entity-label">Requires Verification</span></div></div>
+                    <div id="forgot-pin-main-view" class="modal-body">
+                        <div class="modal-entity-badge">
+                            <div class="entity-icon"><i class="fa-solid fa-unlock-keyhole"></i></div>
+                            <div class="entity-info">
+                                <span class="entity-name">Reset Identity PIN</span>
+                                <span class="entity-label">Requires Verification</span>
+                            </div>
+                        </div>
                         <p class="modal-help-text spaced-top">Enter your master password to verify your identity and reset your PIN.</p>
-                        <form id="form-forgot-pin" class="settings-form hidden recovery-form">
-                            <div class="form-label recovery-label">Master Password</div>
-                            <input type="password" id="forgot-pin-password" class="form-input" placeholder="Enter your master password" autocomplete="current-password" required>
+                        <form id="form-forgot-pin" class="recovery-form hidden">
+                            <div class="form-group">
+                                <label class="form-label">Master Password</label>
+                                <input type="password" id="forgot-pin-password" class="form-input" placeholder="Enter your master password" autocomplete="current-password" required>
+                            </div>
                             <p id="forgot-pin-error" class="hidden recovery-error"></p>
                         </form>
                     </div>
-                    <div class="modal-footer recovery-footer"><button class="btn-danger recovery-btn" id="confirm-forgot-pin-btn"><i class="fa-solid fa-trash-can"></i>Reset PIN & Sign Out</button></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-danger" id="confirm-forgot-pin-btn">
+                        <i class="fa-solid fa-trash-can"></i>
+                        Reset PIN &amp; Sign Out
+                    </button>
                 </div>
             </div>
         </div>
