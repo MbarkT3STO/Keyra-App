@@ -148,3 +148,8 @@
     background-size: 1000px 100%;
     animation: shimmer 2s infinite linear;
 }
+
+@keyframes loadingSubShimmer {
+    0%, 100% { opacity: 0.8; }
+    50%       { opacity: 0.4; }
+}
