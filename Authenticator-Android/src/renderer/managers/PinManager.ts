@@ -13,6 +13,7 @@ export interface PinManagerHost {
     updateAutoLockState(): void;
     renderAccounts(): void;
     tryBiometricUnlock(): Promise<void>;
+    setupBiometric(): Promise<void>;
     clearAllOTPCodes(): void;
 }
 
@@ -445,6 +446,7 @@ export class PinManager {
                     this.host.pushWebSettings();
                     this.host.updateLockVaultVisibility();
                     this.host.updateAutoLockState();
+                    this.host.setupBiometric().catch(() => {});
                     this.host.showToast('PIN security activated successfully', 'success');
                     this.host.hideModal();
                 } else {
@@ -497,9 +499,11 @@ export class PinManager {
 
         document.getElementById('confirm-remove-pin')?.addEventListener('click', () => {
             localStorage.removeItem(this.host.getStorageKey('vault_pin'));
+            localStorage.removeItem(this.host.getStorageKey('biometric_enabled'));
             this.host.pushSettings();
             this.host.updateLockVaultVisibility();
             this.host.updateAutoLockState();
+            this.host.setupBiometric().catch(() => {});
             this.host.showToast('PIN security removed', 'info');
             this.host.hideModal();
         });

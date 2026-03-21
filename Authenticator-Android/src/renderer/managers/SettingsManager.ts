@@ -12,6 +12,7 @@ export interface SettingsManagerHost {
     showPinSetup(): void;
     showPinRemoval(): void;
     tryBiometricUnlock(): Promise<void>;
+    setupBiometric(): Promise<void>;
     showExportOptionsModal(): void;
     showImportPasswordModal(data: any): void;
     loadInitialData(): Promise<void>;
@@ -125,6 +126,12 @@ export class SettingsManager {
                 this.host.updateSegmentedUI('autolock-segmented', '0');
                 this.pushWebSettings();
             }
+            // Disable biometric if PIN is removed
+            const biometricToggle = document.getElementById('biometric-toggle') as HTMLInputElement;
+            if (biometricToggle && biometricToggle.checked) {
+                biometricToggle.checked = false;
+                localStorage.removeItem(this.host.getStorageKey('biometric_enabled'));
+            }
         }
     }
 
@@ -181,6 +188,12 @@ export class SettingsManager {
         // Biometric toggle
         document.getElementById('biometric-toggle')?.addEventListener('change', (e) => {
             const enabled = (e.target as HTMLInputElement).checked;
+            const hasPin = !!localStorage.getItem(this.host.getStorageKey('vault_pin'));
+            if (enabled && !hasPin) {
+                (e.target as HTMLInputElement).checked = false;
+                this.host.showToast('Set up a PIN first to enable biometric unlock', 'error');
+                return;
+            }
             localStorage.setItem(this.host.getStorageKey('biometric_enabled'), String(enabled));
             this.host.showToast(enabled ? 'Biometric unlock enabled' : 'Biometric unlock disabled', 'info');
         });

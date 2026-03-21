@@ -185,32 +185,64 @@ export class UIManager {
 
     // ─── Biometric ─────────────────────────────────────────────────────────────
 
-    public async setupBiometric() {
+    public async setupBiometric(): Promise<void> {
+        const row = document.getElementById('biometric-setting-row');
+        const toggle = document.getElementById('biometric-toggle') as HTMLInputElement;
+        const desc = document.getElementById('biometric-setting-desc');
+
         try {
-            const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
+            const { BiometricAuth, BiometryType } = await import('@aparajita/capacitor-biometric-auth');
             const result = await BiometricAuth.checkBiometry();
-            const toggle = document.getElementById('biometric-toggle') as HTMLInputElement;
-            const section = document.getElementById('biometric-section');
-            if (section) section.classList.toggle('hidden', !result.isAvailable);
-            if (toggle && result.isAvailable) {
-                toggle.checked = localStorage.getItem(this.getStorageKey('biometric_enabled')) === 'true';
+
+            if (!result.isAvailable) {
+                if (row) row.style.display = 'none';
+                return;
+            }
+
+            // Show the row
+            if (row) row.style.display = '';
+
+            // Set description based on biometry type
+            if (desc) {
+                const type = result.biometryType;
+                if (type === BiometryType.faceId || type === BiometryType.faceAuthentication) {
+                    desc.textContent = 'Use Face ID to unlock your vault';
+                } else if (type === BiometryType.touchId || type === BiometryType.fingerprintAuthentication) {
+                    desc.textContent = 'Use fingerprint to unlock your vault';
+                } else {
+                    desc.textContent = 'Use biometrics to unlock your vault';
+                }
+            }
+
+            // Restore saved state — but only if a PIN is set
+            const hasPin = !!localStorage.getItem(this.getStorageKey('vault_pin'));
+            const savedEnabled = localStorage.getItem(this.getStorageKey('biometric_enabled')) === 'true';
+            if (toggle) toggle.checked = hasPin && savedEnabled;
+
+            // If PIN was removed, clear biometric pref
+            if (!hasPin) {
+                localStorage.removeItem(this.getStorageKey('biometric_enabled'));
             }
         } catch {
-            document.getElementById('biometric-section')?.classList.add('hidden');
+            if (row) row.style.display = 'none';
         }
     }
 
     public async tryBiometricUnlock() {
         try {
             const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
-            await BiometricAuth.authenticate({ reason: 'Unlock your vault', cancelTitle: 'Use PIN' });
+            await BiometricAuth.authenticate({
+                reason: 'Unlock your Keyra vault',
+                cancelTitle: 'Use PIN',
+                allowDeviceCredential: false
+            });
             document.getElementById('lock-vessel')?.classList.remove('show');
             document.body.classList.remove('vault-is-locked');
             this.pinManager.clearPinInput();
             this.renderAccounts();
-            this.showToast('Biometric unlock successful', 'success');
+            this.showToast('Identity Verified', 'success');
         } catch {
-            // User cancelled — fall back to PIN silently
+            // User cancelled or failed — fall back to PIN silently
         }
     }
 
