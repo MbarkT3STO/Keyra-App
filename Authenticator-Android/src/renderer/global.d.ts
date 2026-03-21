@@ -1,6 +1,14 @@
 export { };
 
 declare global {
+    interface DeviceRecord {
+        id: string;
+        name: string;
+        platform: string;
+        firstSeen: string;
+        lastSeen: string;
+    }
+
     interface Window {
         ui?: any;
         api: {
@@ -10,7 +18,7 @@ declare global {
             login(user: string, pass: string): Promise<{ success: boolean, message: string }>;
             checkSession(): Promise<{ success: boolean, message: string }>;
             logout(): Promise<void>;
-            getCurrentUser(): Promise<{ id: string, username: string, email: string, pendingEmail?: string } | null>;
+            getCurrentUser(): Promise<{ id: string, username: string, email: string, pendingEmail?: string, devices?: DeviceRecord[] } | null>;
             updateUserSettings(settings: any): Promise<void>;
             pollForUpdates(): Promise<{ changed: boolean, settings?: any }>;
 
@@ -21,6 +29,10 @@ declare global {
             confirmEmailChange(code: string): Promise<{ success: boolean, message: string }>;
             cancelEmailChange(): Promise<{ success: boolean, message: string }>;
             resendEmailChangeCode(): Promise<{ success: boolean, message: string, code?: string }>;
+
+            // Device Management
+            getCurrentDeviceId(): string;
+            revokeDevice(deviceId: string): Promise<{ success: boolean, message: string }>;
 
             generateTOTP(secret: string): Promise<string>;
             saveAccount(acc: any): Promise<void>;

@@ -31,6 +31,9 @@ export class AuthManager {
         const user = await (window as any).api.getCurrentUser();
         if (!user) return;
 
+        // Load devices in parallel
+        this.loadDevices();
+
         // Dropdown header
         const dropdownName = document.getElementById('dropdown-user-name');
         const dropdownEmail = document.getElementById('dropdown-user-email');
@@ -104,6 +107,7 @@ export class AuthManager {
     public setupAccountEvents() {
         document.getElementById('account-settings-btn')?.addEventListener('click', () => {
             this.host.switchTab('account');
+            this.loadDevices();
         });
 
         // Change Avatar
@@ -292,6 +296,119 @@ export class AuthManager {
             this.host.hideModal();
             clearInterval(timerInterval);
         });
+    }
+
+    // ─── Device Management ─────────────────────────────────────────────────────
+
+    public async loadDevices() {
+        const list = document.getElementById('devices-list');
+        if (!list) return;
+
+        const user = await (window as any).api.getCurrentUser();
+        if (!user) return;
+
+        const currentDeviceId: string = (window as any).api.getCurrentDeviceId();
+        const devices: DeviceRecord[] = user.devices || [];
+
+        if (devices.length === 0) {
+            list.innerHTML = `<p class="devices-empty">No devices recorded yet.</p>`;
+            return;
+        }
+
+        // Sort: current device first, then by lastSeen desc
+        const sorted = [...devices].sort((a, b) => {
+            if (a.id === currentDeviceId) return -1;
+            if (b.id === currentDeviceId) return 1;
+            return new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime();
+        });
+
+        list.innerHTML = sorted.map(device => {
+            const isCurrent = device.id === currentDeviceId;
+            const icon = device.platform === 'android' ? 'fa-android'
+                       : device.platform === 'ios'     ? 'fa-apple'
+                       : device.platform === 'darwin'  ? 'fa-apple'
+                       : device.platform === 'linux'   ? 'fa-linux'
+                       : device.platform === 'win32'   ? 'fa-windows'
+                       : 'fa-display';
+            const lastSeen = this.formatRelativeTime(new Date(device.lastSeen));
+            const firstSeen = new Date(device.firstSeen).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+
+            return `
+            <div class="device-row" data-device-id="${device.id}">
+                <div class="device-icon-vessel">
+                    <i class="fa-brands ${icon}"></i>
+                </div>
+                <div class="device-info">
+                    <div class="device-name">
+                        ${device.name}
+                        ${isCurrent ? '<span class="device-current-badge">This Device</span>' : ''}
+                    </div>
+                    <div class="device-meta">
+                        <span>Since ${firstSeen}</span>
+                        <span class="device-meta-dot">·</span>
+                        <span>Active ${lastSeen}</span>
+                    </div>
+                </div>
+                ${!isCurrent ? `<button class="device-revoke-btn" data-device-id="${device.id}" title="Revoke"><i class="fa-solid fa-xmark"></i></button>` : ''}
+            </div>
+            ${!isCurrent ? `
+            <div class="device-revoke-confirm hidden" data-confirm-id="${device.id}">
+                <span class="device-revoke-confirm-text">Remove this device?</span>
+                <div class="device-revoke-confirm-actions">
+                    <button class="device-confirm-cancel" data-confirm-id="${device.id}">Cancel</button>
+                    <button class="device-confirm-ok" data-confirm-id="${device.id}">Remove</button>
+                </div>
+            </div>` : ''}`;
+        }).join('');
+
+        this.setupDeviceEvents(list);
+    }
+
+    private setupDeviceEvents(list: HTMLElement) {
+        list.querySelectorAll('.device-revoke-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const id = (btn as HTMLElement).dataset.deviceId!;
+                list.querySelector(`.device-revoke-confirm[data-confirm-id="${id}"]`)?.classList.remove('hidden');
+            });
+        });
+
+        list.querySelectorAll('.device-confirm-cancel').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const id = (btn as HTMLElement).dataset.confirmId!;
+                list.querySelector(`.device-revoke-confirm[data-confirm-id="${id}"]`)?.classList.add('hidden');
+            });
+        });
+
+        list.querySelectorAll('.device-confirm-ok').forEach(btn => {
+            btn.addEventListener('click', async e => {
+                e.stopPropagation();
+                const id = (btn as HTMLElement).dataset.confirmId!;
+                try {
+                    const res = await (window as any).api.revokeDevice(id);
+                    if (res.success) {
+                        this.host.showToast('Device removed', 'success');
+                        await this.loadDevices();
+                    } else {
+                        this.host.showToast(res.message || 'Failed to remove device', 'error');
+                    }
+                } catch {
+                    this.host.showToast('Failed to remove device', 'error');
+                }
+            });
+        });
+    }
+
+    private formatRelativeTime(date: Date): string {
+        const diffMs = Date.now() - date.getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return 'just now';
+        if (diffMin < 60) return `${diffMin}m ago`;
+        const diffHrs = Math.floor(diffMin / 60);
+        if (diffHrs < 24) return `${diffHrs}h ago`;
+        const diffDays = Math.floor(diffHrs / 24);
+        return diffDays === 1 ? 'yesterday' : `${diffDays}d ago`;
     }
 
     // ─── Activity Tracking ─────────────────────────────────────────────────────

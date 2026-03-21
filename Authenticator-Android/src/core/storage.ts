@@ -33,6 +33,16 @@ export interface UserRecord {
     "Web Settings"?: UserSettings;
     autolock: string;
     profilePicture?: string;
+    devices?: DeviceRecord[];
+    revokedDevices?: string[];
+}
+
+export interface DeviceRecord {
+    id: string;
+    name: string;
+    platform: string;   // 'android' | 'web' | 'desktop'
+    firstSeen: string;  // ISO timestamp
+    lastSeen: string;   // ISO timestamp
 }
 
 const USERS_KEY = 'keyra_users';

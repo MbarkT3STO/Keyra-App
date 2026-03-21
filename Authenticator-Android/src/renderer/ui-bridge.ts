@@ -155,6 +155,11 @@ export const bridge = {
 
     verifyBackupFile: (backupData: any) => auth.verifyBackupFile(backupData),
     setContentProtection: async (_enabled: boolean) => true,
+
+    // Device management
+    getCurrentDeviceId: () => auth.getCurrentDeviceId(),
+    revokeDevice: async (deviceId: string) => syncWrapper(() => auth.revokeDevice(deviceId), "Revoking Device", "UPDATING SECURITY"),
+
     minimize: () => {},
     maximize: () => {},
     close: () => {}

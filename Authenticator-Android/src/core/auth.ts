@@ -1,5 +1,5 @@
 import { getUsers, saveUsers, getUserData, syncUserData, renameUserFolder } from './storage';
-import type { UserRecord } from './storage';
+import type { UserRecord, DeviceRecord } from './storage';
 import { hashPassword, verifyPassword, deriveKey, encryptVault, decryptVault } from './crypto';
 import type { AuthenticatorAccount } from './crypto';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,7 +28,8 @@ export function getCurrentUser() {
         pendingEmail: currentUser.pendingEmail,
         settings: currentUser["Web Settings"],
         autolock: currentUser.autolock,
-        profilePicture: currentUser.profilePicture
+        profilePicture: currentUser.profilePicture,
+        devices: currentUser.devices
     };
 }
 
@@ -182,6 +183,9 @@ export async function login(username: string, password: string): Promise<{ succe
         localStorage.setItem('active_session_key', key.toString('base64'));
         localStorage.setItem('active_session_timestamp', Date.now().toString());
 
+        // Register this device
+        registerCurrentDevice().catch(() => {});
+
         return { success: true, message: "Login successful." };
     } catch (err) {
         console.error("Login Decryption Error:", err);
@@ -268,6 +272,17 @@ export async function checkSession(): Promise<{ success: boolean, message: strin
                 
                 // Update session timestamp on successful resume
                 localStorage.setItem('active_session_timestamp', Date.now().toString());
+
+                // Check if this device has been revoked
+                const deviceId = getCurrentDeviceId();
+                const revoked = currentUser.revokedDevices || [];
+                if (revoked.includes(deviceId)) {
+                    logout();
+                    return { success: false, message: "This device has been revoked." };
+                }
+
+                // Update lastSeen for this device
+                registerCurrentDevice().catch(() => {});
                 
                 return { success: true, message: "Session resumed." };
             }
@@ -750,4 +765,85 @@ export async function resendEmailChangeCode(): Promise<{ success: boolean, messa
 
     deliverActivationCode(user.pendingEmail, newCode);
     return { success: true, message: "New verification code sent.", code: newCode };
+}
+
+// ─── Device Management ─────────────────────────────────────────────────────
+
+const DEVICE_ID_KEY = '__keyra_device_id__';
+
+export function getCurrentDeviceId(): string {
+    let id = localStorage.getItem(DEVICE_ID_KEY);
+    if (!id) {
+        // Generate a stable UUID for this device/browser
+        id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+}
+
+export async function registerCurrentDevice(): Promise<void> {
+    if (!currentUser) return;
+
+    const id = getCurrentDeviceId();
+    const now = new Date().toISOString();
+
+    // Detect platform
+    const ua = navigator.userAgent;
+    let platform = 'web';
+    if (/android/i.test(ua)) platform = 'android';
+    else if (/iphone|ipad/i.test(ua)) platform = 'ios';
+
+    const name = platform === 'android' ? 'Android Device'
+               : platform === 'ios'     ? 'iOS Device'
+               : 'Web Browser';
+
+    const users = await getUsers();
+    const userIndex = users.findIndex(u => u.id === currentUser!.id);
+    if (userIndex === -1) return;
+
+    const devices: DeviceRecord[] = users[userIndex].devices || [];
+    const existing = devices.findIndex(d => d.id === id);
+
+    if (existing >= 0) {
+        devices[existing].lastSeen = now;
+        devices[existing].name = name;
+    } else {
+        devices.push({ id, name, platform, firstSeen: now, lastSeen: now });
+    }
+
+    users[userIndex].devices = devices;
+    currentUser.devices = devices;
+
+    await saveUsers(users);
+    syncUserData(currentUser.username, users[userIndex]).catch(() => {});
+}
+
+export async function revokeDevice(deviceId: string): Promise<{ success: boolean, message: string }> {
+    if (!currentUser) throw new Error("No active user session.");
+
+    const users = await getUsers();
+    const userIndex = users.findIndex(u => u.id === currentUser!.id);
+    if (userIndex === -1) throw new Error("User missing from storage.");
+
+    const before = (users[userIndex].devices || []).length;
+    users[userIndex].devices = (users[userIndex].devices || []).filter(d => d.id !== deviceId);
+
+    if (users[userIndex].devices.length === before) {
+        return { success: false, message: "Device not found." };
+    }
+
+    // Track revoked so that device gets logged out on next session check
+    const revoked = users[userIndex].revokedDevices || [];
+    if (!revoked.includes(deviceId)) revoked.push(deviceId);
+    users[userIndex].revokedDevices = revoked;
+
+    currentUser.devices = users[userIndex].devices;
+    currentUser.revokedDevices = revoked;
+
+    await saveUsers(users);
+    await syncUserData(currentUser.username, users[userIndex]);
+    return { success: true, message: "Device removed." };
 }
