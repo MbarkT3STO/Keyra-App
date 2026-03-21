@@ -36,15 +36,30 @@ async function initCapacitor() {
     }
 
     try {
-        // Keyboard: scroll body when keyboard opens
-        await Keyboard.addListener('keyboardWillShow', () => {
+        // Keyboard: scroll focused input into view when keyboard opens
+        await Keyboard.addListener('keyboardWillShow', (info) => {
             document.body.classList.add('keyboard-open');
+            // Give the keyboard time to animate in, then scroll focused element into view
+            setTimeout(() => {
+                const focused = document.activeElement as HTMLElement;
+                if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA')) {
+                    focused.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
         });
         await Keyboard.addListener('keyboardWillHide', () => {
             document.body.classList.remove('keyboard-open');
         });
     } catch (e) {
-        // Keyboard plugin not available in browser
+        // Keyboard plugin not available in browser — use focusin fallback
+        document.addEventListener('focusin', (e) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                setTimeout(() => {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        });
     }
 
     // Handle Android back button

@@ -312,6 +312,10 @@
                                     <button class="user-button danger" id="remove-pin-btn" style="min-width: 100px; justify-content: center; display: none;">Remove PIN</button>
                                 </div>
                             </div>
+                            <div class="setting-row" id="biometric-setting-row" style="display: none;">
+                                <div class="setting-info"><div class="setting-name">Biometric Unlock</div><div class="setting-desc" id="biometric-setting-desc">Use fingerprint or face to unlock</div></div>
+                                <label class="switch"><input type="checkbox" id="biometric-toggle"><span class="slider round"></span></label>
+                            </div>
                             <div class="setting-row">
                                 <div class="setting-info"><div class="setting-name">Auto-Lock App</div><div class="setting-desc">Lock automatically when inactive</div></div>
                                 <div class="segmented-control" id="autolock-segmented"><button class="segment" data-val="0">Off</button><button class="segment" data-val="1">1m</button><button class="segment" data-val="5">5m</button><button class="segment" data-val="15">15m</button><div class="segment-indicator"></div></div>
@@ -456,6 +460,10 @@
                     <div class="pin-helper">Secure 4-Digit Master Code</div>
                 </form>
                 <div class="pin-footer-actions">
+                    <button type="button" id="btn-biometric-unlock" class="biometric-unlock-btn hidden">
+                        <i class="fa-solid fa-fingerprint"></i>
+                        <span>Use Biometrics</span>
+                    </button>
                     <button type="button" id="btn-forgot-pin" class="forgot-pin-link"><i class="fa-solid fa-key"></i><span>Forgot PIN? Use Master Password</span></button>
                 </div>
             </div>

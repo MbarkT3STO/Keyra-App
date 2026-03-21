@@ -1,6 +1,7 @@
 // import { syncVault } from './store';
 import { rateLimiter } from '../core/rateLimiter';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { BiometricAuth, BiometryType } from '@aparajita/capacitor-biometric-auth';
 
 export class UIManager {
     private currentTheme: 'light' | 'dark' = 'light';
@@ -55,6 +56,7 @@ export class UIManager {
         this.setupEventListeners();
         this.setupPullToRefresh();
         this.setupSearchFocus();
+        this.setupBiometric();
         this.updateLockVaultVisibility(); // Check PIN on startup
         this.startTimer();
         this.loadInitialData();
@@ -537,6 +539,18 @@ export class UIManager {
             }
 
             this.showToast(this.screenGuardian ? "Screenshot protection is on" : "Screenshot protection is off", "info");
+        });
+
+        // Biometric toggle
+        document.getElementById('biometric-toggle')?.addEventListener('change', (e) => {
+            const enabled = (e.target as HTMLInputElement).checked;
+            localStorage.setItem(this.getStorageKey('biometric_enabled'), String(enabled));
+            this.showToast(enabled ? 'Biometric unlock enabled' : 'Biometric unlock disabled', 'info');
+        });
+
+        // Biometric unlock button on lock screen
+        document.getElementById('btn-biometric-unlock')?.addEventListener('click', () => {
+            this.tryBiometricUnlock();
         });
 
 
@@ -1434,6 +1448,62 @@ export class UIManager {
         }
     }
 
+    // ── #7 Biometric unlock ──────────────────────────────────────────────────
+    private async setupBiometric() {
+        const biometricRow = document.getElementById('biometric-setting-row');
+        const biometricToggle = document.getElementById('biometric-toggle') as HTMLInputElement;
+        const biometricDesc = document.getElementById('biometric-setting-desc');
+
+        try {
+            const { isAvailable, biometryType } = await BiometricAuth.checkBiometry();
+
+            if (isAvailable && biometricRow) {
+                biometricRow.style.display = 'flex';
+
+                // Show the type name in the description
+                const typeName = biometryType === BiometryType.faceId ? 'Face ID'
+                    : biometryType === BiometryType.touchId ? 'Touch ID'
+                    : biometryType === BiometryType.faceAuthentication ? 'Face Unlock'
+                    : biometryType === BiometryType.fingerprintAuthentication ? 'Fingerprint'
+                    : 'Biometrics';
+
+                if (biometricDesc) biometricDesc.textContent = `Use ${typeName} to unlock`;
+
+                // Restore saved preference
+                const saved = localStorage.getItem(this.getStorageKey('biometric_enabled')) === 'true';
+                if (biometricToggle) biometricToggle.checked = saved;
+            }
+        } catch {
+            // Biometry not available (web/emulator) — keep row hidden
+        }
+    }
+
+    public async tryBiometricUnlock() {
+        const enabled = localStorage.getItem(this.getStorageKey('biometric_enabled')) === 'true';
+        if (!enabled) return;
+
+        try {
+            await BiometricAuth.authenticate({
+                reason: 'Unlock your Keyra vault',
+                cancelTitle: 'Use PIN',
+                allowDeviceCredential: false,
+            });
+
+            // Success — unlock vault
+            document.getElementById('lock-vessel')?.classList.remove('show');
+            document.body.classList.remove('vault-is-locked');
+            const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
+            if (pinIn) pinIn.value = '';
+            document.querySelectorAll('.pin-input-vessel .pin-dot').forEach(d =>
+                d.classList.remove('filled', 'error', 'success')
+            );
+            this.renderAccounts();
+            this.showToast('Vault unlocked', 'success');
+        } catch {
+            // User cancelled or biometry failed — fall back to PIN silently
+        }
+    }
+
     // ── #4 Pull-to-refresh ──────────────────────────────────────────────────
     private setupPullToRefresh() {
         const mainContent = document.querySelector('.main-content') as HTMLElement;
@@ -1454,7 +1524,7 @@ export class UIManager {
         };
 
         mainContent.addEventListener('touchstart', (e: TouchEvent) => {
-            if (mainContent.scrollTop === 0) {
+            if (mainContent.scrollTop === 0 && this.currentTab === 'vault') {
                 startY = e.touches[0].clientY;
                 pulling = true;
             }
@@ -1785,6 +1855,15 @@ export class UIManager {
         this.refreshLucide(vessel);
         const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
         if (pinIn) { pinIn.value = ''; pinIn.focus(); }
+
+        // Show biometric button if enabled, then auto-prompt
+        const biometricEnabled = localStorage.getItem(this.getStorageKey('biometric_enabled')) === 'true';
+        const biometricBtn = document.getElementById('btn-biometric-unlock');
+        if (biometricBtn) biometricBtn.classList.toggle('hidden', !biometricEnabled);
+        if (biometricEnabled) {
+            // Small delay so the lock screen animation completes first
+            setTimeout(() => this.tryBiometricUnlock(), 400);
+        }
     }
 
     private async updatePinAvatar() {
