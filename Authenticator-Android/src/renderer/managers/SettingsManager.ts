@@ -5,6 +5,7 @@ export interface SettingsManagerHost {
     updateLastActivity(action: string): void;
     showToast(message: string, type: 'info' | 'success' | 'error'): void;
     setTheme(theme: 'light' | 'dark', silent?: boolean): void;
+    setThemeMode(mode: 'light' | 'dark' | 'auto', silent?: boolean): void;
     setAccentColor(accentColor: string, silent?: boolean): void;
     updateLockVaultVisibility(): void;
     renderAccounts(): void;
@@ -22,6 +23,7 @@ export interface SettingsManagerHost {
     privacyManager: { applyPrivacyMode(v: boolean, save?: boolean): void; applyScreenGuardian(v: boolean, save?: boolean): void; };
     vaultViewStyle: 'unified' | 'compact' | 'secure';
     currentTheme: 'light' | 'dark';
+    themeMode: 'light' | 'dark' | 'auto';
     oledMode: boolean;
     applyOledMode(v: boolean, silent?: boolean): void;
 }
@@ -52,7 +54,8 @@ export class SettingsManager {
         const s = settings.Settings || settings;
         const ws = settings['Web Settings'] || settings;
 
-        if (s.theme) this.host.setTheme(s.theme, true);
+        if (s.themeMode) this.host.setThemeMode(s.themeMode, true);
+        else if (s.theme) this.host.setTheme(s.theme, true);
         if (s.accentColor) this.host.setAccentColor(s.accentColor, true);
 
         // Delegate privacy state to PrivacyManager
@@ -88,8 +91,7 @@ export class SettingsManager {
     }
 
     public initSegmentedStates() {
-        const theme = localStorage.getItem(this.host.getStorageKey('theme')) || 'light';
-        this.host.updateSegmentedUI('theme-segmented', theme);
+        this.host.updateSegmentedUI('theme-segmented', this.host.themeMode);
         const autolock = localStorage.getItem(this.host.getStorageKey('autolock')) || '0';
         this.host.updateSegmentedUI('autolock-segmented', autolock);
         this.updateAutoLockState();
@@ -223,6 +225,7 @@ export class SettingsManager {
         return {
             Settings: {
                 theme: this.host.currentTheme,
+                themeMode: this.host.themeMode,
                 accentColor: localStorage.getItem(this.host.getStorageKey('accent_color')) || 'royal-purple',
                 privacyMode: this.host.privacyMode,
                 screenGuardian: this.host.screenGuardian,
@@ -232,6 +235,7 @@ export class SettingsManager {
             },
             'Web Settings': {
                 theme: this.host.currentTheme,
+                themeMode: this.host.themeMode,
                 accentColor: localStorage.getItem(this.host.getStorageKey('accent_color')) || 'royal-purple',
                 privacyMode: this.host.privacyMode,
                 screenGuardian: this.host.screenGuardian,

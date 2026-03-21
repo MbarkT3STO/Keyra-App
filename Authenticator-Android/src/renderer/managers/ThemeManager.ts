@@ -10,11 +10,13 @@ export interface ThemeManagerHost {
 export class ThemeManager {
     private host: ThemeManagerHost;
     private currentTheme: 'light' | 'dark' = 'light';
+    public themeMode: 'light' | 'dark' | 'auto' = 'light';
     public oledMode: boolean = false;
 
     // Stored so we can remove them on re-init
     private handleToggleClick: ((e: Event) => void) | null = null;
     private handleDocumentClick: ((e: Event) => void) | null = null;
+    private systemThemeListener: ((e: MediaQueryListEvent) => void) | null = null;
 
     constructor(host: ThemeManagerHost) {
         this.host = host;
@@ -35,6 +37,41 @@ export class ThemeManager {
         this.applyOledMode(savedOled, true);
     }
 
+    /**
+     * Set the theme mode (light / dark / auto).
+     * Auto follows the system prefers-color-scheme and reacts to changes.
+     */
+    public setThemeMode(mode: 'light' | 'dark' | 'auto', silent: boolean = false) {
+        this.themeMode = mode;
+        localStorage.setItem(this.host.getStorageKey('theme_mode'), mode);
+
+        // Remove old system listener if switching away from auto
+        if (this.systemThemeListener) {
+            window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.systemThemeListener);
+            this.systemThemeListener = null;
+        }
+
+        if (mode === 'auto') {
+            // Clear manual override so system can take over
+            localStorage.removeItem(this.host.getStorageKey('theme_manual_override'));
+            const resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            this.setTheme(resolved, silent);
+
+            // React to future system changes while in auto mode
+            this.systemThemeListener = (e: MediaQueryListEvent) => {
+                if (this.themeMode === 'auto') {
+                    this.setTheme(e.matches ? 'dark' : 'light', false);
+                }
+            };
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', this.systemThemeListener);
+        } else {
+            localStorage.setItem(this.host.getStorageKey('theme_manual_override'), 'true');
+            this.setTheme(mode, silent);
+        }
+
+        this.host.updateSegmentedUI('theme-segmented', mode);
+    }
+
     public setTheme(theme: 'light' | 'dark', silent: boolean = false) {
         this.currentTheme = theme;
         // Keep host in sync
@@ -45,11 +82,8 @@ export class ThemeManager {
         body.classList.add(`${theme}-theme`);
 
         document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem(this.host.getStorageKey('theme'), theme);
 
-        this.host.updateSegmentedUI('theme-segmented', theme);
-
-        // Update theme toggle icons
+        // Update theme toggle icons (navbar quick-toggle)
         const themeIcon = document.getElementById('theme-icon-lucide');
         const themeText = document.getElementById('theme-text');
         const mobileThemeIcon = document.getElementById('mobile-theme-icon');
@@ -218,26 +252,14 @@ export class ThemeManager {
     // ─── Private helpers ───────────────────────────────────────────────────────
 
     private initializeTheme() {
-        const savedTheme = localStorage.getItem(this.host.getStorageKey('theme')) as 'light' | 'dark' | null;
+        // theme_mode is the source of truth ('light' | 'dark' | 'auto')
+        // theme is the legacy key — kept for backward compat
+        const savedMode = localStorage.getItem(this.host.getStorageKey('theme_mode')) as 'light' | 'dark' | 'auto' | null;
+        const legacyTheme = localStorage.getItem(this.host.getStorageKey('theme')) as 'light' | 'dark' | null;
 
-        if (savedTheme === 'light' || savedTheme === 'dark') {
-            // Always silent on startup — no push, just apply
-            this.setTheme(savedTheme, true);
-            // Mark as manually set so system changes don't override
-            localStorage.setItem(this.host.getStorageKey('theme_manual_override'), 'true');
-        } else {
-            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            this.setTheme(systemTheme, true);
-            localStorage.setItem(this.host.getStorageKey('theme'), systemTheme);
-        }
-
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem(this.host.getStorageKey('theme_manual_override'))) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                this.setTheme(newTheme, true);
-                localStorage.setItem(this.host.getStorageKey('theme'), newTheme);
-            }
-        });
+        const mode: 'light' | 'dark' | 'auto' = savedMode ?? (legacyTheme ?? 'auto');
+        // Silent on startup — no push
+        this.setThemeMode(mode, true);
 
         this.setupThemeSwitcher();
     }
@@ -245,14 +267,12 @@ export class ThemeManager {
     private setupThemeSwitcher() {
         document.querySelectorAll('#theme-segmented .segment').forEach(segment => {
             segment.addEventListener('click', () => {
-                const theme = segment.getAttribute('data-val');
-                if (theme === 'light' || theme === 'dark') {
-                    this.setTheme(theme);
-                    localStorage.setItem(this.host.getStorageKey('theme'), theme);
-                    localStorage.setItem(this.host.getStorageKey('theme_manual_override'), 'true');
-                    this.host.updateLastActivity('Changed theme');
-                    this.host.showToast(`Switched to ${theme} mode`, 'success');
-                }
+                const val = segment.getAttribute('data-val') as 'light' | 'dark' | 'auto' | null;
+                if (!val) return;
+                this.setThemeMode(val);
+                this.host.updateLastActivity('Changed theme');
+                const labels: Record<string, string> = { light: 'Light', dark: 'Dark', auto: 'Auto' };
+                this.host.showToast(`Theme: ${labels[val]}`, 'success');
             });
         });
     }

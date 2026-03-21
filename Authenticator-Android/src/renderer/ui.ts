@@ -83,8 +83,13 @@ export class UIManager {
         this.currentTheme = theme;
         this.themeManager.setTheme(theme, silent);
     }
+    public setThemeMode(mode: 'light' | 'dark' | 'auto', silent: boolean = false) { this.themeManager.setThemeMode(mode, silent); }
     public setAccentColor(accentColor: string, silent: boolean = false) { this.themeManager.setAccentColor(accentColor, silent); }
     public applyOledMode(v: boolean, silent: boolean = false) { this.themeManager.applyOledMode(v, silent); }
+
+    // themeMode pass-through
+    get themeMode(): 'light' | 'dark' | 'auto' { return this.themeManager?.themeMode ?? 'auto'; }
+    set themeMode(v: 'light' | 'dark' | 'auto') { if (this.themeManager) this.themeManager.themeMode = v; }
 
     // ─── Navigation delegations ────────────────────────────────────────────────
 
