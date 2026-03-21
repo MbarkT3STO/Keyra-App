@@ -23,7 +23,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
 
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -447,23 +447,38 @@
                     <h2 class="pin-title" id="pin-greeting">Vault Locked</h2>
                     <p class="pin-subtitle">Enter your PIN to resume session</p>
                 </div>
-                <form id="form-unlock">
-                    <div class="pin-input-vessel">
-                        <div class="pin-indicators">
-                            <div class="pin-dot" data-digit="1"></div>
-                            <div class="pin-dot" data-digit="2"></div>
-                            <div class="pin-dot" data-digit="3"></div>
-                            <div class="pin-dot" data-digit="4"></div>
-                        </div>
-                        <input type="password" inputmode="numeric" id="unlock-pin" maxlength="4" class="pin-input-hidden" autocomplete="off" autofocus>
+                <!-- PIN dots -->
+                <div class="pin-input-vessel">
+                    <div class="pin-indicators">
+                        <div class="pin-dot" data-digit="1"></div>
+                        <div class="pin-dot" data-digit="2"></div>
+                        <div class="pin-dot" data-digit="3"></div>
+                        <div class="pin-dot" data-digit="4"></div>
                     </div>
-                    <div class="pin-helper">Secure 4-Digit Master Code</div>
-                </form>
-                <div class="pin-footer-actions">
-                    <button type="button" id="btn-biometric-unlock" class="biometric-unlock-btn hidden">
+                    <!-- Hidden input for keyboard fallback -->
+                    <input type="password" inputmode="numeric" id="unlock-pin" maxlength="4" class="pin-input-hidden" autocomplete="off">
+                </div>
+                <div class="pin-helper">Secure 4-Digit Master Code</div>
+                <!-- Visual numpad -->
+                <div class="pin-numpad" id="pin-numpad">
+                    <button class="pin-key" data-key="1"><span>1</span></button>
+                    <button class="pin-key" data-key="2"><span>2</span></button>
+                    <button class="pin-key" data-key="3"><span>3</span></button>
+                    <button class="pin-key" data-key="4"><span>4</span></button>
+                    <button class="pin-key" data-key="5"><span>5</span></button>
+                    <button class="pin-key" data-key="6"><span>6</span></button>
+                    <button class="pin-key" data-key="7"><span>7</span></button>
+                    <button class="pin-key" data-key="8"><span>8</span></button>
+                    <button class="pin-key" data-key="9"><span>9</span></button>
+                    <button class="pin-key pin-key-biometric hidden" id="btn-biometric-unlock" type="button">
                         <i class="fa-solid fa-fingerprint"></i>
-                        <span>Use Biometrics</span>
                     </button>
+                    <button class="pin-key" data-key="0"><span>0</span></button>
+                    <button class="pin-key pin-key-delete" id="pin-key-delete" type="button">
+                        <i class="fa-solid fa-delete-left"></i>
+                    </button>
+                </div>
+                <div class="pin-footer-actions">
                     <button type="button" id="btn-forgot-pin" class="forgot-pin-link"><i class="fa-solid fa-key"></i><span>Forgot PIN? Use Master Password</span></button>
                 </div>
             </div>
@@ -505,7 +520,22 @@
             </div>
         </div>
 
-        <div id="toast-container" class="toast-container"></div>
+        <!-- Search Overlay (full-screen) -->
+        <div id="search-overlay" class="search-overlay hidden">
+            <div class="search-overlay-bar">
+                <button class="search-overlay-back" id="search-overlay-back">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="search-overlay-input-vessel">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-overlay-input" class="search-overlay-input" placeholder="Search accounts..." autocomplete="off">
+                    <button class="search-overlay-clear hidden" id="search-overlay-clear">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="search-overlay-results" id="search-overlay-results"></div>
+        </div>
 
         <!-- Bottom Navigation Bar (mobile) -->
         <nav class="bottom-nav" id="bottom-nav">
@@ -517,8 +547,15 @@
                 <i class="fa-solid fa-gear"></i>
                 <span>Settings</span>
             </button>
+            <button class="bottom-nav-tab" data-tab="account">
+                <i class="fa-solid fa-user"></i>
+                <span>Account</span>
+            </button>
         </nav>
     </div>
+
+    <!-- Toast container outside app-container to avoid overflow:hidden clipping -->
+    <div id="toast-container" class="toast-container"></div>
 
     <div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" title="Cloud Sync Active">
         <i class="fa-solid fa-cloud-arrow-up sync-icon"></i><span>Syncing...</span>

@@ -570,9 +570,10 @@ input, textarea {
 
 /* ── 12. PIN / LOCK SCREEN ─────────────────────────────────────────────────── */
 
-@media (max-width: 768px) {
+/* Desktop-only pin vessel sizing — mobile is handled in section 25 */
+@media (min-width: 769px) {
     .pin-vessel {
-        padding: 32px 24px calc(env(safe-area-inset-bottom) + 32px);
+        padding: 48px 40px;
     }
 
     .pin-avatar-ring {
@@ -680,21 +681,25 @@ input, textarea {
 /* ── 15. TOAST NOTIFICATIONS ───────────────────────────────────────────────── */
 
 /* Override both toast-container definitions from components.css */
+.toast-container {
+    position: fixed;
+    top: calc(var(--mobile-navbar-h, 64px) + env(safe-area-inset-top) + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: auto;
+    width: calc(100vw - 32px);
+    max-width: 360px;
+    z-index: 99999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
 @media (max-width: 768px) {
     .toast-container {
-        position: fixed;
         top: calc(var(--mobile-navbar-h) + env(safe-area-inset-top) + 12px);
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: auto;
-        width: calc(100vw - 32px);
-        max-width: 360px;
-        z-index: 9999;
-        pointer-events: none;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-items: center;
     }
 
     .neumorphic-toast {
@@ -847,5 +852,506 @@ body.keyboard-open .auth-overlay {
 
     .bento-card {
         padding: 12px;
+    }
+}
+
+/* ── 21. MONOSPACED OTP FONT ────────────────────────────────────────────────── */
+
+.otp-code {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 4px;
+}
+
+/* ── 22. COPY SUCCESS ANIMATION ─────────────────────────────────────────────── */
+
+@keyframes copyRipple {
+    0%   { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+
+.copy-ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--accent-primary);
+    opacity: 0;
+    pointer-events: none;
+    animation: copyRipple 0.5s ease-out forwards;
+}
+
+.copy-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.copy-btn.copied {
+    color: var(--success, #28a745) !important;
+}
+
+.copy-btn.copied i::before {
+    content: '\f00c'; /* fa-check */
+}
+
+/* ── 23. COUNTDOWN RING COLOR SHIFT ─────────────────────────────────────────── */
+
+/* Applied via JS — these classes shift the linear progress bar color */
+.timer-linear-progress.timer-warning {
+    background-color: #ff9500 !important;
+    transition: background-color 0.5s ease;
+}
+
+.timer-linear-progress.timer-danger {
+    background-color: #ff3b30 !important;
+    transition: background-color 0.3s ease;
+    animation: timerPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes timerPulse {
+    from { opacity: 1; }
+    to   { opacity: 0.6; }
+}
+
+/* ── 24. BOTTOM NAV — 3 TABS ─────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    /* Account tab in bottom nav */
+    .bottom-nav-tab[data-tab="account"] i {
+        font-size: 20px;
+    }
+}
+
+/* ── 25. PIN NUMPAD ──────────────────────────────────────────────────────────── */
+
+/* ── Full-screen lock screen on mobile ── */
+@media (max-width: 768px) {
+    /* Override the card-style pin-vessel — go full screen */
+    .pin-overlay {
+        align-items: stretch !important;
+        background: var(--bg-primary) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    .pin-vessel {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding-top: calc(env(safe-area-inset-top) + 32px) !important;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 20px) !important;
+        overflow: hidden !important;
+    }
+
+    /* Top section: avatar + title */
+    .pin-brand {
+        flex-shrink: 0;
+    }
+
+    .pin-avatar-ring {
+        width: 72px !important;
+        height: 72px !important;
+        margin-bottom: 14px !important;
+    }
+
+    .pin-avatar-inner {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .pin-header {
+        margin-bottom: 0 !important;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .pin-title {
+        font-size: 22px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .pin-subtitle {
+        font-size: 12px !important;
+    }
+
+    /* Dots section */
+    .pin-input-vessel {
+        flex-shrink: 0;
+    }
+
+    .pin-indicators {
+        gap: 18px !important;
+        padding: 12px 0 !important;
+    }
+
+    .pin-dot {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .pin-helper {
+        font-size: 10px !important;
+        margin-bottom: 0 !important;
+        margin-top: 6px;
+    }
+
+    /* Hide the old text input — numpad handles input */
+    .pin-input-hidden {
+        position: absolute !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        width: 1px !important;
+        height: 1px !important;
+    }
+
+    /* Numpad grid — fills remaining space proportionally */
+    .pin-numpad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        width: 100%;
+        max-width: 320px;
+        padding: 0 20px;
+        flex-shrink: 0;
+    }
+
+    .pin-key {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        /* Use aspect-ratio so keys are always square regardless of screen height */
+        aspect-ratio: 1 / 1;
+        max-height: 72px;
+        border-radius: 18px;
+        background: var(--bg-primary);
+        box-shadow:
+            5px 5px 12px var(--nm-shadow-dark),
+            -5px -5px 12px var(--nm-shadow-light);
+        border: none;
+        cursor: pointer;
+        transition: box-shadow 0.1s ease, transform 0.1s ease;
+        color: var(--text-primary);
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+    }
+
+    .pin-key span {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    /* Remove any sub labels */
+    .pin-key sub {
+        display: none !important;
+    }
+
+    .pin-key:active {
+        box-shadow: var(--nm-shadow-in-sm);
+        transform: scale(0.91);
+    }
+
+    /* Biometric key */
+    .pin-key-biometric {
+        color: var(--accent-primary);
+    }
+
+    .pin-key-biometric i {
+        font-size: 24px;
+    }
+
+    .pin-key-biometric.hidden {
+        visibility: hidden;
+        pointer-events: none;
+        box-shadow: none;
+        background: transparent;
+    }
+
+    /* Delete key */
+    .pin-key-delete {
+        color: var(--text-secondary);
+    }
+
+    .pin-key-delete i {
+        font-size: 20px;
+    }
+
+    /* Footer */
+    .pin-footer-actions {
+        flex-shrink: 0;
+        margin-top: 0 !important;
+        gap: 8px !important;
+    }
+
+    .forgot-pin-link {
+        font-size: 12px !important;
+        opacity: 0.6;
+    }
+}
+
+/* Ultra-short screens (e.g. landscape or very small phones) */
+@media (max-width: 768px) and (max-height: 680px) {
+    .pin-avatar-ring {
+        width: 56px !important;
+        height: 56px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .pin-title {
+        font-size: 18px !important;
+    }
+
+    .pin-numpad {
+        gap: 8px;
+    }
+
+    .pin-key {
+        max-height: 58px;
+        border-radius: 14px;
+    }
+
+    .pin-key span {
+        font-size: 20px;
+    }
+}
+
+/* ── 26. FULL-SCREEN SEARCH OVERLAY ─────────────────────────────────────────── */
+
+.search-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-primary);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    padding-top: env(safe-area-inset-top);
+}
+
+.search-overlay.open {
+    transform: translateY(0);
+}
+
+.search-overlay.hidden {
+    display: none;
+}
+
+.search-overlay-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--nm-shadow-dark);
+}
+
+.search-overlay-back {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--bg-primary);
+    box-shadow:
+        4px 4px 10px var(--nm-shadow-dark),
+        -4px -4px 10px var(--nm-shadow-light);
+    border: none;
+    color: var(--text-primary);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.search-overlay-back:active {
+    box-shadow: var(--nm-shadow-in-sm);
+    transform: scale(0.93);
+}
+
+.search-overlay-input-vessel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 48px;
+    padding: 0 16px;
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    box-shadow: var(--nm-shadow-in);
+    color: var(--text-secondary);
+}
+
+.search-overlay-input-vessel i {
+    font-size: 16px;
+    flex-shrink: 0;
+    color: var(--accent-primary);
+}
+
+.search-overlay-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-family: inherit;
+}
+
+.search-overlay-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.search-overlay-clear {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--nm-shadow-dark);
+    border: none;
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.search-overlay-clear:not(.hidden) {
+    display: flex;
+}
+
+.search-overlay-results {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Compact result card inside overlay */
+.search-result-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: var(--bg-primary);
+    box-shadow:
+        6px 6px 14px var(--nm-shadow-dark),
+        -6px -6px 14px var(--nm-shadow-light);
+    cursor: pointer;
+    transition: box-shadow 0.12s ease, transform 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.search-result-card:active {
+    box-shadow: var(--nm-shadow-in-sm);
+    transform: scale(0.98);
+}
+
+.search-result-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--bg-primary);
+    box-shadow:
+        inset 4px 4px 8px var(--nm-shadow-dark),
+        inset -4px -4px 8px var(--nm-shadow-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-primary);
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.search-result-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-result-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-result-account {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.search-result-copy {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--bg-primary);
+    box-shadow:
+        4px 4px 10px var(--nm-shadow-dark),
+        -4px -4px 10px var(--nm-shadow-light);
+    border: none;
+    color: var(--accent-primary);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.search-result-copy:active {
+    box-shadow: var(--nm-shadow-in-sm);
+    transform: scale(0.9);
+}
+
+.search-overlay-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 12px;
+    color: var(--text-tertiary);
+    padding: 40px 0;
+}
+
+.search-overlay-empty i {
+    font-size: 48px;
+    opacity: 0.2;
+}
+
+.search-overlay-empty p {
+    font-size: 15px;
+    font-weight: 600;
+    opacity: 0.5;
+}
+
+/* On mobile, intercept the search input tap to open overlay */
+@media (max-width: 768px) {
+    .search-vessel .search-input {
+        cursor: pointer;
+        caret-color: transparent;
     }
 }

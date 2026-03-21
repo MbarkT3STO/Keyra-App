@@ -628,50 +628,32 @@ export class UIManager {
             this.showForgotPinConfirm();
         });
 
-        // Auto-unlock on PIN input
+        // Auto-unlock on PIN input (keyboard fallback)
         const pinInput = document.getElementById('unlock-pin') as HTMLInputElement;
         pinInput?.addEventListener('input', (e) => {
             const value = (e.target as HTMLInputElement).value;
-
-            // Only allow numeric digits
             const numericValue = value.replace(/[^0-9]/g, '');
-            if (value !== numericValue) {
-                (e.target as HTMLInputElement).value = numericValue;
-                // Don't return here, we want to update dots even if cleaned
-            }
-
-            // Call validation/update logic for EVERY change (it has its own 4-char guard for success/error)
+            if (value !== numericValue) (e.target as HTMLInputElement).value = numericValue;
+            this.pinBuffer = numericValue;
             this.validateAndAutoUnlock(numericValue);
         });
 
-        // Add keyboard support for PIN input
         pinInput?.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.clearPinInput();
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 this.handleUnlock();
-                // Track export/import actions
-                const exportBtn = document.getElementById('btn-export-vault');
-                const importBtn = document.getElementById('btn-import-vault');
-
-                if (exportBtn) {
-                    exportBtn.addEventListener('click', () => {
-                        this.updateLastActivity('Exported vault');
-                    });
-                }
-
-                if (importBtn) {
-                    importBtn.addEventListener('click', () => {
-                        this.updateLastActivity('Imported vault');
-                    });
-                }
-            }
-            // Prevent non-numeric input
-            else if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
+            } else if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
                 e.preventDefault();
             }
         });
+
+        // Numpad keys
+        this.setupNumpad();
+
+        // Search overlay intercept
+        this.setupSearchOverlay();
 
         // Handle window resize for icon refreshing if layout shifts majorly
         window.addEventListener('resize', this.debounce(() => this.refreshLucide(), 250));
@@ -1285,6 +1267,21 @@ export class UIManager {
             }
             const otpCode = await (window as any).api.generateTOTP(account.secret);
             await navigator.clipboard.writeText(otpCode);
+            // Haptic feedback
+            Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+            // Ripple animation
+            const ripple = document.createElement('span');
+            ripple.className = 'copy-ripple';
+            copyBtn.appendChild(ripple);
+            copyBtn.classList.add('copied');
+            const btnText = copyBtn.querySelector('.btn-text');
+            const originalText = btnText?.textContent;
+            if (btnText) btnText.textContent = 'Copied!';
+            setTimeout(() => {
+                ripple.remove();
+                copyBtn.classList.remove('copied');
+                if (btnText) btnText.textContent = originalText || 'Secure Copy';
+            }, 700);
             this.showToast("Code copied!", "success");
         };
 
@@ -1344,7 +1341,9 @@ export class UIManager {
             if (globalBar) {
                 const scale = remainingSeconds / 30;
                 globalBar.style.transform = `scaleX(${scale})`;
-                globalBar.style.backgroundColor = remainingSeconds <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+                globalBar.classList.toggle('timer-warning', remainingSeconds <= 10 && remainingSeconds > 5);
+                globalBar.classList.toggle('timer-danger', remainingSeconds <= 5);
+                if (remainingSeconds > 10) globalBar.style.backgroundColor = '';
             }
         }
         // Mode 2: Compact — individual linear bar
@@ -1353,7 +1352,9 @@ export class UIManager {
             if (progressBar) {
                 const scale = remainingSeconds / 30;
                 progressBar.style.transform = `scaleX(${scale})`;
-                progressBar.style.backgroundColor = remainingSeconds <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+                progressBar.classList.toggle('timer-warning', remainingSeconds <= 10 && remainingSeconds > 5);
+                progressBar.classList.toggle('timer-danger', remainingSeconds <= 5);
+                if (remainingSeconds > 10) progressBar.style.backgroundColor = '';
             }
         }
         // Mode 3: Secure — SVG circle timer (fallback, no code shown)
@@ -1362,7 +1363,7 @@ export class UIManager {
             const progressCircle = card.querySelector('.timer-progress') as HTMLElement;
             if (progressCircle) {
                 progressCircle.style.strokeDashoffset = dashOffset.toString();
-                progressCircle.style.stroke = remainingSeconds <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+                progressCircle.style.stroke = remainingSeconds <= 5 ? '#ff3b30' : remainingSeconds <= 10 ? '#ff9500' : 'var(--accent-primary)';
             }
         }
     }
@@ -1393,12 +1394,26 @@ export class UIManager {
         element.textContent = 'Copied!';
         element.style.color = '#28a745';
         element.style.transform = 'scale(1.1)';
+        element.style.transition = 'all 0.2s ease';
 
         setTimeout(() => {
             element.textContent = originalText;
             element.style.color = originalColor;
             element.style.transform = 'scale(1)';
         }, 1000);
+
+        // Ripple on nearest copy-btn if applicable
+        const copyBtn = element.closest('.copy-btn') as HTMLElement;
+        if (copyBtn) {
+            copyBtn.classList.add('copied');
+            const ripple = document.createElement('span');
+            ripple.className = 'copy-ripple';
+            copyBtn.appendChild(ripple);
+            setTimeout(() => {
+                ripple.remove();
+                copyBtn.classList.remove('copied');
+            }, 600);
+        }
     }
 
     private updateLastActivity(action: string) {
@@ -1583,6 +1598,161 @@ export class UIManager {
 
         searchInput.addEventListener('input', () => {
             searchVessel.classList.toggle('search-expanded', searchInput.value.length > 0);
+        });
+    }
+
+    // ── #6 PIN Numpad ─────────────────────────────────────────────────────────
+    private setupNumpad() {
+        document.querySelectorAll('.pin-key[data-key]').forEach(key => {
+            key.addEventListener('click', () => {
+                if (this.pinBuffer.length >= 4) return;
+                const digit = (key as HTMLElement).getAttribute('data-key')!;
+                this.pinBuffer += digit;
+                Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+                this.validateAndAutoUnlock(this.pinBuffer);
+            });
+        });
+
+        document.getElementById('pin-key-delete')?.addEventListener('click', () => {
+            if (this.pinBuffer.length === 0) return;
+            this.pinBuffer = this.pinBuffer.slice(0, -1);
+            Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+            this.updatePinDots(this.pinBuffer.length);
+        });
+    }
+
+    // ── #8 Full-screen search overlay ────────────────────────────────────────
+    private setupSearchOverlay() {
+        const searchInput = document.getElementById('vault-search') as HTMLInputElement;
+        const overlay = document.getElementById('search-overlay');
+        const overlayInput = document.getElementById('search-overlay-input') as HTMLInputElement;
+        const backBtn = document.getElementById('search-overlay-back');
+        const clearBtn = document.getElementById('search-overlay-clear');
+        const results = document.getElementById('search-overlay-results');
+
+        if (!overlay || !overlayInput || !results) return;
+
+        const openOverlay = () => {
+            overlay.classList.remove('hidden');
+            // Force reflow then animate
+            requestAnimationFrame(() => {
+                overlay.classList.add('open');
+                setTimeout(() => overlayInput.focus(), 50);
+            });
+        };
+
+        const closeOverlay = () => {
+            overlay.classList.remove('open');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlayInput.value = '';
+                clearBtn?.classList.add('hidden');
+                results.innerHTML = '';
+                // Also clear the main search
+                if (searchInput) {
+                    searchInput.value = '';
+                    this.searchQuery = '';
+                    this.renderAccounts();
+                }
+            }, 350);
+        };
+
+        // Intercept tap on the main search bar (mobile)
+        searchInput?.addEventListener('focus', (e) => {
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                searchInput.blur();
+                openOverlay();
+            }
+        });
+
+        backBtn?.addEventListener('click', closeOverlay);
+
+        // Clear button
+        clearBtn?.addEventListener('click', () => {
+            overlayInput.value = '';
+            clearBtn.classList.add('hidden');
+            this.renderSearchOverlay('', results);
+            overlayInput.focus();
+        });
+
+        // Live search
+        overlayInput.addEventListener('input', () => {
+            const q = overlayInput.value.trim();
+            clearBtn?.classList.toggle('hidden', q.length === 0);
+            this.renderSearchOverlay(q, results);
+            // Keep main vault in sync
+            this.searchQuery = q.toLowerCase();
+        });
+
+        // Close on Escape
+        overlayInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeOverlay();
+        });
+    }
+
+    private renderSearchOverlay(query: string, container: HTMLElement) {
+        container.innerHTML = '';
+
+        if (!query) {
+            container.innerHTML = `
+                <div class="search-overlay-empty">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <p>Type to search your accounts</p>
+                </div>`;
+            return;
+        }
+
+        const q = query.toLowerCase();
+        const filtered = this.accounts.filter(acc =>
+            acc.issuer.toLowerCase().includes(q) || acc.account.toLowerCase().includes(q)
+        );
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="search-overlay-empty">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                    <p>No accounts found</p>
+                </div>`;
+            return;
+        }
+
+        filtered.forEach(acc => {
+            const card = document.createElement('div');
+            card.className = 'search-result-card';
+            card.innerHTML = `
+                <div class="search-result-icon">
+                    <i class="${this.getIcon(acc.issuer)}"></i>
+                </div>
+                <div class="search-result-info">
+                    <div class="search-result-name">${acc.issuer}</div>
+                    <div class="search-result-account">${acc.account}</div>
+                </div>
+                <button class="search-result-copy" title="Copy OTP">
+                    <i class="fa-solid fa-copy"></i>
+                </button>
+            `;
+
+            const copyBtn = card.querySelector('.search-result-copy') as HTMLElement;
+            copyBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (document.body.classList.contains('vault-is-locked')) {
+                    this.showToast("Vault Locked", "error");
+                    return;
+                }
+                const otp = await (window as any).api.generateTOTP(acc.secret);
+                await navigator.clipboard.writeText(otp);
+                Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+                copyBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                copyBtn.style.color = 'var(--success, #28a745)';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fa-solid fa-copy"></i>';
+                    copyBtn.style.color = '';
+                }, 1200);
+                this.showToast("Code copied!", "success");
+            });
+
+            container.appendChild(card);
         });
     }
 
@@ -1844,7 +2014,7 @@ export class UIManager {
         const vessel = document.getElementById('lock-vessel');
         if (!vessel) return;
         vessel.classList.add('show');
-        document.body.classList.add('vault-is-locked'); // Optimize performance
+        document.body.classList.add('vault-is-locked');
 
         // Security: Clear all OTP codes immediately when vault is locked
         this.clearAllOTPCodes();
@@ -1853,15 +2023,16 @@ export class UIManager {
         this.updatePinAvatar();
 
         this.refreshLucide(vessel);
-        const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
-        if (pinIn) { pinIn.value = ''; pinIn.focus(); }
 
-        // Show biometric button if enabled, then auto-prompt
+        // Reset numpad state
+        this.pinBuffer = '';
+        this.updatePinDots(0);
+
+        // Show biometric key in numpad if enabled, then auto-prompt
         const biometricEnabled = localStorage.getItem(this.getStorageKey('biometric_enabled')) === 'true';
-        const biometricBtn = document.getElementById('btn-biometric-unlock');
-        if (biometricBtn) biometricBtn.classList.toggle('hidden', !biometricEnabled);
+        const biometricKey = document.getElementById('btn-biometric-unlock');
+        if (biometricKey) biometricKey.classList.toggle('hidden', !biometricEnabled);
         if (biometricEnabled) {
-            // Small delay so the lock screen animation completes first
             setTimeout(() => this.tryBiometricUnlock(), 400);
         }
     }
@@ -1886,10 +2057,7 @@ export class UIManager {
     }
 
     private handleUnlock() {
-        const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
-        if (!pinIn) return;
-
-        this.validateAndAutoUnlock(pinIn.value);
+        this.validateAndAutoUnlock(this.pinBuffer);
     }
 
     private async validateAndAutoUnlock(pinValue: string) {
@@ -1898,12 +2066,7 @@ export class UIManager {
         const progressDots = document.querySelectorAll('.pin-input-vessel .pin-dot');
 
         // Update progress dots based on input length
-        progressDots.forEach((dot, index) => {
-            dot.classList.remove('filled', 'error', 'success');
-            if (index < pinValue.length) {
-                dot.classList.add('filled');
-            }
-        });
+        this.updatePinDots(pinValue.length);
 
         if (pinValue.length === 4) {
             try {
@@ -1929,8 +2092,9 @@ export class UIManager {
 
                     setTimeout(() => {
                         document.getElementById('lock-vessel')?.classList.remove('show');
-                        document.body.classList.remove('vault-is-locked'); // Restore performance
-                        pinIn.value = '';
+                        document.body.classList.remove('vault-is-locked');
+                        this.pinBuffer = '';
+                        if (pinIn) pinIn.value = '';
                         progressDots.forEach(dot => dot.classList.remove('filled', 'error', 'success'));
 
                         // Security: Restore OTP codes after successful unlock
@@ -1939,7 +2103,8 @@ export class UIManager {
 
                     this.showToast("Identity Verified", "success");
                 } else {
-                    // Error feedback
+                    // Error feedback + haptic
+                    Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {});
                     const vessel = document.querySelector('.pin-input-vessel');
                     vessel?.classList.add('animate-shake');
                     progressDots.forEach(dot => {
@@ -1949,8 +2114,9 @@ export class UIManager {
 
                     setTimeout(() => {
                         vessel?.classList.remove('animate-shake');
-                        pinIn.value = '';
-                        pinIn.focus();
+                        this.pinBuffer = '';
+                        if (pinIn) pinIn.value = '';
+                        this.updatePinDots(0);
                         progressDots.forEach(dot => dot.classList.remove('filled', 'error', 'success'));
                     }, 1000);
 
@@ -1959,10 +2125,24 @@ export class UIManager {
             } catch (err) {
                 console.error("PIN validation error:", err);
                 this.showToast("PIN validation failed", "error");
+                this.pinBuffer = '';
                 if (pinIn) pinIn.value = '';
+                this.updatePinDots(0);
                 progressDots.forEach(dot => dot.classList.remove('filled', 'error', 'success'));
             }
         }
+    }
+
+    private updatePinDots(filledCount: number, state?: 'error' | 'success') {
+        const dots = document.querySelectorAll('.pin-input-vessel .pin-dot');
+        dots.forEach((dot, i) => {
+            dot.classList.remove('filled', 'error', 'success');
+            if (state) {
+                dot.classList.add(state);
+            } else if (i < filledCount) {
+                dot.classList.add('filled');
+            }
+        });
     }
 
     private async loadAccountInfo() {
@@ -2252,20 +2432,10 @@ export class UIManager {
     }
 
     private clearPinInput() {
+        this.pinBuffer = '';
         const pinIn = document.getElementById('unlock-pin') as HTMLInputElement;
-        const progressDots = document.querySelectorAll('.pin-dot');
-
-        if (pinIn) {
-            pinIn.value = '';
-            pinIn.style.borderColor = '';
-            pinIn.style.boxShadow = '';
-            pinIn.focus();
-        }
-
-        // Reset progress dots
-        progressDots.forEach(dot => {
-            dot.classList.remove('filled', 'error', 'success');
-        });
+        if (pinIn) { pinIn.value = ''; }
+        this.updatePinDots(0);
     }
 
     private showPinSetup() {
@@ -2276,6 +2446,7 @@ export class UIManager {
 
     private currentPinStep: number = 1;
     private tempPin: string = '';
+    private pinBuffer: string = '';
 
     private showPinSetupStep1() {
         const content = `
