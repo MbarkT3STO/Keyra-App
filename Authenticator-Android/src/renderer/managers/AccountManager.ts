@@ -533,7 +533,7 @@ export class AccountManager {
                     account: parsed.account,
                     secret: parsed.secret
                 });
-                this.host.accounts = res.accounts || [];
+                this.host.accounts = res || [];
                 this.renderAccounts();
                 this.host.hideModal();
                 this.host.showToast(`${parsed.issuer} added!`, 'success');
@@ -576,7 +576,7 @@ export class AccountManager {
                 return;
             }
             const res = await (window as any).api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
-            this.host.accounts = res.accounts || [];
+            this.host.accounts = res || [];
             this.renderAccounts();
             this.host.hideModal();
             this.host.showToast('Account saved!', 'success');
@@ -652,7 +652,7 @@ export class AccountManager {
             const accName = (document.getElementById('edit-account') as HTMLInputElement).value.trim();
             if (!issuer) return;
             const res = await (window as any).api.saveAccount({ ...account, issuer, account: accName });
-            this.host.accounts = res.accounts || [];
+            this.host.accounts = res || [];
             this.renderAccounts();
             this.host.hideModal();
             this.host.showToast('Account updated!', 'success');

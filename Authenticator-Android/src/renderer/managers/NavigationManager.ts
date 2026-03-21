@@ -217,7 +217,8 @@ export class NavigationManager {
         if (!content) return;
         let startY = 0;
         let pulling = false;
-        const threshold = 80;
+        const threshold = 72;
+        const maxHeight = 52;
         const isVaultTab = () => !document.getElementById('vault-view')?.classList.contains('hidden');
 
         content.addEventListener('touchstart', (e) => {
@@ -231,7 +232,9 @@ export class NavigationManager {
             if (delta > 0 && content.scrollTop === 0) {
                 const indicator = document.getElementById('pull-refresh-indicator');
                 if (indicator) {
-                    indicator.style.transform = `translateY(${Math.min(delta * 0.4, 60)}px)`;
+                    // Expand height proportionally, capped at maxHeight
+                    const h = Math.min(delta * 0.55, maxHeight);
+                    indicator.style.height = `${h}px`;
                     indicator.classList.toggle('ready', delta > threshold);
                 }
             }
@@ -242,10 +245,25 @@ export class NavigationManager {
             pulling = false;
             const delta = e.changedTouches[0].clientY - startY;
             const indicator = document.getElementById('pull-refresh-indicator');
-            if (indicator) indicator.style.transform = '';
             if (delta > threshold && isVaultTab()) {
                 Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+                // Hold open at full height while loading
+                if (indicator) {
+                    indicator.style.height = `${maxHeight}px`;
+                    indicator.classList.remove('ready');
+                    indicator.classList.add('loading');
+                }
                 await this.host.refreshAccounts();
+                if (indicator) {
+                    indicator.classList.remove('loading');
+                    indicator.style.height = '0';
+                }
+            } else {
+                // Snap closed
+                if (indicator) {
+                    indicator.style.height = '0';
+                    indicator.classList.remove('ready');
+                }
             }
         }, { passive: true });
     }

@@ -45,8 +45,11 @@
 <div id="toast-container" class="toast-container"></div>
 
 <!-- Cloud sync indicator -->
-<div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" title="Cloud Sync Active">
-    <i class="fa-solid fa-cloud-arrow-up sync-icon"></i><span>Syncing...</span>
+<div id="cloud-sync-indicator" class="cloud-sync-indicator hidden" aria-live="polite" aria-label="Cloud sync in progress">
+    <div class="sync-icon-vessel">
+        <i class="fa-solid fa-rotate"></i>
+    </div>
+    <span class="sync-label">Syncing</span>
 </div>
 
 <!-- Connectivity indicator -->

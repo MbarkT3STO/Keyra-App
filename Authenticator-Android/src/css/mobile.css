@@ -65,7 +65,7 @@ input, textarea {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: calc(env(safe-area-inset-top) + 14px) 16px 10px;
+        padding: 14px 16px 10px;
         flex-shrink: 0;
     }
 
@@ -148,7 +148,7 @@ input, textarea {
     /* Mobile dropdown — anchored below the avatar button */
     .mobile-dropdown {
         position: fixed;
-        top: calc(env(safe-area-inset-top) + 62px);
+        top: 62px;
         right: 12px;
         left: auto;
         min-width: 220px;
@@ -1535,52 +1535,73 @@ input, textarea {
 
 /* ── 16. CLOUD SYNC INDICATOR ──────────────────────────────────────────────── */
 
+/* Desktop: top-center, below the navbar */
 .cloud-sync-indicator {
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    top: calc(env(safe-area-inset-top) + 72px);
 }
 
 @media (max-width: 768px) {
+    /* Mobile: top-center, just below the mobile tab header (~74px) */
     .cloud-sync-indicator {
-        bottom: calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom) + 12px);
-        right: 14px;
-        height: 38px;
-        padding: 0 14px;
-        font-size: 12px;
-        border-radius: var(--radius-full);
+        top: calc(env(safe-area-inset-top) + 74px);
+        height: 44px;
+        padding: 0 18px 0 7px;
+        gap: 10px;
         box-shadow:
-            4px 4px 10px var(--nm-shadow-dark),
-            -4px -4px 10px var(--nm-shadow-light);
+            6px 6px 16px var(--nm-shadow-dark),
+            -6px -6px 16px var(--nm-shadow-light);
+    }
+
+    .sync-icon-vessel {
+        width: 30px;
+        height: 30px;
+    }
+
+    .sync-icon-vessel i {
+        font-size: 13px;
     }
 }
 
+
 /* ── 17. PULL-TO-REFRESH ───────────────────────────────────────────────────── */
 
+/* Wrapper: height is driven by JS (0 → 52px) */
 .pull-refresh-indicator {
+    overflow: hidden;
+    height: 0;
+    pointer-events: none;
+    /* No margin, no transform — height expansion IS the reveal */
+}
+
+/* Inner pill — neumorphic raised, centered */
+.pull-refresh-inner {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    height: 0;
-    overflow: hidden;
-    opacity: 0;
+    gap: 10px;
+    height: 52px;
     color: var(--accent-primary);
-    font-size: 13px;
-    font-weight: 800;
-    transition: height 0.1s ease, opacity 0.1s ease;
-    pointer-events: none;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
-.pull-refresh-indicator i {
-    font-size: 16px;
-    transition: transform 0.3s ease;
+.pull-refresh-inner i {
+    font-size: 18px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.pull-refresh-indicator.pull-refresh-ready i {
+/* "ready" — icon flips to signal release */
+.pull-refresh-indicator.ready .pull-refresh-inner i {
     transform: rotate(180deg);
+    color: var(--accent-primary);
+    filter: drop-shadow(0 0 6px var(--aura-1));
 }
 
-.pull-refresh-indicator.pull-refresh-loading i {
-    animation: prSpin 0.8s linear infinite;
+/* "loading" — icon spins while refreshing */
+.pull-refresh-indicator.loading .pull-refresh-inner i {
+    animation: prSpin 0.7s linear infinite;
 }
 
 @keyframes prSpin {
