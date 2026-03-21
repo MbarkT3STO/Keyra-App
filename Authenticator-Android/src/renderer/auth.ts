@@ -206,11 +206,15 @@ export async function setupAuthUI() {
     const digitInputs = document.querySelectorAll('.verify-digit') as NodeListOf<HTMLInputElement>;
     digitInputs.forEach((input, idx) => {
         input.addEventListener('input', () => {
+            input.classList.toggle('filled', !!input.value);
             if (input.value && digitInputs[idx + 1]) digitInputs[idx + 1].focus();
             if (Array.from(digitInputs).every(i => i.value)) handleVerification();
         });
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !input.value && digitInputs[idx - 1]) digitInputs[idx - 1].focus();
+            if (e.key === 'Backspace' && !input.value && digitInputs[idx - 1]) {
+                digitInputs[idx - 1].focus();
+                digitInputs[idx - 1].classList.remove('filled');
+            }
         });
     });
 

@@ -62,8 +62,10 @@
     <!-- Auth Overlay -->
     <div id="auth-vessel" class="modal-overlay show auth-overlay">
         <div class="modal auth-modal animate-fade-in">
-            <div style="text-align: center; margin-bottom: var(--space-xl);">
-                <div class="brand-vessel" style="margin-bottom: var(--space-md);">
+
+            <!-- Brand header -->
+            <div class="auth-brand">
+                <div class="auth-logo-vessel">
                     <img src="/logo.png" class="app-logo-large nm-logo">
                 </div>
                 <h1 class="auth-title">Keyra</h1>
@@ -72,7 +74,7 @@
 
             <!-- Login Box -->
             <div id="auth-login-box" class="auth-state-transition">
-                <form id="form-login">
+                <form id="form-login" class="auth-form">
                     <div class="form-group">
                         <label class="form-label">Vault Name</label>
                         <input type="text" id="login-username" class="form-input" placeholder="Your username" autocomplete="username" required>
@@ -81,17 +83,21 @@
                         <label class="form-label">Master Key</label>
                         <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password" required>
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; height: 60px; font-size: 17px; border-radius: var(--radius-lg);">Unlock Vault</button>
-                    <div id="login-error" style="color: #ff3b30; font-size: 14px; margin-top: 20px; text-align: center; opacity: 0; font-weight: 800;"></div>
+                    <button type="submit" class="btn-primary auth-submit-btn">
+                        <i class="fa-solid fa-lock-open"></i>
+                        <span>Unlock Vault</span>
+                    </button>
+                    <div id="login-error" class="auth-error-msg"></div>
                 </form>
-                <div style="text-align: center; margin-top: 32px;">
-                    <p style="font-size: 15px; color: var(--text-secondary); font-weight: 600;">First time? <button id="btn-show-signup" style="color: var(--accent-primary); font-weight: 900; background: none; border: none; padding: 0; cursor: pointer;">Create your Vault</button></p>
+                <div class="auth-switch-row">
+                    <span class="auth-switch-text">First time?</span>
+                    <button id="btn-show-signup" class="auth-switch-btn">Create your Vault</button>
                 </div>
             </div>
 
             <!-- Signup Box -->
             <div id="auth-signup-box" class="auth-state-transition hidden">
-                <form id="form-signup">
+                <form id="form-signup" class="auth-form">
                     <div class="form-group">
                         <label class="form-label">Full Name</label>
                         <input type="text" id="signup-username" class="form-input" placeholder="John Doe" required>
@@ -104,23 +110,30 @@
                         <label class="form-label">Master Password</label>
                         <input type="password" id="signup-password" class="form-input" placeholder="Min 8 characters" required>
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; height: 60px; border-radius: var(--radius-lg);">Create Vault</button>
-                    <div id="signup-error" style="color: #ff3b30; font-size: 13px; margin-top: 16px; text-align: center; opacity: 0; font-weight: 700;"></div>
+                    <button type="submit" class="btn-primary auth-submit-btn">
+                        <i class="fa-solid fa-vault"></i>
+                        <span>Create Vault</span>
+                    </button>
+                    <div id="signup-error" class="auth-error-msg"></div>
                 </form>
-                <div style="text-align: center; margin-top: 32px;">
-                    <p style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Already have a vault? <button id="btn-show-login" style="color: var(--accent-primary); font-weight: 800; background: none; border: none; padding: 0; cursor: pointer;">Sign In</button></p>
+                <div class="auth-switch-row">
+                    <span class="auth-switch-text">Already have a vault?</span>
+                    <button id="btn-show-login" class="auth-switch-btn">Sign In</button>
                 </div>
             </div>
 
             <!-- Verify Box -->
             <div id="auth-verify-box" class="auth-state-transition hidden">
-                <div style="text-align: center; margin-bottom: 32px;">
-                    <h2 style="font-size: 26px; font-weight: 850; margin-bottom: 12px;">Verify it's You</h2>
-                    <p style="color: var(--text-secondary); font-size: 15px;">Enter the 6-digit code we sent to your email.</p>
+                <div class="auth-verify-header">
+                    <div class="auth-verify-icon-vessel">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <h2 class="auth-verify-title">Verify it's You</h2>
+                    <p class="auth-verify-desc">Enter the 6-digit code we sent to your email.</p>
                 </div>
-                <form id="form-verify">
+                <form id="form-verify" class="auth-form">
                     <input type="hidden" id="verify-email-field">
-                    <div style="display: flex; gap: clamp(6px, 2vw, 12px); justify-content: center; margin-bottom: 32px;">
+                    <div class="auth-digits-row">
                         <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
                         <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
                         <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
@@ -128,12 +141,19 @@
                         <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
                         <input type="text" inputmode="numeric" maxlength="1" class="verify-digit form-input">
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; height: 60px; border-radius: var(--radius-lg);">Unlock</button>
-                    <div id="verify-error" style="color: #ff3b30; font-size: 13px; margin-top: 16px; text-align: center; opacity: 0; font-weight: 700;"></div>
+                    <button type="submit" class="btn-primary auth-submit-btn">
+                        <i class="fa-solid fa-shield-check"></i>
+                        <span>Verify & Unlock</span>
+                    </button>
+                    <div id="verify-error" class="auth-error-msg"></div>
                 </form>
-                <div style="text-align: center; margin-top: 32px; display: flex; flex-direction: column; gap: 16px;">
-                    <button id="btn-resend-code" style="color: var(--accent-primary); font-weight: 800; font-size: 14px; background: none; border: none; padding: 0; cursor: pointer;">Resend Code <span id="resend-timer" style="font-weight: 400; opacity: 0.6;"></span></button>
-                    <button id="btn-show-login-from-verify" style="color: var(--text-secondary); font-weight: 700; font-size: 13px; background: none; border: none; padding: 0; cursor: pointer; opacity: 0.7;">Back to Login</button>
+                <div class="auth-verify-actions">
+                    <button id="btn-resend-code" class="auth-switch-btn">
+                        Resend Code <span id="resend-timer" class="auth-resend-timer"></span>
+                    </button>
+                    <button id="btn-show-login-from-verify" class="auth-back-btn">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Login
+                    </button>
                 </div>
             </div>
 

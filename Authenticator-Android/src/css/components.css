@@ -2349,24 +2349,43 @@ input:checked+.slider:before {
 /* ─────────────────────────────────────────────────────────────────────────────
    VERIFICATION DIGITS - HIGH TECH GRID
    ───────────────────────────────────────────────────────────────────────────── */
+
+.auth-digits-row {
+    display: flex;
+    gap: clamp(6px, 2vw, 10px);
+    justify-content: center;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
 .verify-digit {
-    width: clamp(40px, 10vw, 56px) !important;
-    height: clamp(52px, 12vw, 68px) !important;
+    /* Flex-based sizing: fills row evenly, never overflows */
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 56px;
+    height: clamp(52px, 14vw, 64px) !important;
     text-align: center !important;
-    font-size: 28px !important;
+    font-size: clamp(20px, 5vw, 28px) !important;
     padding: 0 !important;
-    border-radius: var(--radius-md) !important;
+    border-radius: 14px !important;
     font-family: 'Outfit', system-ui, sans-serif !important;
     font-weight: 800 !important;
     background: var(--bg-primary) !important;
     box-shadow: var(--nm-shadow-in-sm) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: box-shadow 0.2s ease, transform 0.2s ease !important;
     border: none !important;
+    color: var(--accent-primary) !important;
+    caret-color: var(--accent-primary);
 }
 
 .verify-digit:focus {
     box-shadow: var(--nm-shadow-in), 0 0 0 2px var(--accent-soft) !important;
-    transform: translateY(-2px) scale(1.02) !important;
+    transform: scale(1.06) !important;
+    outline: none !important;
+}
+
+.verify-digit.filled {
+    box-shadow: var(--nm-shadow-in-sm), 0 0 0 2px var(--accent-soft) !important;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -3082,6 +3101,184 @@ body.vault-is-locked .main-app-content,
     opacity: 0.6;
     letter-spacing: 1.5px;
     text-transform: uppercase;
+}
+
+/* ── Auth brand header ── */
+.auth-brand {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.auth-logo-vessel {
+    width: 80px;
+    height: 80px;
+    border-radius: 26px;
+    background: var(--bg-primary);
+    box-shadow:
+        10px 10px 24px var(--nm-shadow-dark),
+        -10px -10px 24px var(--nm-shadow-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+/* ── Auth form ── */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Submit button */
+.auth-submit-btn {
+    width: 100% !important;
+    height: 58px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border-radius: var(--radius-full) !important;
+    gap: 10px !important;
+    margin-top: 8px;
+    box-shadow:
+        8px 8px 20px var(--nm-shadow-dark),
+        -8px -8px 20px var(--nm-shadow-light) !important;
+}
+
+.auth-submit-btn:hover {
+    transform: none !important;
+    box-shadow:
+        8px 8px 20px var(--nm-shadow-dark),
+        -8px -8px 20px var(--nm-shadow-light) !important;
+}
+
+.auth-submit-btn:active {
+    box-shadow: var(--nm-shadow-in-sm) !important;
+    transform: scale(0.97) !important;
+}
+
+/* Error message */
+.auth-error-msg {
+    color: #ff3b30;
+    font-size: 13px;
+    margin-top: 12px;
+    text-align: center;
+    opacity: 0;
+    font-weight: 800;
+    min-height: 20px;
+    transition: opacity 0.2s ease;
+}
+
+/* Switch row (sign in / create vault) */
+.auth-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 28px;
+}
+
+.auth-switch-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.auth-switch-btn {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--accent-primary);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.auth-switch-btn:active {
+    opacity: 0.6;
+}
+
+/* ── Verify box ── */
+.auth-verify-header {
+    text-align: center;
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.auth-verify-icon-vessel {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: var(--bg-primary);
+    box-shadow:
+        8px 8px 18px var(--nm-shadow-dark),
+        -8px -8px 18px var(--nm-shadow-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-primary);
+    font-size: 26px;
+}
+
+.auth-verify-title {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin: 0;
+}
+
+.auth-verify-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin: 0;
+    opacity: 0.85;
+}
+
+.auth-digits-row {
+    display: flex;
+    gap: clamp(6px, 2vw, 12px);
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.auth-verify-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.auth-back-btn {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+}
+
+.auth-back-btn:active {
+    opacity: 1;
+}
+
+.auth-resend-timer {
+    font-weight: 400;
+    opacity: 0.6;
 }
 
 /* Auth Modal Close/Back Button */

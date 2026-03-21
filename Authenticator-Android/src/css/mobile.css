@@ -1082,23 +1082,25 @@ input, textarea {
 /* ── 10. AUTH SCREEN ───────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
+    /* Full-screen bottom sheet */
     .auth-overlay {
         align-items: flex-end !important;
         padding: 0 !important;
         overflow-y: auto !important;
+        background: var(--bg-primary) !important;
     }
 
     .auth-modal {
         max-width: 100% !important;
         width: 100% !important;
         border-radius: 32px 32px 0 0 !important;
-        padding: 32px 24px calc(env(safe-area-inset-bottom) + 40px) !important;
+        padding: 0 24px calc(env(safe-area-inset-bottom) + 36px) !important;
         margin: 0 !important;
         max-height: 96dvh !important;
         overflow-y: auto !important;
         animation: authMobileEntry 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
         box-shadow:
-            0 -8px 40px var(--nm-shadow-dark),
+            0 -12px 48px var(--nm-shadow-dark),
             0 -1px 0 var(--nm-shadow-light) !important;
     }
 
@@ -1107,29 +1109,84 @@ input, textarea {
         to   { transform: translateY(0); }
     }
 
-    /* Drag handle on auth sheet */
+    /* Drag handle */
     .auth-modal::before {
         content: '';
         display: block;
-        width: 40px;
-        height: 4px;
+        width: 44px;
+        height: 5px;
         border-radius: var(--radius-full);
         background: var(--nm-shadow-dark);
-        opacity: 0.2;
-        margin: 0 auto 24px;
+        opacity: 0.25;
+        margin: 16px auto 0;
     }
 
-    .auth-modal .form-input {
-        height: 56px;
-        padding: 0 20px;
+    /* Brand header */
+    .auth-brand {
+        padding-top: 20px;
+        margin-bottom: 28px;
+        gap: 8px;
+    }
+
+    .auth-logo-vessel {
+        width: 68px;
+        height: 68px;
+        border-radius: 22px;
+        box-shadow:
+            8px 8px 18px var(--nm-shadow-dark),
+            -8px -8px 18px var(--nm-shadow-light);
+    }
+
+    .auth-logo-vessel img {
+        width: 44px;
+        height: 44px;
+    }
+
+    .auth-title {
+        font-size: 32px !important;
+        letter-spacing: -1.5px !important;
+    }
+
+    /* Form inputs */
+    .auth-form .form-input {
+        height: 56px !important;
+        padding: 0 20px !important;
         font-size: 16px !important;
-        border-radius: 16px;
+        border-radius: 16px !important;
     }
 
-    .auth-modal .btn-primary {
-        height: 58px;
-        font-size: 17px;
-        border-radius: var(--radius-full);
+    /* Submit button */
+    .auth-submit-btn {
+        height: var(--mobile-btn-h) !important;
+        font-size: 16px !important;
+        margin-top: 12px !important;
+    }
+
+    /* Switch row */
+    .auth-switch-row {
+        margin-top: 24px;
+    }
+
+    /* Verify icon vessel */
+    .auth-verify-icon-vessel {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        font-size: 24px;
+        box-shadow:
+            6px 6px 16px var(--nm-shadow-dark),
+            -6px -6px 16px var(--nm-shadow-light);
+    }
+
+    .auth-verify-title {
+        font-size: 22px;
+    }
+
+    /* Digit inputs */
+    .verify-digit {
+        height: clamp(52px, 14vw, 60px) !important;
+        font-size: clamp(18px, 5vw, 24px) !important;
+        border-radius: 12px !important;
     }
 
     /* Keyboard open: slide auth up */
@@ -1137,7 +1194,6 @@ input, textarea {
         align-items: flex-start !important;
     }
 }
-
 /* ── 11. SETTINGS & BENTO CARDS ────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
