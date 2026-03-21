@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches: [main]
-  workflow_dispatch: # allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   build:
@@ -34,7 +34,7 @@ jobs:
           node scripts/build-html.cjs
           npm run build
 
-      - name: Add Android platform (if not present)
+      - name: Add Android platform
         working-directory: Authenticator-Android
         run: |
           if [ ! -d "android" ]; then
@@ -45,9 +45,18 @@ jobs:
         working-directory: Authenticator-Android
         run: npx cap sync android
 
+      - name: Patch AndroidManifest — permissions + edge-to-edge
+        working-directory: Authenticator-Android/android/app/src/main
+        run: |
+          # Add permissions before </manifest>
+          sed -i 's|</manifest>|    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.USE_BIOMETRIC" />\n    <uses-permission android:name="android.permission.USE_FINGERPRINT" />\n    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n</manifest>|' AndroidManifest.xml
+
+          # Make status bar transparent for edge-to-edge
+          sed -i 's|android:theme="@style/AppTheme"|android:theme="@style/AppTheme"\n            android:windowSoftInputMode="adjustResize"|' AndroidManifest.xml
+
       - name: Build debug APK
         working-directory: Authenticator-Android/android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

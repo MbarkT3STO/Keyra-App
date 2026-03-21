@@ -7,6 +7,11 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https'
   },
+  android: {
+    allowMixedContent: false,
+    captureInput: true,
+    webContentsDebuggingEnabled: false
+  },
   plugins: {
     Keyboard: {
       resize: 'body',
@@ -14,11 +19,10 @@ const config: CapacitorConfig = {
     },
     StatusBar: {
       style: 'default',
-      backgroundColor: '#ffffff'
+      backgroundColor: '#00000000',
+      overlaysWebView: true
     },
     PrivacyScreen: {
-      // Disabled at startup — PrivacyManager enables it programmatically
-      // based on the user's screenGuardian setting
       enable: false
     }
   }

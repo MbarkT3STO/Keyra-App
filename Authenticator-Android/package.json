@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:netlify": "netlify dev",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "build:html": "node scripts/build-html.cjs",

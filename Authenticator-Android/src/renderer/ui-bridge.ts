@@ -37,8 +37,8 @@ export const bridge = {
     verifyMasterPassword: async (password: string) => syncWrapper(() => auth.verifyMasterPassword(password), "Verifying", "MASTER KEY VALIDATION"),
     pollForUpdates: async () => auth.pollForUpdates(),
 
-    encryptPIN: (pin: string) => auth.encryptPIN(pin),
-    decryptPIN: (encryptedPin: string) => auth.decryptPIN(encryptedPin),
+    encryptPIN: async (pin: string) => auth.encryptPIN(pin),
+    decryptPIN: async (encryptedPin: string) => auth.decryptPIN(encryptedPin),
 
     changeUsername: async (newName: string) => syncWrapper(() => auth.changeUsername(newName), "Updating Profile", "SYNCHRONIZING CHANGES"),
     changePassword: async (newPassword: string) => syncWrapper(() => auth.changePassword(newPassword), "Re-encrypting Vault", "MASTER KEY ROTATION"),
@@ -106,7 +106,7 @@ export const bridge = {
 
     exportVault: async () => {
         try {
-            const data = auth.getBackupData();
+            const data = await auth.getBackupData();
             const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');

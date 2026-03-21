@@ -48,6 +48,13 @@ export interface DeviceRecord {
 
 const USERS_KEY = 'keyra_users';
 
+// On Android (Capacitor), relative URLs resolve to https://localhost — must use absolute.
+// In browser/dev, use relative so the Vite proxy handles CORS.
+const IS_NATIVE = !!(window as any).Capacitor?.isNativePlatform?.();
+const SYNC_URL = IS_NATIVE
+    ? 'https://keyraapp.netlify.app/.netlify/functions/github-sync'
+    : '/.netlify/functions/github-sync';
+
 const syncQueues: Record<string, { timer: any, data: any, resolvers: ((val: any) => void)[] }> = {};
 
 /**
@@ -104,7 +111,7 @@ async function callSync(action: 'get' | 'put' | 'move', path: string, data?: any
                 delete syncQueues[path];
                 
                 try {
-                    const response = await retryFetch('/.netlify/functions/github-sync', {
+                    const response = await retryFetch(SYNC_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action, path, data: latestData })
@@ -122,7 +129,7 @@ async function callSync(action: 'get' | 'put' | 'move', path: string, data?: any
 
     // Default 'get', 'move' or immediate action with retry
     try {
-        const response = await retryFetch('/.netlify/functions/github-sync', {
+        const response = await retryFetch(SYNC_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, path, data })
