@@ -41,7 +41,14 @@ export class SyncManager {
     public startLastSyncTimer() {
         this.updateLastSyncDisplay();
         if (this.lastSyncUpdateInterval) clearInterval(this.lastSyncUpdateInterval);
-        this.lastSyncUpdateInterval = setInterval(() => this.updateLastSyncDisplay(), 30000);
+        // Only refresh the display when the settings tab is actually visible
+        this.lastSyncUpdateInterval = setInterval(() => {
+            if ((window as any).__appInBackground) return;
+            const settingsView = document.getElementById('settings-view');
+            if (settingsView && !settingsView.classList.contains('hidden')) {
+                this.updateLastSyncDisplay();
+            }
+        }, 60000);
     }
 
     public updateLastSyncDisplay() {
@@ -138,7 +145,8 @@ export class SyncManager {
 
     public startLiveSync() {
         if (this.liveSyncInterval) clearInterval(this.liveSyncInterval);
-        this.liveSyncInterval = setInterval(() => this.checkForUpdates(), 45000);
+        // 60s interval — enough for TOTP apps, saves battery vs 45s
+        this.liveSyncInterval = setInterval(() => this.checkForUpdates(), 60000);
     }
 
     public stopLiveSync() {
@@ -147,7 +155,10 @@ export class SyncManager {
     }
 
     private async checkForUpdates() {
+        // Skip when backgrounded, offline, or vault is locked
+        if ((window as any).__appInBackground) return;
         if (!navigator.onLine) return;
+        if (document.body.classList.contains('vault-is-locked')) return;
         if (document.activeElement?.tagName === 'INPUT' || document.querySelector('.modal.show')) return;
 
         this.setSyncing(true);

@@ -107,6 +107,8 @@ export class AccountManager {
     public startTimer() {
         if (this.host.timerInterval) clearInterval(this.host.timerInterval);
         this.host.timerInterval = setInterval(async () => {
+            // Skip tick when app is backgrounded — saves CPU/battery
+            if ((window as any).__appInBackground) return;
             const remaining = await (window as any).api.getRemainingSeconds();
             document.querySelectorAll<HTMLElement>('.account-card').forEach((card, i) => {
                 if (this.host.accounts[i]) this.updateCardOTP(card, this.host.accounts[i].secret, remaining);

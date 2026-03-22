@@ -3,6 +3,18 @@
    Pure neumorphic design system optimised for touch & small screens
    ───────────────────────────────────────────────────────────────────────────── */
 
+/* ── 0. BATTERY SAVER — pause all CSS animations when app is backgrounded ──── */
+/* app.ts sets --animation-play-state to 'paused' via appStateChange            */
+:root {
+    --animation-play-state: running;
+}
+
+*,
+*::before,
+*::after {
+    animation-play-state: var(--animation-play-state) !important;
+}
+
 /* ── 1. FOUNDATION ─────────────────────────────────────────────────────────── */
 
 body {

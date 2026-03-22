@@ -348,12 +348,21 @@ export class NavigationManager {
 
     public setupEventListeners() {
         // Card dropdown dismissal
+        const mainContent = document.querySelector('.main-content');
         document.addEventListener('click', (e) => {
             if (!(e.target as HTMLElement).closest('.card-actions')) closeAllCardDropdowns();
         });
-        const mainContent = document.querySelector('.main-content');
-        if (mainContent) mainContent.addEventListener('scroll', () => closeAllCardDropdowns(), { passive: true });
-        document.addEventListener('touchmove', () => closeAllCardDropdowns(), { passive: true });
+        // Debounced scroll/touchmove — only close dropdowns after movement settles
+        let dropdownScrollTimer: any = null;
+        const debouncedClose = () => {
+            if (dropdownScrollTimer) return;
+            dropdownScrollTimer = setTimeout(() => {
+                dropdownScrollTimer = null;
+                closeAllCardDropdowns();
+            }, 150);
+        };
+        if (mainContent) mainContent.addEventListener('scroll', debouncedClose, { passive: true });
+        document.addEventListener('touchmove', debouncedClose, { passive: true });
 
         // Tab navigation
         document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -511,10 +520,6 @@ export class NavigationManager {
         // Numpad + search overlay
         this.host.setupNumpad();
         this.setupSearchOverlay();
-
-        // Resize debounce (no-op)
-        let resizeTimer: any;
-        window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => {}, 250); });
 
         // Accent + theme init
         this.host.themeManager.loadAccentColor();

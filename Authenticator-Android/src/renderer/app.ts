@@ -9,6 +9,7 @@ import { ConnectivityManager } from './managers/ConnectivityManager';
 import { UpdateManager } from './managers/UpdateManager';
 
 let inactivityTimer: any = null;
+let inactivityDebounce: any = null;
 
 function initUpdateManager() {
     const showToast = (msg: string, type: 'info' | 'success' | 'error') => {
@@ -32,19 +33,24 @@ function initConnectivity() {
 }
 
 function resetInactivityTimer() {
-    if (inactivityTimer) clearTimeout(inactivityTimer);
-    const uid = (window as any).userId || 'default';
-    const timeoutMinutes = parseInt(localStorage.getItem(`${uid}_autolock`) || '0');
-    if (timeoutMinutes > 0) {
-        inactivityTimer = setTimeout(() => {
-            if ((window as any).ui) (window as any).ui.lockVault();
-        }, timeoutMinutes * 60 * 1000);
-    }
+    // Debounce: only actually reset the timer at most once every 2 seconds
+    if (inactivityDebounce) return;
+    inactivityDebounce = setTimeout(() => {
+        inactivityDebounce = null;
+        if (inactivityTimer) clearTimeout(inactivityTimer);
+        const uid = (window as any).userId || 'default';
+        const timeoutMinutes = parseInt(localStorage.getItem(`${uid}_autolock`) || '0');
+        if (timeoutMinutes > 0) {
+            inactivityTimer = setTimeout(() => {
+                if ((window as any).ui) (window as any).ui.lockVault();
+            }, timeoutMinutes * 60 * 1000);
+        }
+    }, 2000);
 }
 
 function initAutoLock() {
-    ['touchstart', 'touchmove', 'keydown', 'scroll'].forEach(evt => {
-        document.addEventListener(evt, resetInactivityTimer, true);
+    ['touchstart', 'keydown', 'scroll'].forEach(evt => {
+        document.addEventListener(evt, resetInactivityTimer, { passive: true, capture: true });
     });
     resetInactivityTimer();
 }
@@ -99,6 +105,16 @@ async function initCapacitor() {
         if (!canGoBack) {
             App.minimizeApp();
         }
+    });
+
+    // Track background state — used by timers/sync to skip work when not visible
+    App.addListener('appStateChange', ({ isActive }) => {
+        (window as any).__appInBackground = !isActive;
+        // Pause all CSS infinite animations when backgrounded to save GPU/CPU
+        document.documentElement.style.setProperty(
+            '--animation-play-state',
+            isActive ? 'running' : 'paused'
+        );
     });
 
     // appStateChange is handled by PrivacyManager.initAppStateListener()
