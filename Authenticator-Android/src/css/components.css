@@ -4646,6 +4646,7 @@ body.vault-is-locked .main-app-content,
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    position: relative;
 }
 
 .device-icon-vessel i {
@@ -4759,6 +4760,67 @@ body.vault-is-locked .main-app-content,
 .device-confirm-cancel:active,
 .device-confirm-ok:active {
     box-shadow: var(--nm-shadow-in-sm);
+}
+
+.device-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.device-platform-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    background: var(--bg-primary);
+    box-shadow: var(--nm-shadow-out-sm);
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+}
+
+.device-online-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 9px;
+    height: 9px;
+    background: #34c759;
+    border-radius: 50%;
+    border: 2px solid var(--bg-primary);
+}
+
+.device-icon-vessel {
+.device-rename-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    box-shadow: var(--nm-shadow-out-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.device-rename-btn:active {
+    box-shadow: var(--nm-shadow-in-sm);
+    color: var(--accent-primary);
+}
+
+.device-rename-form {
+    padding: 10px 4px 4px;
+}
+
+.device-rename-input {
+    font-size: 14px;
+    font-weight: 700;
+    height: 44px;
+    padding: 0 14px;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────

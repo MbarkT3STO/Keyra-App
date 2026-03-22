@@ -33,6 +33,7 @@ declare global {
             // Device Management
             getCurrentDeviceId(): string;
             revokeDevice(deviceId: string): Promise<{ success: boolean, message: string }>;
+            renameDevice(deviceId: string, newName: string): Promise<{ success: boolean, message: string }>;
 
             generateTOTP(secret: string): Promise<string>;
             saveAccount(acc: any): Promise<void>;

@@ -176,6 +176,7 @@ export const bridge = {
     // Device management
     getCurrentDeviceId: () => auth.getCurrentDeviceId(),
     revokeDevice: async (deviceId: string) => syncWrapper(() => auth.revokeDevice(deviceId), "Revoking Device", "UPDATING SECURITY"),
+    renameDevice: async (deviceId: string, newName: string) => syncWrapper(() => auth.renameDevice(deviceId, newName), "Renaming Device", "UPDATING SECURITY"),
 
     minimize: () => {},
     maximize: () => {},

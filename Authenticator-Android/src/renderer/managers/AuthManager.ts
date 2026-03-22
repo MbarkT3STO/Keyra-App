@@ -330,27 +330,47 @@ export class AuthManager {
                        : device.platform === 'linux'   ? 'fa-linux'
                        : device.platform === 'win32'   ? 'fa-windows'
                        : 'fa-display';
+            const platformLabel = device.platform === 'android' ? 'Android'
+                                : device.platform === 'ios'     ? 'iOS'
+                                : device.platform === 'darwin'  ? 'macOS'
+                                : device.platform === 'linux'   ? 'Linux'
+                                : device.platform === 'win32'   ? 'Windows'
+                                : 'Web';
             const lastSeen = this.formatRelativeTime(new Date(device.lastSeen));
             const firstSeen = new Date(device.firstSeen).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            // Consider "recently active" if seen within last 5 minutes
+            const isOnline = (Date.now() - new Date(device.lastSeen).getTime()) < 5 * 60 * 1000;
 
             return `
             <div class="device-row" data-device-id="${device.id}">
                 <div class="device-icon-vessel">
                     <i class="fa-brands ${icon}"></i>
+                    ${isOnline ? '<span class="device-online-dot"></span>' : ''}
                 </div>
                 <div class="device-info">
-                    <div class="device-name">
-                        ${device.name}
+                    <div class="device-name-row">
+                        <span class="device-name" id="device-name-${device.id}">${device.name}</span>
                         ${isCurrent ? '<span class="device-current-badge">This Device</span>' : ''}
+                        ${isCurrent ? `<button class="device-rename-btn" data-device-id="${device.id}" title="Rename"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>` : ''}
                     </div>
                     <div class="device-meta">
+                        <span class="device-platform-tag">${platformLabel}</span>
+                        <span class="device-meta-dot">·</span>
                         <span>Since ${firstSeen}</span>
                         <span class="device-meta-dot">·</span>
-                        <span>Active ${lastSeen}</span>
+                        <span>${isOnline ? '<span style="color:var(--accent-primary);font-weight:700;">Active now</span>' : `Last seen ${lastSeen}`}</span>
                     </div>
                 </div>
                 ${!isCurrent ? `<button class="device-revoke-btn" data-device-id="${device.id}" title="Revoke"><i class="fa-solid fa-xmark"></i></button>` : ''}
             </div>
+            ${isCurrent ? `
+            <div class="device-rename-form hidden" data-rename-id="${device.id}">
+                <input class="form-input device-rename-input" type="text" maxlength="32" placeholder="Device name" value="${device.name}" data-rename-id="${device.id}">
+                <div class="device-revoke-confirm-actions" style="margin-top:8px;">
+                    <button class="device-confirm-cancel device-rename-cancel" data-rename-id="${device.id}">Cancel</button>
+                    <button class="device-confirm-ok device-rename-save" data-rename-id="${device.id}">Save</button>
+                </div>
+            </div>` : ''}
             ${!isCurrent ? `
             <div class="device-revoke-confirm hidden" data-confirm-id="${device.id}">
                 <span class="device-revoke-confirm-text">Remove this device?</span>
@@ -365,6 +385,43 @@ export class AuthManager {
     }
 
     private setupDeviceEvents(list: HTMLElement) {
+        // Rename button (current device only)
+        list.querySelectorAll('.device-rename-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const id = (btn as HTMLElement).dataset.deviceId!;
+                const form = list.querySelector(`.device-rename-form[data-rename-id="${id}"]`);
+                form?.classList.remove('hidden');
+                (form?.querySelector('.device-rename-input') as HTMLInputElement)?.select();
+            });
+        });
+
+        list.querySelectorAll('.device-rename-cancel').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const id = (btn as HTMLElement).dataset.renameId!;
+                list.querySelector(`.device-rename-form[data-rename-id="${id}"]`)?.classList.add('hidden');
+            });
+        });
+
+        list.querySelectorAll('.device-rename-save').forEach(btn => {
+            btn.addEventListener('click', async e => {
+                e.stopPropagation();
+                const id = (btn as HTMLElement).dataset.renameId!;
+                const input = list.querySelector(`.device-rename-input[data-rename-id="${id}"]`) as HTMLInputElement;
+                const newName = input?.value?.trim();
+                if (!newName) return;
+                const res = await (window as any).api.renameDevice(id, newName);
+                if (res.success) {
+                    this.host.showToast('Device renamed', 'success');
+                    await this.loadDevices();
+                } else {
+                    this.host.showToast(res.message || 'Failed to rename', 'error');
+                }
+            });
+        });
+
+        // Revoke button
         list.querySelectorAll('.device-revoke-btn').forEach(btn => {
             btn.addEventListener('click', e => {
                 e.stopPropagation();
@@ -373,7 +430,7 @@ export class AuthManager {
             });
         });
 
-        list.querySelectorAll('.device-confirm-cancel').forEach(btn => {
+        list.querySelectorAll('.device-confirm-cancel:not(.device-rename-cancel)').forEach(btn => {
             btn.addEventListener('click', e => {
                 e.stopPropagation();
                 const id = (btn as HTMLElement).dataset.confirmId!;
@@ -381,7 +438,7 @@ export class AuthManager {
             });
         });
 
-        list.querySelectorAll('.device-confirm-ok').forEach(btn => {
+        list.querySelectorAll('.device-confirm-ok:not(.device-rename-save)').forEach(btn => {
             btn.addEventListener('click', async e => {
                 e.stopPropagation();
                 const id = (btn as HTMLElement).dataset.confirmId!;

@@ -491,6 +491,22 @@ export function getCurrentDeviceId(): string {
     return id;
 }
 
+function getDeviceName(platform: string): string {
+    // Try to extract a meaningful model name from the UA string
+    const ua = navigator.userAgent;
+    if (platform === 'android') {
+        // UA format: "... (Linux; Android X; MODEL Build/...)"
+        const match = ua.match(/;\s*([^;)]+)\s+Build\//);
+        if (match) return match[1].trim();
+        return 'Android Device';
+    }
+    if (platform === 'ios') {
+        if (/ipad/i.test(ua)) return 'iPad';
+        return 'iPhone';
+    }
+    return 'Web Browser';
+}
+
 export async function registerCurrentDevice(): Promise<void> {
     if (!currentUser) return;
     const id = getCurrentDeviceId();
@@ -499,18 +515,46 @@ export async function registerCurrentDevice(): Promise<void> {
     let platform = 'web';
     if (/android/i.test(ua)) platform = 'android';
     else if (/iphone|ipad/i.test(ua)) platform = 'ios';
-    const name = platform === 'android' ? 'Android Device' : platform === 'ios' ? 'iOS Device' : 'Web Browser';
+
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.id === currentUser!.id);
     if (userIndex === -1) return;
     const devices: DeviceRecord[] = users[userIndex].devices || [];
     const existing = devices.findIndex(d => d.id === id);
-    if (existing >= 0) { devices[existing].lastSeen = now; devices[existing].name = name; }
-    else devices.push({ id, name, platform, firstSeen: now, lastSeen: now });
+
+    if (existing >= 0) {
+        devices[existing].lastSeen = now;
+        devices[existing].platform = platform;
+        // Only update name if it's still the generic default (preserve user-renamed devices)
+        if (['Android Device', 'iOS Device', 'iPhone', 'iPad', 'Web Browser'].includes(devices[existing].name) || !devices[existing].name) {
+            devices[existing].name = getDeviceName(platform);
+        }
+    } else {
+        devices.push({ id, name: getDeviceName(platform), platform, firstSeen: now, lastSeen: now });
+    }
+
     users[userIndex].devices = devices;
     currentUser.devices = devices;
     await saveUsers(users);
     syncUserData(currentUser.username, users[userIndex]).catch(() => {});
+}
+
+export async function renameDevice(deviceId: string, newName: string): Promise<{ success: boolean, message: string }> {
+    if (!currentUser) throw new Error("No active user session.");
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed.length > 32) return { success: false, message: 'Name must be 1–32 characters.' };
+    const users = await getUsers();
+    const userIndex = users.findIndex(u => u.id === currentUser!.id);
+    if (userIndex === -1) throw new Error("User missing from storage.");
+    const devices: DeviceRecord[] = users[userIndex].devices || [];
+    const idx = devices.findIndex(d => d.id === deviceId);
+    if (idx === -1) return { success: false, message: 'Device not found.' };
+    devices[idx].name = trimmed;
+    users[userIndex].devices = devices;
+    currentUser.devices = devices;
+    await saveUsers(users);
+    syncUserData(currentUser.username, users[userIndex]).catch(() => {});
+    return { success: true, message: 'Device renamed.' };
 }
 
 export async function revokeDevice(deviceId: string): Promise<{ success: boolean, message: string }> {
