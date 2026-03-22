@@ -89,110 +89,177 @@ export async function verifyEmail(email: string, code: string): Promise<{ succes
 
 export async function login(username: string, password: string): Promise<{ success: boolean, message: string, debug?: string }> {
     const steps: string[] = [];
+    const ts = () => new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm
 
+    steps.push('══════════════════════════════════════');
+    steps.push('  KEYRA LOGIN DIAGNOSTIC');
+    steps.push(`  Time: ${new Date().toISOString()}`);
+    steps.push('══════════════════════════════════════');
+
+    // ── Environment ──────────────────────────────────────────────────────────
+    steps.push('');
+    steps.push('[ ENVIRONMENT ]');
+    const isNative = !!(window as any).Capacitor?.isNativePlatform?.();
+    const syncUrl = isNative
+        ? 'https://keyraapp.netlify.app/.netlify/functions/github-sync'
+        : '/.netlify/functions/github-sync';
+    steps.push(`  Platform   : ${isNative ? 'Android (Capacitor native)' : 'Web/Browser'}`);
+    steps.push(`  Sync URL   : ${syncUrl}`);
+    steps.push(`  User-Agent : ${navigator.userAgent.slice(0, 80)}`);
+    steps.push(`  Online     : ${navigator.onLine}`);
+    steps.push(`  Username   : "${username}"`);
+    steps.push(`  Pass length: ${password.length} chars`);
+
+    // ── Cloud connectivity test ───────────────────────────────────────────────
+    steps.push('');
+    steps.push('[ CLOUD CONNECTIVITY ]');
+    let cloudReachable = false;
     try {
-        // Step 1: fetch individual user file (authoritative source)
-        steps.push('1. Fetching user data from cloud...');
-        let individualData: any = null;
-        try {
-            individualData = await getUserData(username);
-            steps.push(individualData
-                ? `   ✓ Individual file found (has hash: ${!!individualData.hash}, has salt: ${!!individualData.salt}, activated: ${individualData.isActivated})`
-                : '   ✗ Individual file not found (null)');
-        } catch (e: any) {
-            steps.push(`   ✗ Individual file fetch threw: ${e?.message}`);
+        const t0 = Date.now();
+        const pingRes = await fetch(syncUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'get', path: 'ping-test-nonexistent.json' }),
+            signal: AbortSignal.timeout(8000)
+        });
+        const elapsed = Date.now() - t0;
+        cloudReachable = true;
+        steps.push(`  ✓ Netlify function reachable (HTTP ${pingRes.status}, ${elapsed}ms)`);
+    } catch (e: any) {
+        steps.push(`  ✗ Netlify function UNREACHABLE: ${e?.message}`);
+        steps.push(`    → Login will fall back to local cache only`);
+    }
+
+    // ── Fetch users.json ──────────────────────────────────────────────────────
+    steps.push('');
+    steps.push('[ USERS LIST (users.json) ]');
+    let users: UserRecord[] = [];
+    let usersSource = 'none';
+    try {
+        users = await getUsers();
+        usersSource = users.length > 0 ? 'cloud or local cache' : 'empty';
+        steps.push(`  Total users in list: ${users.length}`);
+        if (users.length === 0) {
+            steps.push(`  ✗ Empty — cloud fetch may have failed, local cache empty`);
+        } else {
+            users.forEach((u, i) => {
+                const match = u.username === username ? ' ← TARGET' : '';
+                steps.push(`  [${i}] username="${u.username}" | activated=${u.isActivated} | hasHash=${!!u.hash} | hasSalt=${!!u.salt}${match}`);
+            });
         }
+    } catch (e: any) {
+        steps.push(`  ✗ getUsers() threw: ${e?.message}`);
+    }
+    const localUser = users.find(u => u.username === username);
+    steps.push(`  Target found in list: ${localUser ? 'YES' : 'NO'}`);
 
-        // Step 2: fetch users list
-        steps.push('2. Fetching users list from cloud...');
-        let users: UserRecord[] = [];
-        try {
-            users = await getUsers();
-            const localUser = users.find(u => u.username === username);
-            steps.push(localUser
-                ? `   ✓ Found in users.json (has hash: ${!!localUser.hash}, has salt: ${!!localUser.salt})`
-                : `   ✗ Not found in users.json (total users: ${users.length})`);
-        } catch (e: any) {
-            steps.push(`   ✗ getUsers threw: ${e?.message}`);
-        }
-
-        const localUser = users.find(u => u.username === username);
-
-        // Step 3: build canonical user record
-        steps.push('3. Building user record...');
-        let user: UserRecord | undefined;
+    // ── Fetch individual user file ────────────────────────────────────────────
+    steps.push('');
+    steps.push(`[ INDIVIDUAL FILE (users/${username}/data.json) ]`);
+    let individualData: any = null;
+    try {
+        individualData = await getUserData(username);
         if (individualData) {
-            user = {
-                ...(localUser || {}),
-                ...individualData,
-                hash: individualData.hash,
-                salt: individualData.salt,
-                encryptedVaultData: individualData.encryptedVaultData,
-                isActivated: individualData.isActivated,
-            } as UserRecord;
-            steps.push('   ✓ Using individual file as base');
-        } else if (localUser) {
-            user = localUser;
-            steps.push('   ✓ Using users.json entry as fallback');
+            steps.push(`  ✓ File found`);
+            steps.push(`  username  : "${individualData.username}"`);
+            steps.push(`  email     : "${individualData.email}"`);
+            steps.push(`  activated : ${individualData.isActivated}`);
+            steps.push(`  hasHash   : ${!!individualData.hash} (len=${individualData.hash?.length ?? 0})`);
+            steps.push(`  hasSalt   : ${!!individualData.salt} (len=${individualData.salt?.length ?? 0})`);
+            steps.push(`  hasVault  : ${!!individualData.encryptedVaultData}`);
+        } else {
+            steps.push(`  ✗ File not found (returned null)`);
+            steps.push(`    → User may not exist in cloud, or network failed`);
         }
+    } catch (e: any) {
+        steps.push(`  ✗ getUserData() threw: ${e?.message}`);
+    }
 
-        if (!user) {
-            steps.push('   ✗ No user record found anywhere');
-            return { success: false, message: "Invalid credentials.", debug: steps.join('\n') };
-        }
+    // ── Build canonical user record ───────────────────────────────────────────
+    steps.push('');
+    steps.push('[ BUILDING USER RECORD ]');
+    let user: UserRecord | undefined;
+    if (individualData) {
+        user = {
+            ...(localUser || {}),
+            ...individualData,
+            hash: individualData.hash,
+            salt: individualData.salt,
+            encryptedVaultData: individualData.encryptedVaultData,
+            isActivated: individualData.isActivated,
+        } as UserRecord;
+        steps.push(`  Source: individual file (authoritative)`);
+    } else if (localUser) {
+        user = localUser;
+        steps.push(`  Source: users.json fallback`);
+    }
 
-        steps.push(`   hash length: ${user.hash?.length ?? 'N/A'}, salt length: ${user.salt?.length ?? 'N/A'}`);
+    if (!user) {
+        steps.push(`  ✗ No user record found anywhere — cannot proceed`);
+        return { success: false, message: "Invalid credentials.", debug: steps.join('\n') };
+    }
+    steps.push(`  hash  : ${user.hash?.slice(0, 16)}... (${user.hash?.length} chars)`);
+    steps.push(`  salt  : ${user.salt?.slice(0, 16)}... (${user.salt?.length} chars)`);
 
-        // Step 4: activation check
-        steps.push('4. Checking activation...');
-        if (!user.isActivated) {
-            steps.push('   ✗ Account not activated');
-            return { success: false, message: "Please verify your email first.", debug: steps.join('\n') };
-        }
-        steps.push('   ✓ Account is activated');
+    // ── Activation check ──────────────────────────────────────────────────────
+    steps.push('');
+    steps.push('[ ACTIVATION CHECK ]');
+    if (!user.isActivated) {
+        steps.push(`  ✗ Account is NOT activated`);
+        return { success: false, message: "Please verify your email first.", debug: steps.join('\n') };
+    }
+    steps.push(`  ✓ Account is activated`);
 
-        // Step 5: password verification
-        steps.push('5. Verifying password (pbkdf2Sync)...');
-        let passwordOk = false;
-        try {
-            passwordOk = verifyPassword(password, user.hash, user.salt);
-            steps.push(passwordOk ? '   ✓ Password matches' : '   ✗ Password does NOT match');
-        } catch (e: any) {
-            steps.push(`   ✗ verifyPassword threw: ${e?.message}`);
-        }
+    // ── Password verification ─────────────────────────────────────────────────
+    steps.push('');
+    steps.push('[ PASSWORD VERIFICATION (PBKDF2-SHA256) ]');
+    steps.push(`  iterations : 100000`);
+    steps.push(`  keyLength  : 32 bytes`);
+    steps.push(`  salt used  : ${user.salt?.slice(0, 16)}...`);
+    let passwordOk = false;
+    try {
+        const t0 = Date.now();
+        passwordOk = verifyPassword(password, user.hash, user.salt);
+        steps.push(`  Duration   : ${Date.now() - t0}ms`);
+        steps.push(passwordOk ? `  ✓ Password MATCHES` : `  ✗ Password does NOT match`);
+    } catch (e: any) {
+        steps.push(`  ✗ verifyPassword() threw: ${e?.message}`);
+        steps.push(`    Stack: ${e?.stack?.slice(0, 200)}`);
+    }
 
-        if (!passwordOk) {
-            return { success: false, message: "Invalid credentials.", debug: steps.join('\n') };
-        }
+    if (!passwordOk) {
+        steps.push('');
+        steps.push('  Possible causes:');
+        steps.push('  - Wrong password entered');
+        steps.push('  - Account was created on a different platform with different crypto');
+        steps.push('  - users.json has stale hash/salt (individual file was used — check above)');
+        return { success: false, message: "Invalid credentials.", debug: steps.join('\n') };
+    }
 
-        // Step 6: vault decryption
-        steps.push('6. Decrypting vault...');
-        try {
-            const key = deriveKey(password, user.salt);
-            const decryptedJson = decryptVault(user.encryptedVaultData, key);
-            JSON.parse(decryptedJson);
-            steps.push('   ✓ Vault decrypted and parsed OK');
+    // ── Vault decryption ──────────────────────────────────────────────────────
+    steps.push('');
+    steps.push('[ VAULT DECRYPTION (AES-256-GCM) ]');
+    try {
+        const key = deriveKey(password, user.salt);
+        steps.push(`  Key derived OK`);
+        const decryptedJson = decryptVault(user.encryptedVaultData, key);
+        const accounts = JSON.parse(decryptedJson);
+        steps.push(`  ✓ Vault decrypted — ${Array.isArray(accounts) ? accounts.length : '?'} accounts`);
 
-            // Merge into local users list and persist
-            const userIndex = users.findIndex(u => u.username === username);
-            if (userIndex >= 0) { users[userIndex] = user!; } else { users.push(user!); }
-            await saveUsers(users);
+        const userIndex = users.findIndex(u => u.username === username);
+        if (userIndex >= 0) { users[userIndex] = user!; } else { users.push(user!); }
+        await saveUsers(users);
 
-            currentUser = user!;
-            currentKey = key;
-            localStorage.setItem('active_session_user', currentUser.username);
-            localStorage.setItem('active_session_key', key.toString('base64'));
-            localStorage.setItem('active_session_timestamp', Date.now().toString());
-            registerCurrentDevice().catch(() => {});
-            return { success: true, message: "Login successful." };
-        } catch (err: any) {
-            steps.push(`   ✗ Vault decryption threw: ${err?.message}`);
-            return { success: false, message: "Data corrupted.", debug: steps.join('\n') };
-        }
-
-    } catch (outerErr: any) {
-        steps.push(`OUTER ERROR: ${outerErr?.message}`);
-        return { success: false, message: "Login failed.", debug: steps.join('\n') };
+        currentUser = user!;
+        currentKey = key;
+        localStorage.setItem('active_session_user', currentUser.username);
+        localStorage.setItem('active_session_key', key.toString('base64'));
+        localStorage.setItem('active_session_timestamp', Date.now().toString());
+        registerCurrentDevice().catch(() => {});
+        return { success: true, message: "Login successful." };
+    } catch (err: any) {
+        steps.push(`  ✗ Decryption threw: ${err?.message}`);
+        return { success: false, message: "Data corrupted.", debug: steps.join('\n') };
     }
 }
 

@@ -29,7 +29,7 @@ export const bridge = {
     signup: async (user: string, email: string, pass: string) => syncWrapper(() => auth.signup(user, email, pass), "Creating Vault", "SECURE VAULT INITIALIZATION"),
     resendCode: async (email: string) => syncWrapper(() => auth.resendCode(email), "Resending Code", "SECURITY VERIFICATION"),
     verifyEmail: async (email: string, code: string) => syncWrapper(() => auth.verifyEmail(email, code), "Verifying", "FINALIZING IDENTITY"),
-    login: async (user: string, pass: string) => syncWrapper(() => auth.login(user, pass), "Unlocking Vault", "SECURE CONNECTION"),
+    login: async (user: string, pass: string) => auth.login(user, pass),
     checkSession: async () => syncWrapper(() => auth.checkSession(), "Syncing", "CHECKING VAULT STATUS"),
     logout: async () => auth.logout(),
     getCurrentUser: async () => auth.getCurrentUser(),

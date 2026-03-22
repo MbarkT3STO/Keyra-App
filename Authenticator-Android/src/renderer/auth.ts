@@ -331,51 +331,70 @@ export async function setupAuthUI() {
     }
 
     function showLoginDebugModal(errorMessage: string, debug: string) {
-        const ui = (window as any).ui;
-        if (!ui) return;
-
         const escaped = debug
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
 
-        ui.showModal(`
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-icon-vessel danger">
-                        <i class="fa-solid fa-bug"></i>
-                    </div>
-                    <div class="modal-title-vessel">
-                        <h2 class="danger">Login Failed</h2>
-                        <p>${errorMessage}</p>
+        // Remove any existing debug modal
+        document.getElementById('login-debug-modal')?.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'login-debug-modal';
+        modal.style.cssText = `
+            position: fixed; inset: 0; z-index: 99999;
+            background: rgba(0,0,0,0.7);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+        `;
+        modal.innerHTML = `
+            <div style="
+                background: var(--bg-primary, #e0e5ec);
+                border-radius: 20px;
+                padding: 24px;
+                width: 100%; max-width: 480px;
+                max-height: 80vh;
+                overflow-y: auto;
+                box-shadow: 8px 8px 16px rgba(0,0,0,0.3), -4px -4px 12px rgba(255,255,255,0.1);
+            ">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                    <div style="
+                        width:44px; height:44px; border-radius:12px; flex-shrink:0;
+                        background: var(--bg-primary, #e0e5ec);
+                        box-shadow: 4px 4px 8px rgba(0,0,0,0.2), -2px -2px 6px rgba(255,255,255,0.1);
+                        display:flex; align-items:center; justify-content:center;
+                        color: #ff3b30; font-size:20px;
+                    "><i class="fa-solid fa-bug"></i></div>
+                    <div>
+                        <div style="font-weight:800; font-size:16px; color:var(--text-primary,#333);">Login Failed</div>
+                        <div style="font-size:13px; color:var(--text-secondary,#666); margin-top:2px;">${errorMessage}</div>
                     </div>
                 </div>
-                <div class="modal-divider"></div>
-                <div class="modal-body">
-                    <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase;">Diagnostic Log</p>
-                    <pre style="
-                        background: var(--bg-secondary);
-                        box-shadow: var(--nm-pressed);
-                        border-radius: var(--radius-md);
-                        padding: 14px;
-                        font-size: 11px;
-                        line-height: 1.7;
-                        color: var(--text-primary);
-                        white-space: pre-wrap;
-                        word-break: break-all;
-                        font-family: 'JetBrains Mono', monospace;
-                        max-height: 320px;
-                        overflow-y: auto;
-                    ">${escaped}</pre>
-                </div>
+                <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-secondary,#666); margin-bottom:8px;">Diagnostic Log</div>
+                <pre style="
+                    background: var(--bg-secondary, #d1d9e6);
+                    border-radius: 12px;
+                    padding: 12px;
+                    font-size: 11px;
+                    line-height: 1.7;
+                    color: var(--text-primary, #333);
+                    white-space: pre-wrap;
+                    word-break: break-all;
+                    font-family: 'JetBrains Mono', monospace;
+                    max-height: 260px;
+                    overflow-y: auto;
+                    margin: 0 0 16px 0;
+                ">${escaped}</pre>
+                <button id="login-debug-close" style="
+                    width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer;
+                    background: var(--accent-primary, #7c3aed);
+                    color: #fff; font-weight:800; font-size:15px;
+                    box-shadow: 4px 4px 8px rgba(0,0,0,0.2);
+                ">Close</button>
             </div>
-            <div class="modal-footer">
-                <button class="btn-primary" id="debug-modal-close">
-                    <i class="fa-solid fa-xmark"></i>
-                    Close
-                </button>
-            </div>
-        `);
-        document.getElementById('debug-modal-close')?.addEventListener('click', () => ui.hideModal());
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('login-debug-close')?.addEventListener('click', () => modal.remove());
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
     }
 }
