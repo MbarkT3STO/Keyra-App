@@ -154,8 +154,16 @@ export class AccountManager {
         card.className = 'account-card';
         card.style.animationDelay = `${index * 0.06}s`;
 
+        // Circumference for the 28px ring (r=11): 2π×11 ≈ 69.1
+        const ringCircumference = 69.1;
+
         card.innerHTML = `
             <div class="card-actions">
+                ${this.host.vaultViewStyle !== 'secure' ? `
+                <button class="btn-card-copy" title="Copy code">
+                    <i class="fa-solid fa-copy"></i>
+                </button>
+                ` : ''}
                 <button class="btn-card-more" title="More options">
                     <i class="fa-solid fa-ellipsis-vertical"></i>
                 </button>
@@ -181,36 +189,29 @@ export class AccountManager {
             </div>
             <div class="otp-box">
                 ${this.host.vaultViewStyle !== 'secure' ? `
-                <div class="otp-code ${this.host.privacyMode ? 'privacy-hidden' : ''}" data-id="${account.id}" style="cursor: pointer;" title="Click to copy">
+                <div class="otp-code ${this.host.privacyMode ? 'privacy-hidden' : ''}" data-id="${account.id}" title="Tap to copy">
                     ${this.host.privacyMode ? '••••••' : '------'}
                 </div>
+                ${this.host.vaultViewStyle !== 'unified' ? `
+                <div class="otp-timer-badge">
+                    <svg class="otp-timer-ring" viewBox="0 0 28 28">
+                        <circle cx="14" cy="14" r="11" fill="none" stroke="var(--bg-secondary)" stroke-width="3"></circle>
+                        <circle class="timer-progress" cx="14" cy="14" r="11" fill="none"
+                            stroke="var(--accent-primary)" stroke-width="3" stroke-linecap="round"
+                            stroke-dasharray="${ringCircumference}" stroke-dashoffset="0"
+                            transform="rotate(-90 14 14)"
+                            style="transition: stroke-dashoffset 1s linear, stroke 0.3s ease;"></circle>
+                    </svg>
+                    <span class="otp-timer-seconds">30</span>
+                </div>
+                ` : ''}
                 ` : `
-                <button class="btn-primary secure-view-btn" style="width: 100%; height: 50px;">
+                <button class="btn-primary secure-view-btn" style="width: 100%; height: 50px; border-radius: 14px;">
                     <i class="fa-solid fa-shield-halved"></i>
                     <span>Secure View</span>
                 </button>
                 `}
-                ${this.host.vaultViewStyle === 'compact' ? `
-                <div class="timer-linear-vessel" style="position: absolute; bottom: 0; left: 0; right: 0;">
-                    <div class="timer-linear-progress"></div>
-                </div>
-                ` : this.host.vaultViewStyle === 'unified' || this.host.vaultViewStyle === 'secure' ? '' : `
-                <div class="timer-container" style="position: absolute; right: 12px; width: 24px; height: 24px;">
-                    <svg viewBox="0 0 60 60">
-                        <circle cx="30" cy="30" r="26" fill="none" class="timer-bg" style="stroke: var(--bg-secondary); stroke-width: 4;"></circle>
-                        <circle class="timer-progress" cx="30" cy="30" r="26" fill="none" stroke-dasharray="163.36" stroke-dashoffset="0" style="stroke: var(--accent-primary); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear;"></circle>
-                    </svg>
-                </div>
-                `}
             </div>
-            ${this.host.vaultViewStyle !== 'secure' ? `
-            <div class="card-copy-row">
-                <button class="btn-primary copy-btn">
-                    <i class="fa-solid fa-copy"></i>
-                    <span class="btn-text">Secure Copy</span>
-                </button>
-            </div>
-            ` : ''}
         `;
 
         // 3-dot dropdown
@@ -222,6 +223,30 @@ export class AccountManager {
             closeAllCardDropdowns();
             if (!isOpen) { dropdown.classList.add('show'); moreBtn.classList.add('active'); }
         });
+
+        // Copy icon button in card-actions
+        const copyBtn = card.querySelector('.btn-card-copy') as HTMLElement;
+        if (copyBtn) {
+            copyBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (document.body.classList.contains('vault-is-locked')) {
+                    this.host.showToast('Vault Locked - Enter PIN to Access', 'error');
+                    return;
+                }
+                const otp = await (window as any).api.generateTOTP(account.secret);
+                await navigator.clipboard.writeText(otp);
+                Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+                const icon = copyBtn.querySelector('i') as HTMLElement;
+                icon.className = 'fa-solid fa-check';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    icon.className = 'fa-solid fa-copy';
+                    copyBtn.classList.remove('copied');
+                }, 1200);
+                this.host.showToast('Code copied!', 'success');
+                this.host.updateLastActivity('OTP copied');
+            });
+        }
 
         // OTP code tap to copy
         const codeElement = card.querySelector('.otp-code') as HTMLElement;
@@ -237,37 +262,12 @@ export class AccountManager {
         // Full card tap to copy
         card.addEventListener('click', async (e) => {
             const target = e.target as HTMLElement;
-            if (target.closest('.card-actions, .copy-btn, .secure-view-btn, .otp-code')) return;
+            if (target.closest('.card-actions, .secure-view-btn, .otp-code')) return;
             if (document.body.classList.contains('vault-is-locked')) return;
             if (this.host.vaultViewStyle === 'secure') return;
             const otp = await (window as any).api.generateTOTP(account.secret);
             this.copyOTPToClipboard(otp, (card.querySelector('.otp-code') as HTMLElement) || card);
         });
-
-        // Copy button
-        const copyBtn = card.querySelector('.copy-btn') as HTMLElement;
-        if (copyBtn) copyBtn.onclick = async () => {
-            if (document.body.classList.contains('vault-is-locked')) {
-                this.host.showToast('Vault Locked - Enter PIN to Access', 'error');
-                return;
-            }
-            const otpCode = await (window as any).api.generateTOTP(account.secret);
-            await navigator.clipboard.writeText(otpCode);
-            Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
-            const ripple = document.createElement('span');
-            ripple.className = 'copy-ripple';
-            copyBtn.appendChild(ripple);
-            copyBtn.classList.add('copied');
-            const btnText = copyBtn.querySelector('.btn-text');
-            const originalText = btnText?.textContent;
-            if (btnText) btnText.textContent = 'Copied!';
-            setTimeout(() => {
-                ripple.remove();
-                copyBtn.classList.remove('copied');
-                if (btnText) btnText.textContent = originalText || 'Secure Copy';
-            }, 700);
-            this.host.showToast('Code copied!', 'success');
-        };
 
         card.querySelector('.edit-btn')?.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -315,29 +315,30 @@ export class AccountManager {
             }
         }
 
+        const isWarning = remainingSeconds <= 10 && remainingSeconds > 5;
+        const isDanger = remainingSeconds <= 5;
+        const strokeColor = isDanger ? '#ff3b30' : isWarning ? '#ff9500' : 'var(--accent-primary)';
+
+        // Ring + seconds — only in compact mode (unified uses global bar, secure has none)
+        if (this.host.vaultViewStyle === 'compact') {
+            const ringCircumference = 69.1;
+            const progressCircle = card.querySelector('.timer-progress') as SVGCircleElement;
+            if (progressCircle) {
+                progressCircle.style.strokeDashoffset = (ringCircumference * (1 - remainingSeconds / 30)).toString();
+                progressCircle.style.stroke = strokeColor;
+            }
+            const secondsEl = card.querySelector('.otp-timer-seconds') as HTMLElement;
+            if (secondsEl) secondsEl.textContent = remainingSeconds.toString();
+        }
+
+        // Global bar — unified mode only
         if (this.host.vaultViewStyle === 'unified') {
             const globalBar = document.getElementById('global-otp-timer') as HTMLElement;
             if (globalBar) {
-                const scale = remainingSeconds / 30;
-                globalBar.style.transform = `scaleX(${scale})`;
-                globalBar.classList.toggle('timer-warning', remainingSeconds <= 10 && remainingSeconds > 5);
-                globalBar.classList.toggle('timer-danger', remainingSeconds <= 5);
+                globalBar.style.transform = `scaleX(${remainingSeconds / 30})`;
+                globalBar.classList.toggle('timer-warning', isWarning);
+                globalBar.classList.toggle('timer-danger', isDanger);
                 if (remainingSeconds > 10) globalBar.style.backgroundColor = '';
-            }
-        } else if (this.host.vaultViewStyle === 'compact') {
-            const progressBar = card.querySelector('.timer-linear-progress') as HTMLElement;
-            if (progressBar) {
-                const scale = remainingSeconds / 30;
-                progressBar.style.transform = `scaleX(${scale})`;
-                progressBar.classList.toggle('timer-warning', remainingSeconds <= 10 && remainingSeconds > 5);
-                progressBar.classList.toggle('timer-danger', remainingSeconds <= 5);
-                if (remainingSeconds > 10) progressBar.style.backgroundColor = '';
-            }
-        } else {
-            const progressCircle = card.querySelector('.timer-progress') as HTMLElement;
-            if (progressCircle) {
-                progressCircle.style.strokeDashoffset = (163.36 * (1 - remainingSeconds / 30)).toString();
-                progressCircle.style.stroke = remainingSeconds <= 5 ? '#ff3b30' : remainingSeconds <= 10 ? '#ff9500' : 'var(--accent-primary)';
             }
         }
     }

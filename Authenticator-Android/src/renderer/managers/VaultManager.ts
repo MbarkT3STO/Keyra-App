@@ -68,71 +68,112 @@ export class VaultManager {
         const remaining = await (window as any).api.getRemainingSeconds();
         const circumference = 2 * Math.PI * 54;
         const offset = circumference - (remaining / 30) * circumference;
+        const icon = this.host.getIcon(account.issuer);
 
         const content = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-icon-vessel">
-                        <i class="${this.host.getIcon(account.issuer)}"></i>
+            <div class="otp-modal-sheet">
+                <!-- Service header -->
+                <div class="otp-modal-service-row">
+                    <div class="otp-modal-service-icon">
+                        <i class="${icon}"></i>
                     </div>
-                    <div class="modal-title-vessel">
-                        <h2>${account.issuer}</h2>
-                        <p>${account.account || 'VAULT TOKEN'}</p>
+                    <div class="otp-modal-service-info">
+                        <div class="otp-modal-service-name">${account.issuer}</div>
+                        <div class="otp-modal-service-account">${account.account || ''}</div>
                     </div>
                 </div>
-                <div class="modal-divider"></div>
-                <div class="modal-body">
-                    <div class="otp-modal-ring-vessel">
+
+                <!-- Code hero -->
+                <div class="otp-modal-code-hero" id="otp-modal-code-hero" title="Tap to copy">
+                    <div class="otp-modal-code-display" id="otp-modal-code">${formatted}</div>
+                    <div class="otp-modal-copy-hint" id="otp-modal-copy-hint">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>Tap to copy</span>
+                    </div>
+                </div>
+
+                <!-- Timer row -->
+                <div class="otp-modal-timer-row">
+                    <div class="otp-modal-ring-wrap">
                         <svg viewBox="0 0 120 120" class="otp-modal-svg">
-                            <circle cx="60" cy="60" r="54" fill="none" stroke="var(--bg-secondary)" stroke-width="5"></circle>
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="var(--bg-secondary)" stroke-width="6"></circle>
                             <circle class="otp-modal-circle" cx="60" cy="60" r="54" fill="none"
                                 stroke="var(--accent-primary)" stroke-width="7" stroke-linecap="round"
                                 stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
-                                style="transition: stroke-dashoffset 1s linear;"></circle>
+                                style="transition: stroke-dashoffset 1s linear, stroke 0.3s ease;"></circle>
                         </svg>
-                        <div class="otp-modal-ring-inner">
-                            <div class="otp-modal-code">${formatted}</div>
-                            <div class="otp-modal-timer">${remaining}s</div>
-                        </div>
+                        <div class="otp-modal-ring-seconds" id="otp-modal-seconds">${remaining}</div>
+                    </div>
+                    <div class="otp-modal-timer-info">
+                        <div class="otp-modal-timer-label">Refreshes in</div>
+                        <div class="otp-modal-timer-value" id="otp-modal-timer-text">${remaining} seconds</div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary otp-modal-copy-btn">
-                    <i class="fa-solid fa-copy"></i>
-                    Copy Code
-                </button>
-                <button class="user-button" id="otp-modal-close">Close</button>
+
+                <!-- Actions -->
+                <div class="otp-modal-actions">
+                    <button class="otp-modal-copy-btn" id="otp-modal-copy-btn">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>Copy Code</span>
+                    </button>
+                    <button class="otp-modal-close-btn" id="otp-modal-close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
             </div>
         `;
+
         this.host.showModal(content);
 
-        document.getElementById('otp-modal-close')?.addEventListener('click', () => this.host.hideModal());
-        document.querySelector('.otp-modal-copy-btn')?.addEventListener('click', async () => {
+        // Auto-copy on open
+        navigator.clipboard.writeText(otp).catch(() => {});
+
+        const doCopy = async () => {
             const code = await (window as any).api.generateTOTP(account.secret);
             await navigator.clipboard.writeText(code);
+            const hint = document.getElementById('otp-modal-copy-hint');
+            const copyBtn = document.getElementById('otp-modal-copy-btn');
+            if (hint) { hint.innerHTML = '<i class="fa-solid fa-check"></i><span>Copied!</span>'; hint.classList.add('copied'); }
+            if (copyBtn) { copyBtn.innerHTML = '<i class="fa-solid fa-check"></i><span>Copied!</span>'; copyBtn.classList.add('copied'); }
+            setTimeout(() => {
+                if (hint) { hint.innerHTML = '<i class="fa-solid fa-copy"></i><span>Tap to copy</span>'; hint.classList.remove('copied'); }
+                if (copyBtn) { copyBtn.innerHTML = '<i class="fa-solid fa-copy"></i><span>Copy Code</span>'; copyBtn.classList.remove('copied'); }
+            }, 1500);
             this.host.showToast('Code copied!', 'success');
-        });
+        };
+
+        document.getElementById('otp-modal-code-hero')?.addEventListener('click', doCopy);
+        document.getElementById('otp-modal-copy-btn')?.addEventListener('click', doCopy);
+        document.getElementById('otp-modal-close')?.addEventListener('click', () => this.host.hideModal());
 
         const modalInterval = setInterval(async () => {
             const overlay = document.getElementById('modal-overlay');
             if (!overlay?.classList.contains('show')) { clearInterval(modalInterval); return; }
+
             const rem = await (window as any).api.getRemainingSeconds();
             const newOtp = await (window as any).api.generateTOTP(account.secret);
             const newFormatted = newOtp.substring(0, 3) + ' ' + newOtp.substring(3);
-            const codeEl = overlay.querySelector('.otp-modal-code') as HTMLElement;
-            const timerEl = overlay.querySelector('.otp-modal-timer') as HTMLElement;
+
+            const codeEl = document.getElementById('otp-modal-code');
+            const secondsEl = document.getElementById('otp-modal-seconds');
+            const timerText = document.getElementById('otp-modal-timer-text');
             const circle = overlay.querySelector('.otp-modal-circle') as SVGCircleElement;
+
             if (codeEl) codeEl.textContent = newFormatted;
-            if (timerEl) {
-                timerEl.textContent = `${rem}s`;
-                timerEl.style.color = rem <= 5 ? '#ff3b30' : 'var(--text-secondary)';
-            }
+            if (secondsEl) secondsEl.textContent = String(rem);
+            if (timerText) timerText.textContent = `${rem} second${rem !== 1 ? 's' : ''}`;
+
+            const isDanger = rem <= 5;
+            const isWarning = rem <= 10 && rem > 5;
+            const color = isDanger ? '#ff3b30' : isWarning ? '#ff9500' : 'var(--accent-primary)';
+
             if (circle) {
                 const circ = 2 * Math.PI * 54;
                 circle.style.strokeDashoffset = String(circ - (rem / 30) * circ);
-                circle.style.stroke = rem <= 5 ? '#ff3b30' : 'var(--accent-primary)';
+                circle.style.stroke = color;
             }
+            if (secondsEl) secondsEl.style.color = color;
+            if (timerText) timerText.style.color = color;
         }, 1000);
     }
 

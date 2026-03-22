@@ -7,7 +7,7 @@
     pointer-events: none;
 }
 
-.vault-is-locked .copy-btn,
+.vault-is-locked .btn-card-copy,
 .vault-is-locked .edit-btn,
 .vault-is-locked .delete-btn {
     opacity: 0.3;
@@ -554,13 +554,13 @@ i.fa-regular {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   SCIENTIFIC ACCOUNT CARDS - COMPACT MODE
+   VAULT ACCOUNT CARDS — Android-optimized
    ───────────────────────────────────────────────────────────────────────────── */
 
 .accounts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
     width: 100%;
     max-width: 100%;
 }
@@ -568,53 +568,53 @@ i.fa-regular {
 .account-card {
     background: var(--bg-primary);
     box-shadow: var(--nm-shadow-out);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    transition: all var(--transition-medium);
+    border-radius: 20px;
+    padding: 18px;
+    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
     position: relative;
     overflow: visible;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
     border: none;
-    animation: cardEntrance 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+    animation: cardEntrance 0.5s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
     opacity: 0;
 }
 
-.account-card:hover {
-    transform: none;
-    box-shadow:
-        10px 10px 22px var(--nm-shadow-dark),
-        -10px -10px 22px var(--nm-shadow-light);
+/* Clip only the inner content (otp-box etc), not the dropdown */
+.account-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    pointer-events: none;
 }
 
 .account-card:active {
-    transform: scale(0.985);
+    transform: scale(0.982);
     box-shadow: var(--nm-shadow-in-sm);
 }
 
+/* ── Card header row ── */
 .account-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
+    padding-right: 96px; /* room for copy(34) + gap(8) + 3-dot(34) + right-padding(18) + 2px */
+    margin-bottom: 14px;
 }
 
 .account-icon {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     background: var(--bg-primary);
-    border-radius: var(--radius-lg);
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--accent-primary);
     box-shadow: var(--nm-shadow-in-sm);
     flex-shrink: 0;
-    transition: all 0.3s ease;
-}
-
-.account-card:hover .account-icon {
-    box-shadow: var(--nm-shadow-in);
 }
 
 .account-icon i {
@@ -622,18 +622,102 @@ i.fa-regular {
     line-height: 1;
 }
 
-/* Card 3-dot menu */
-.card-actions {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 10;
+.service-name {
+    font-weight: 850;
+    font-size: 17px;
+    color: var(--text-primary);
+    letter-spacing: -0.4px;
+    line-height: 1.2;
 }
 
+.account-identity {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    opacity: 0.65;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 2px;
+}
+
+/* ── OTP display area ── */
+.otp-box {
+    background: var(--bg-primary);
+    padding: 10px 16px 12px;
+    border-radius: 14px;
+    box-shadow: var(--nm-shadow-in);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    min-height: 56px;
+    margin-bottom: 14px;
+    overflow: hidden;
+}
+
+.otp-code {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--accent-primary);
+    font-family: var(--font-heading);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    user-select: all;
+    line-height: 1;
+}
+
+.otp-code:active {
+    opacity: 0.6;
+}
+
+/* Timer badge inside otp-box */
+.otp-timer-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.otp-timer-seconds {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.otp-timer-ring {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.otp-timer-ring circle {
+    transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+}
+
+/* ── Card top-right action cluster ── */
+.card-actions {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* height must be exactly the button height — dropdown must not affect it */
+    height: 34px;
+}
+
+.btn-card-copy,
 .btn-card-more {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-sm);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -643,11 +727,14 @@ i.fa-regular {
     transition: all var(--transition-fast);
     font-size: 14px;
     line-height: 1;
+    flex-shrink: 0;
+    position: static; /* no relative — dropdown anchors to .card-actions */
 }
 
-.btn-card-more:hover {
-    color: var(--accent-primary);
-    box-shadow: var(--nm-shadow-out);
+.btn-card-copy:active,
+.btn-card-copy.copied {
+    box-shadow: var(--nm-shadow-in-sm);
+    color: #34c759;
 }
 
 .btn-card-more:active,
@@ -658,16 +745,16 @@ i.fa-regular {
 
 .card-dropdown {
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 8px); /* below .card-actions, not the button */
     right: 0;
-    min-width: 160px;
+    min-width: 170px;
     background: var(--bg-primary);
     border-radius: var(--radius-md);
     box-shadow:
         10px 10px 24px var(--nm-shadow-dark),
         -10px -10px 24px var(--nm-shadow-light);
     padding: 6px;
-    z-index: 1000;
+    z-index: 9999;
     opacity: 0;
     visibility: hidden;
     transform: translateY(6px) scale(0.94);
@@ -676,26 +763,29 @@ i.fa-regular {
         opacity 0.18s ease,
         transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1),
         visibility 0.18s ease;
+    /* must NOT participate in flex layout */
+    pointer-events: none;
 }
 
 .card-dropdown.show {
     opacity: 1;
     visibility: visible;
     transform: translateY(0) scale(1);
+    pointer-events: auto;
 }
 
 .card-dropdown-item {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 11px 14px;
+    padding: 12px 14px;
     border-radius: var(--radius-sm);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 750;
     color: var(--text-secondary);
-    transition: box-shadow 0.15s ease, color 0.15s ease, transform 0.12s ease;
     cursor: pointer;
-    min-height: 44px;
+    min-height: 48px;
+    transition: box-shadow 0.15s ease, color 0.15s ease;
 }
 
 .card-dropdown-item i {
@@ -703,104 +793,15 @@ i.fa-regular {
     width: 18px;
     text-align: center;
     flex-shrink: 0;
-    line-height: 1;
-}
-
-.card-dropdown-item:hover {
-    background: var(--bg-primary);
-    box-shadow: var(--nm-shadow-in-sm);
-    color: var(--accent-primary);
 }
 
 .card-dropdown-item:active {
-    transform: scale(0.96);
     box-shadow: var(--nm-shadow-in-sm);
-}
-
-.card-dropdown-item.danger {
-    color: var(--text-secondary);
-}
-
-.card-dropdown-item.danger:hover {
-    color: #ff3b30;
-    background: var(--bg-primary);
-    box-shadow: var(--nm-shadow-in-sm);
+    color: var(--accent-primary);
 }
 
 .card-dropdown-item.danger:active {
-    transform: scale(0.96);
-}
-
-/* Card copy row + copy button */
-.card-copy-row {
-    display: flex;
-    gap: 10px;
-}
-
-.copy-btn {
-    flex: 1;
-    height: 46px !important;
-    font-size: 14px !important;
-    border-radius: var(--radius-full) !important;
-    box-shadow:
-        6px 6px 14px var(--nm-shadow-dark),
-        -6px -6px 14px var(--nm-shadow-light) !important;
-}
-
-.copy-btn:hover {
-    transform: none !important;
-    box-shadow:
-        8px 8px 18px var(--nm-shadow-dark),
-        -8px -8px 18px var(--nm-shadow-light) !important;
-}
-
-.copy-btn:active {
-    box-shadow: var(--nm-shadow-in-sm) !important;
-    transform: scale(0.97) !important;
-}
-
-.service-name {
-    font-weight: 850;
-    font-size: 16px;
-    color: var(--text-primary);
-    letter-spacing: -0.4px;
-}
-
-.account-identity {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-weight: 600;
-    opacity: 0.7;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.otp-box {
-    background: var(--bg-primary);
-    padding: 12px 18px;
-    border-radius: var(--radius-md);
-    box-shadow: var(--nm-shadow-in);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    min-height: 54px;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.otp-code {
-    font-size: 1.85rem;
-    font-weight: 900;
-    letter-spacing: 3px;
-    color: var(--accent-primary);
-    font-family: var(--font-heading);
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    user-select: all;
+    color: #ff3b30;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -4091,20 +4092,6 @@ body.vault-is-locked .main-app-content,
     transition: transform 1s linear, background-color 0.3s ease;
 }
 
-/* Compact mode: linear bar inside otp-box */
-.otp-box {
-    position: relative;
-}
-
-.otp-box .timer-linear-vessel {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-    height: 4px;
-}
-
 /* Secure view button */
 .secure-view-btn {
     background: var(--bg-primary) !important;
@@ -4337,8 +4324,8 @@ body.vault-is-locked .main-app-content,
 .skeleton-card {
     background: var(--bg-primary);
     box-shadow: var(--nm-shadow-out);
-    border-radius: var(--radius-lg);
-    padding: clamp(var(--space-md), 4vw, var(--space-lg));
+    border-radius: 20px;
+    padding: 18px;
     position: relative;
     overflow: hidden;
     animation: cardEntrance 0.4s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
@@ -4348,16 +4335,18 @@ body.vault-is-locked .main-app-content,
 .skeleton-header {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
+    gap: 14px;
+    margin-bottom: 14px;
+    padding-right: 36px;
 }
 
 .skeleton-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-md);
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     background: var(--bg-secondary);
     box-shadow: var(--nm-shadow-in-sm);
+    flex-shrink: 0;
 }
 
 .skeleton-text-group {
@@ -4368,33 +4357,35 @@ body.vault-is-locked .main-app-content,
 }
 
 .skeleton-text {
-    height: 16px;
+    height: 14px;
     border-radius: var(--radius-sm);
     background: var(--bg-secondary);
 }
 
 .skeleton-text.title {
-    width: 60%;
-    height: 18px;
+    width: 55%;
+    height: 17px;
 }
 
 .skeleton-text.subtitle {
-    width: 40%;
-    height: 14px;
+    width: 38%;
+    height: 12px;
 }
 
 .skeleton-otp {
-    height: 60px;
-    border-radius: var(--radius-md);
+    height: 56px;
+    border-radius: 14px;
     background: var(--bg-secondary);
-    margin-bottom: var(--space-md);
+    margin-bottom: 14px;
     box-shadow: var(--nm-shadow-in-sm);
 }
 
 .skeleton-button {
-    height: 44px;
-    border-radius: var(--radius-md);
+    height: 14px;
+    width: 40%;
+    border-radius: var(--radius-sm);
     background: var(--bg-secondary);
+    margin-top: 4px;
 }
 
 

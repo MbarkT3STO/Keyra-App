@@ -486,32 +486,10 @@ input, textarea {
         flex-shrink: 0;
     }
 
-    /* Copy button — full width, taller touch target */
-    .copy-btn {
-        height: var(--mobile-btn-h) !important;
-        border-radius: 14px !important;
-        font-size: 14px !important;
-        box-shadow:
-            6px 6px 14px var(--nm-shadow-dark),
-            -6px -6px 14px var(--nm-shadow-light) !important;
-    }
-
-    .copy-btn:hover {
-        transform: none !important;
-        box-shadow:
-            6px 6px 14px var(--nm-shadow-dark),
-            -6px -6px 14px var(--nm-shadow-light) !important;
-    }
-
-    .copy-btn:active {
-        box-shadow: var(--nm-shadow-in-sm) !important;
-        transform: scale(0.97) !important;
-    }
-
     /* 3-dot menu */
     .btn-card-more {
-        width: 36px;
-        height: 36px;
+        width: 34px;
+        height: 34px;
     }
 }
 
@@ -2397,61 +2375,221 @@ body.keyboard-open .auth-overlay {
     }
 }
 
-/* ── 27. OTP MODAL RING ──────────────────────────────────────────────────────── */
+/* ── 27. OTP SECURE VIEW MODAL ───────────────────────────────────────────────── */
 
-.otp-modal-ring-vessel {
-    position: relative;
-    width: 180px;
-    height: 180px;
-    margin: 0 auto 4px;
+.otp-modal-sheet {
+    padding: 12px 24px calc(env(safe-area-inset-bottom) + 28px);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Service row */
+.otp-modal-service-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.otp-modal-service-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: var(--bg-primary);
+    box-shadow: var(--nm-shadow-in-sm);
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--accent-primary);
+    flex-shrink: 0;
+}
+
+.otp-modal-service-icon i {
+    font-size: 24px;
+}
+
+.otp-modal-service-name {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+
+.otp-modal-service-account {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    margin-top: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Code hero — the big tappable area */
+.otp-modal-code-hero {
+    background: var(--bg-primary);
+    box-shadow: var(--nm-shadow-in);
+    border-radius: 20px;
+    padding: 28px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: box-shadow var(--transition-fast);
+    margin-bottom: 20px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.otp-modal-code-hero:active {
+    box-shadow: var(--nm-shadow-in-sm);
+}
+
+.otp-modal-code-display {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: var(--accent-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+}
+
+.otp-modal-copy-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    transition: color 0.2s ease;
+}
+
+.otp-modal-copy-hint.copied {
+    color: #34c759;
+}
+
+.otp-modal-copy-hint i {
+    font-size: 11px;
+}
+
+/* Timer row */
+.otp-modal-timer-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 0 4px;
+}
+
+.otp-modal-ring-wrap {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
 }
 
 .otp-modal-svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    width: 52px;
+    height: 52px;
     transform: rotate(-90deg);
 }
 
-.otp-modal-ring-inner {
-    position: relative;
-    text-align: center;
-}
-
-.otp-modal-code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 28px;
-    font-weight: 900;
-    letter-spacing: 6px;
-    color: var(--accent-primary);
-    line-height: 1;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-}
-
-.otp-modal-timer {
+.otp-modal-ring-seconds {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 13px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    margin-top: 6px;
+    font-weight: 900;
+    color: var(--accent-primary);
+    font-variant-numeric: tabular-nums;
     transition: color 0.3s ease;
 }
 
-@media (max-width: 768px) {
-    .otp-modal-ring-vessel {
-        width: 160px;
-        height: 160px;
-    }
-
-    .otp-modal-code {
-        font-size: 24px;
-        letter-spacing: 5px;
-    }
+.otp-modal-timer-info {
+    flex: 1;
+    min-width: 0;
 }
+
+.otp-modal-timer-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 3px;
+}
+
+.otp-modal-timer-value {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--accent-primary);
+    transition: color 0.3s ease;
+}
+
+/* Actions row */
+.otp-modal-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.otp-modal-copy-btn {
+    flex: 1;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--bg-primary);
+    box-shadow: var(--nm-shadow-out);
+    color: var(--accent-primary);
+    font-size: 15px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all var(--transition-fast);
+    letter-spacing: 0.2px;
+}
+
+.otp-modal-copy-btn:active {
+    box-shadow: var(--nm-shadow-in-sm);
+    transform: scale(0.97);
+}
+
+.otp-modal-copy-btn.copied {
+    color: #34c759;
+}
+
+.otp-modal-close-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--bg-primary);
+    box-shadow: var(--nm-shadow-out);
+    color: var(--text-tertiary);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.otp-modal-close-btn:active {
+    box-shadow: var(--nm-shadow-in-sm);
+    color: #ff3b30;
+    transform: scale(0.95);
+}
+
 
 /* ── 28. MODAL BACK BUTTON ───────────────────────────────────────────────────── */
 
