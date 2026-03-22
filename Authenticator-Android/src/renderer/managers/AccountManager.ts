@@ -112,12 +112,10 @@ export class AccountManager {
     public startTimer() {
         if (this.host.timerInterval) clearInterval(this.host.timerInterval);
         this.host.timerInterval = setInterval(async () => {
-            // Skip tick when app is backgrounded — saves CPU/battery
             if ((window as any).__appInBackground) return;
             const remaining = await (window as any).api.getRemainingSeconds();
 
             if (this.host.vaultViewStyle === 'focus') {
-                // Update focus card
                 const focusCard = document.getElementById('focus-main-card');
                 if (focusCard) {
                     const secret = focusCard.dataset.secret;
@@ -132,7 +130,7 @@ export class AccountManager {
     }
 
     public clearAllOTPCodes() {
-        document.querySelectorAll('.otp-code, .focus-card-otp').forEach(el => { el.textContent = '••••••'; });
+        document.querySelectorAll('.otp-code, .focus-card-otp, .fv-otp-code').forEach(el => { el.textContent = '••••••'; });
     }
 
     // ─── Private helpers ───────────────────────────────────────────────────────
@@ -174,160 +172,201 @@ export class AccountManager {
     private renderFocusView(grid: HTMLElement, accounts: any[]) {
         this.focusIndex = Math.min(this.focusIndex, accounts.length - 1);
         const active = accounts[this.focusIndex];
+        const ringC = 408.41; // r=65: 2π×65
 
-        // ── Big focus card ──
-        const ringCircumference = 113.1; // r=18: 2π×18
-        const focusCard = document.createElement('div');
-        focusCard.id = 'focus-main-card';
-        focusCard.className = 'focus-main-card';
-        focusCard.dataset.secret = active.secret;
-        focusCard.dataset.index = String(this.focusIndex);
-        focusCard.innerHTML = `
-            <div class="focus-card-header">
-                <div class="focus-card-icon">
+        // ── Stage wrapper ──
+        const stage = document.createElement('div');
+        stage.className = 'fv-stage';
+        stage.id = 'focus-main-card';
+        stage.dataset.secret = active.secret;
+
+        stage.innerHTML = `
+            <!-- Identity -->
+            <div class="fv-identity">
+                <div class="fv-icon">
                     <i class="${this.getIcon(active.issuer)}"></i>
                 </div>
-                <div class="focus-card-identity">
-                    <div class="focus-card-name">${active.issuer}</div>
-                    <div class="focus-card-account">${active.account}</div>
-                </div>
-                <div class="focus-card-timer">
-                    <svg class="focus-timer-ring" viewBox="0 0 44 44">
-                        <circle cx="22" cy="22" r="18" fill="none" stroke="var(--bg-secondary)" stroke-width="3.5"></circle>
-                        <circle class="focus-timer-progress" cx="22" cy="22" r="18" fill="none"
-                            stroke="var(--accent-primary)" stroke-width="3.5" stroke-linecap="round"
-                            stroke-dasharray="${ringCircumference}" stroke-dashoffset="0"
-                            transform="rotate(-90 22 22)"
-                            style="transition: stroke-dashoffset 1s linear, stroke 0.3s ease;"></circle>
-                    </svg>
-                    <span class="focus-timer-seconds">30</span>
+                <div class="fv-name">${active.issuer}</div>
+                <div class="fv-account">${active.account}</div>
+            </div>
+
+            <!-- OTP ring + code -->
+            <div class="fv-ring-wrap">
+                <svg class="fv-ring-svg" viewBox="0 0 160 160">
+                    <circle class="fv-ring-track" cx="80" cy="80" r="65"/>
+                    <circle class="fv-ring-progress" cx="80" cy="80" r="65"
+                        stroke-dasharray="${ringC}"
+                        stroke-dashoffset="0"
+                        transform="rotate(-90 80 80)"/>
+                </svg>
+                <div class="fv-otp-inner">
+                    <div class="fv-otp-code ${this.host.privacyMode ? 'privacy-hidden' : ''}" data-id="${active.id}">
+                        ${this.host.privacyMode ? '••• •••' : '--- ---'}
+                    </div>
+                    <div class="fv-otp-seconds">30s</div>
                 </div>
             </div>
-            <div class="focus-card-otp ${this.host.privacyMode ? 'privacy-hidden' : ''}" data-id="${active.id}">
-                ${this.host.privacyMode ? '•••  •••' : '---  ---'}
-            </div>
-            <div class="focus-card-actions">
-                <button class="focus-action-btn focus-copy-btn">
-                    <i class="fa-solid fa-copy"></i>
-                    <span>Copy</span>
+
+            <!-- Primary copy button -->
+            <button class="fv-copy-btn">
+                <i class="fa-solid fa-copy"></i>
+                <span>Copy Code</span>
+            </button>
+
+            <!-- Secondary actions -->
+            <div class="fv-secondary-actions">
+                <button class="fv-sec-btn fv-view-btn" title="Secure View">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>View</span>
                 </button>
-                <button class="focus-action-btn focus-edit-btn">
+                <div class="fv-sec-divider"></div>
+                <button class="fv-sec-btn fv-edit-btn" title="Edit">
                     <i class="fa-solid fa-sliders"></i>
                     <span>Edit</span>
                 </button>
-                <button class="focus-action-btn focus-delete-btn danger">
+                <div class="fv-sec-divider"></div>
+                <button class="fv-sec-btn fv-delete-btn" title="Delete">
                     <i class="fa-solid fa-trash-can"></i>
                     <span>Delete</span>
                 </button>
             </div>
         `;
 
-        // Copy
-        focusCard.querySelector('.focus-copy-btn')?.addEventListener('click', async (e) => {
+        // Tap OTP ring area to copy
+        stage.querySelector('.fv-ring-wrap')?.addEventListener('click', async () => {
+            if (document.body.classList.contains('vault-is-locked')) return;
+            const otp = await (window as any).api.generateTOTP(active.secret);
+            this.copyOTPToClipboard(otp, stage.querySelector('.fv-otp-code') as HTMLElement);
+        });
+
+        // Copy button
+        const copyBtn = stage.querySelector('.fv-copy-btn') as HTMLButtonElement;
+        copyBtn?.addEventListener('click', async (e) => {
             e.stopPropagation();
             if (document.body.classList.contains('vault-is-locked')) {
-                this.host.showToast('Vault Locked - Enter PIN to Access', 'error'); return;
+                this.host.showToast('Vault Locked — Enter PIN to Access', 'error'); return;
             }
             const otp = await (window as any).api.generateTOTP(active.secret);
             await navigator.clipboard.writeText(otp);
             Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
-            const btn = focusCard.querySelector('.focus-copy-btn') as HTMLElement;
-            const icon = btn.querySelector('i') as HTMLElement;
-            const label = btn.querySelector('span') as HTMLElement;
+            const icon = copyBtn.querySelector('i') as HTMLElement;
+            const label = copyBtn.querySelector('span') as HTMLElement;
             icon.className = 'fa-solid fa-check';
             label.textContent = 'Copied!';
-            btn.classList.add('copied');
+            copyBtn.classList.add('copied');
             setTimeout(() => {
                 icon.className = 'fa-solid fa-copy';
-                label.textContent = 'Copy';
-                btn.classList.remove('copied');
+                label.textContent = 'Copy Code';
+                copyBtn.classList.remove('copied');
             }, 1500);
             this.host.showToast('Code copied!', 'success');
             this.host.updateLastActivity('OTP copied');
         });
 
-        // Tap OTP to copy
-        focusCard.querySelector('.focus-card-otp')?.addEventListener('click', async () => {
-            if (document.body.classList.contains('vault-is-locked')) return;
-            const otp = await (window as any).api.generateTOTP(active.secret);
-            this.copyOTPToClipboard(otp, focusCard.querySelector('.focus-card-otp') as HTMLElement);
+        // View
+        stage.querySelector('.fv-view-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (document.body.classList.contains('vault-is-locked')) {
+                this.host.showToast('Vault Locked — Enter PIN to Access', 'error'); return;
+            }
+            this.host.showOtpModal(active);
         });
 
         // Edit
-        focusCard.querySelector('.focus-edit-btn')?.addEventListener('click', (e) => {
+        stage.querySelector('.fv-edit-btn')?.addEventListener('click', (e) => {
             e.stopPropagation();
             if (document.body.classList.contains('vault-is-locked')) {
-                this.host.showToast('Vault Locked - Enter PIN to Access', 'error'); return;
+                this.host.showToast('Vault Locked — Enter PIN to Access', 'error'); return;
             }
             this.host.showEditModal(active);
         });
 
         // Delete
-        focusCard.querySelector('.focus-delete-btn')?.addEventListener('click', (e) => {
+        stage.querySelector('.fv-delete-btn')?.addEventListener('click', (e) => {
             e.stopPropagation();
             if (document.body.classList.contains('vault-is-locked')) {
-                this.host.showToast('Vault Locked - Enter PIN to Access', 'error'); return;
+                this.host.showToast('Vault Locked — Enter PIN to Access', 'error'); return;
             }
             this.host.showDeleteConfirm(active);
         });
 
-        grid.appendChild(focusCard);
-        this.updateFocusCardOTP(focusCard, active.secret, 30);
+        grid.appendChild(stage);
+        this.updateFocusCardOTP(stage, active.secret, 30);
 
-        // ── Mini grid ──
+        // ── Account switcher ──
         if (accounts.length > 1) {
-            const miniGrid = document.createElement('div');
-            miniGrid.className = 'focus-mini-grid';
+            const switcher = document.createElement('div');
+            switcher.className = 'fv-switcher';
 
             accounts.forEach((acc, idx) => {
-                const chip = document.createElement('button');
-                chip.className = `focus-chip${idx === this.focusIndex ? ' active' : ''}`;
-                chip.innerHTML = `
-                    <div class="focus-chip-icon"><i class="${this.getIcon(acc.issuer)}"></i></div>
-                    <div class="focus-chip-name">${acc.issuer}</div>
-                    <div class="focus-chip-account">${acc.account}</div>
-                `;
-                chip.addEventListener('click', () => {
+                const btn = document.createElement('button');
+                btn.className = `fv-sw-btn${idx === this.focusIndex ? ' active' : ''}`;
+                btn.title = acc.issuer;
+                btn.innerHTML = `<i class="${this.getIcon(acc.issuer)}"></i>`;
+                btn.addEventListener('click', () => {
+                    if (idx === this.focusIndex) return;
                     this.focusIndex = idx;
-                    this.renderAccounts();
+                    // Fade out stage, then re-render
+                    stage.style.opacity = '0';
+                    stage.style.transform = 'scale(0.97)';
+                    setTimeout(() => {
+                        this.renderAccounts();
+                        // After re-render, scroll active chip into view
+                        requestAnimationFrame(() => {
+                            const activeSw = document.querySelector<HTMLElement>('.fv-sw-btn.active');
+                            activeSw?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                        });
+                    }, 160);
                 });
-                miniGrid.appendChild(chip);
+                switcher.appendChild(btn);
             });
 
-            grid.appendChild(miniGrid);
+            grid.appendChild(switcher);
+
+            // Scroll active chip into view on initial render
+            requestAnimationFrame(() => {
+                const activeSw = switcher.querySelector<HTMLElement>('.fv-sw-btn.active');
+                activeSw?.scrollIntoView({ behavior: 'instant', inline: 'center', block: 'nearest' });
+            });
         }
     }
 
     private async updateFocusCardOTP(card: HTMLElement, secret: string, remainingSeconds: number) {
         if (document.body.classList.contains('vault-is-locked')) return;
 
-        const codeEl = card.querySelector('.focus-card-otp') as HTMLElement;
+        const codeEl = card.querySelector('.fv-otp-code') as HTMLElement;
         if (codeEl) {
             if (this.host.privacyMode) {
-                if (codeEl.textContent?.trim() !== '•••  •••') codeEl.textContent = '•••  •••';
+                if (codeEl.textContent?.trim() !== '••• •••') codeEl.textContent = '••• •••';
             } else {
                 const otp = await (window as any).api.generateTOTP(secret);
-                const display = otp.substring(0, 3) + '  ' + otp.substring(3);
+                const display = otp.substring(0, 3) + ' ' + otp.substring(3);
                 if (codeEl.textContent?.trim() !== display) codeEl.textContent = display;
             }
         }
 
         const isWarning = remainingSeconds <= 10 && remainingSeconds > 5;
-        const isDanger = remainingSeconds <= 5;
-        const strokeColor = isDanger ? '#ff3b30' : isWarning ? '#ff9500' : 'var(--accent-primary)';
-        const ringCircumference = 113.1;
+        const isDanger  = remainingSeconds <= 5;
+        const ringC = 408.41;
 
-        const progressCircle = card.querySelector('.focus-timer-progress') as SVGCircleElement;
-        if (progressCircle) {
-            progressCircle.style.strokeDashoffset = (ringCircumference * (1 - remainingSeconds / 30)).toString();
-            progressCircle.style.stroke = strokeColor;
+        // Arc ring
+        const arc = card.querySelector('.fv-ring-progress') as SVGCircleElement;
+        if (arc) {
+            arc.style.strokeDashoffset = String(ringC * (1 - remainingSeconds / 30));
+            arc.style.stroke = isDanger ? '#ff3b30' : isWarning ? '#ff9500' : 'var(--accent-primary)';
         }
-        const secondsEl = card.querySelector('.focus-timer-seconds') as HTMLElement;
-        if (secondsEl) secondsEl.textContent = remainingSeconds.toString();
 
-        // Pulse the OTP on danger
+        // Seconds label
+        const secEl = card.querySelector('.fv-otp-seconds') as HTMLElement;
+        if (secEl) {
+            secEl.textContent = `${remainingSeconds}s`;
+            secEl.style.color = isDanger ? '#ff3b30' : isWarning ? '#ff9500' : 'var(--text-secondary)';
+        }
+
+        // OTP colour
         if (codeEl) {
-            codeEl.classList.toggle('timer-danger', isDanger);
+            codeEl.style.color = isDanger ? '#ff3b30' : isWarning ? '#ff9500' : 'var(--accent-primary)';
+            codeEl.classList.toggle('fv-danger-pulse', isDanger);
         }
     }
 

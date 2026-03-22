@@ -620,252 +620,294 @@ input, textarea {
         box-shadow: var(--nm-shadow-in-sm);
     }
 
-    /* ── Focus View ─────────────────────────────────────────────────────────── */
+    /* ── Focus View — Stage Design ──────────────────────────────────────────── */
 
-    /* Override grid to single column when focus mode is active */
-    .accounts-grid:has(.focus-main-card) {
+    .accounts-grid:has(.fv-stage) {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 20px;
     }
 
-    /* Big focus card */
-    .focus-main-card {
-        background: var(--bg-primary);
-        border-radius: 28px;
-        box-shadow:
-            8px 8px 20px var(--nm-shadow-dark),
-            -8px -8px 20px var(--nm-shadow-light);
-        padding: 24px 20px 20px;
+    /* Stage: full-width, centered column */
+    .fv-stage {
         display: flex;
         flex-direction: column;
-        gap: 20px;
-        animation: cardEntrance 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        align-items: center;
+        gap: 0;
+        padding: 28px 20px 24px;
+        background: var(--bg-primary);
+        border-radius: 32px;
+        box-shadow:
+            10px 10px 28px var(--nm-shadow-dark),
+            -10px -10px 28px var(--nm-shadow-light);
+        animation: fvIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+        transition: opacity 0.16s ease, transform 0.16s ease;
     }
 
-    .focus-card-header {
+    @keyframes fvIn {
+        from { opacity: 0; transform: translateY(12px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Identity block */
+    .fv-identity {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 24px;
+    }
+
+    .fv-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 22px;
+        background: var(--bg-primary);
+        box-shadow:
+            7px 7px 16px var(--nm-shadow-dark),
+            -7px -7px 16px var(--nm-shadow-light);
         display: flex;
         align-items: center;
-        gap: 14px;
+        justify-content: center;
+        font-size: 26px;
+        color: var(--accent-primary);
+        margin-bottom: 10px;
     }
 
-    .focus-card-icon {
+    .fv-name {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: -0.6px;
+        color: var(--text-primary);
+        text-align: center;
+    }
+
+    .fv-account {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        opacity: 0.55;
+        text-align: center;
+    }
+
+    /* Ring + OTP */
+    .fv-ring-wrap {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        margin-bottom: 28px;
+        flex-shrink: 0;
+    }
+
+    .fv-ring-wrap:active .fv-ring-svg {
+        transform: scale(0.97);
+    }
+
+    .fv-ring-svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.12s ease;
+    }
+
+    .fv-ring-track {
+        fill: none;
+        stroke: var(--bg-secondary);
+        stroke-width: 6;
+        /* inset neumorphic track */
+        filter: drop-shadow(2px 2px 3px var(--nm-shadow-dark))
+                drop-shadow(-2px -2px 3px var(--nm-shadow-light));
+    }
+
+    .fv-ring-progress {
+        fill: none;
+        stroke: var(--accent-primary);
+        stroke-width: 6;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+    }
+
+    .fv-otp-inner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        z-index: 1;
+        user-select: none;
+        text-align: center;
+        width: 100%;
+        pointer-events: none;
+    }
+
+    .fv-otp-code {
+        font-size: 2.8rem;
+        font-weight: 900;
+        letter-spacing: 6px;
+        color: var(--accent-primary);
+        line-height: 1;
+        transition: color 0.3s ease;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .fv-otp-seconds {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        letter-spacing: 0.5px;
+        transition: color 0.3s ease;
+        opacity: 0.7;
+    }
+
+    @keyframes fvDangerPulse {
+        from { opacity: 1; }
+        to   { opacity: 0.5; }
+    }
+
+    .fv-danger-pulse {
+        animation: fvDangerPulse 0.5s ease-in-out infinite alternate;
+    }
+
+    /* Primary copy button */
+    .fv-copy-btn {
+        width: 100%;
+        height: 56px;
+        border-radius: 20px;
+        background: var(--bg-primary);
+        box-shadow:
+            6px 6px 16px var(--nm-shadow-dark),
+            -6px -6px 16px var(--nm-shadow-light);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--accent-primary);
+        font-family: inherit;
+        letter-spacing: -0.2px;
+        -webkit-tap-highlight-color: transparent;
+        transition: box-shadow 0.12s ease, transform 0.12s ease, color 0.2s ease;
+        margin-bottom: 12px;
+    }
+
+    .fv-copy-btn i { font-size: 15px; }
+
+    .fv-copy-btn:active {
+        box-shadow: var(--nm-shadow-in-sm);
+        transform: scale(0.97);
+    }
+
+    .fv-copy-btn.copied {
+        color: #34c759;
+    }
+
+    /* Secondary actions row */
+    .fv-secondary-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        background: var(--bg-primary);
+        border-radius: 18px;
+        box-shadow:
+            inset 4px 4px 10px var(--nm-shadow-dark),
+            inset -4px -4px 10px var(--nm-shadow-light);
+        overflow: hidden;
+    }
+
+    .fv-sec-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 14px 8px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-size: 16px;
+        font-family: inherit;
+        -webkit-tap-highlight-color: transparent;
+        transition: color 0.12s ease, transform 0.12s ease;
+    }
+
+    .fv-sec-btn span {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+    }
+
+    .fv-sec-btn:active {
+        transform: scale(0.92);
+        color: var(--accent-primary);
+    }
+
+    .fv-delete-btn:active { color: #ff3b30; }
+
+    .fv-sec-divider {
+        width: 1px;
+        height: 32px;
+        background: var(--nm-shadow-dark);
+        opacity: 0.4;
+        flex-shrink: 0;
+    }
+
+    /* Account switcher — icon pill row */
+    .fv-switcher {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 4px 2px;
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .fv-switcher::-webkit-scrollbar { display: none; }
+
+    .fv-sw-btn {
         width: 52px;
         height: 52px;
         border-radius: 18px;
         background: var(--bg-primary);
         box-shadow:
-            inset 5px 5px 12px var(--nm-shadow-dark),
-            inset -5px -5px 12px var(--nm-shadow-light);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        color: var(--accent-primary);
-        flex-shrink: 0;
-    }
-
-    .focus-card-identity {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .focus-card-name {
-        font-size: 18px;
-        font-weight: 900;
-        letter-spacing: -0.4px;
-        color: var(--text-primary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .focus-card-account {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        opacity: 0.65;
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .focus-card-timer {
-        position: relative;
-        width: 44px;
-        height: 44px;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .focus-timer-ring {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-    }
-
-    .focus-timer-seconds {
-        font-size: 12px;
-        font-weight: 900;
-        color: var(--text-primary);
-        position: relative;
-        z-index: 1;
-    }
-
-    .focus-card-otp {
-        font-size: 2.6rem;
-        font-weight: 900;
-        letter-spacing: 4px;
-        color: var(--accent-primary);
-        text-align: center;
-        padding: 18px 0;
-        border-radius: 20px;
-        background: var(--bg-primary);
-        box-shadow:
-            inset 6px 6px 14px var(--nm-shadow-dark),
-            inset -6px -6px 14px var(--nm-shadow-light);
-        cursor: pointer;
-        transition: transform 0.12s ease, box-shadow 0.12s ease;
-        -webkit-tap-highlight-color: transparent;
-        user-select: none;
-    }
-
-    .focus-card-otp:active {
-        transform: scale(0.97);
-        box-shadow: var(--nm-shadow-in-sm);
-    }
-
-    .focus-card-otp.timer-danger {
-        color: #ff3b30;
-        animation: timerPulse 0.6s ease-in-out infinite alternate;
-    }
-
-    .focus-card-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    .focus-action-btn {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 14px 8px;
-        border-radius: 18px;
-        background: var(--bg-primary);
-        box-shadow:
             5px 5px 12px var(--nm-shadow-dark),
             -5px -5px 12px var(--nm-shadow-light);
         border: none;
         cursor: pointer;
-        color: var(--accent-primary);
-        font-size: 18px;
-        font-family: inherit;
-        -webkit-tap-highlight-color: transparent;
-        transition: box-shadow 0.12s ease, transform 0.12s ease;
-    }
-
-    .focus-action-btn span {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--text-secondary);
-        letter-spacing: 0.2px;
-    }
-
-    .focus-action-btn:active {
-        box-shadow: var(--nm-shadow-in-sm);
-        transform: scale(0.96);
-    }
-
-    .focus-action-btn.copied { color: #34c759; }
-    .focus-action-btn.danger { color: #ff3b30; }
-
-    /* Mini grid — 3 per row */
-    .focus-mini-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-
-    .focus-chip {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 6px;
-        padding: 14px 8px 12px;
-        border-radius: 20px;
-        background: var(--bg-primary);
-        box-shadow:
-            5px 5px 12px var(--nm-shadow-dark),
-            -5px -5px 12px var(--nm-shadow-light);
-        border: none;
-        cursor: pointer;
+        justify-content: center;
+        font-size: 18px;
+        color: var(--text-secondary);
+        flex-shrink: 0;
         -webkit-tap-highlight-color: transparent;
-        transition: box-shadow 0.12s ease, transform 0.12s ease;
-        text-align: center;
-        overflow: hidden;
-        width: 100%;
+        transition: box-shadow 0.14s ease, color 0.14s ease, transform 0.14s ease;
     }
 
-    .focus-chip:active {
-        box-shadow: var(--nm-shadow-in-sm);
-        transform: scale(0.96);
+    .fv-sw-btn:active {
+        transform: scale(0.93);
     }
 
-    .focus-chip.active {
+    .fv-sw-btn.active {
         box-shadow:
             inset 4px 4px 10px var(--nm-shadow-dark),
             inset -4px -4px 10px var(--nm-shadow-light);
-    }
-
-    .focus-chip-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 13px;
-        background: var(--bg-primary);
-        box-shadow:
-            inset 3px 3px 7px var(--nm-shadow-dark),
-            inset -3px -3px 7px var(--nm-shadow-light);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
         color: var(--accent-primary);
-        flex-shrink: 0;
-    }
-
-    .focus-chip.active .focus-chip-icon {
-        box-shadow:
-            3px 3px 7px var(--nm-shadow-dark),
-            -3px -3px 7px var(--nm-shadow-light);
-    }
-
-    .focus-chip-name {
-        font-size: 11px;
-        font-weight: 800;
-        color: var(--text-primary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        width: 100%;
-        text-align: center;
-    }
-
-    .focus-chip-account {
-        font-size: 9px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        opacity: 0.6;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        width: 100%;
-        text-align: center;
     }
 
     .account-icon {
