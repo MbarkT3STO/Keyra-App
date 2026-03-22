@@ -30,8 +30,6 @@
     align-items: center;
     justify-content: center;
     color: var(--accent-primary);
-    filter: drop-shadow(0 0 6px var(--aura-1));
-    /* Reduced shadow for performance */
     flex-shrink: 0;
 }
 
@@ -59,10 +57,7 @@
     font-weight: 850;
     font-size: clamp(20px, 2.5vw, 26px);
     letter-spacing: -1.5px;
-    background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
 }
 
 /* Custom Logo System */
@@ -82,13 +77,13 @@
 .app-logo-medium {
     width: clamp(64px, 10vw, 84px);
     height: auto;
-    filter: var(--logo-hue-shift) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+    filter: var(--logo-hue-shift);
 }
 
 .app-logo-large {
     width: clamp(100px, 15vw, 140px);
     height: auto;
-    filter: var(--logo-hue-shift) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.45));
+    filter: var(--logo-hue-shift);
 }
 
 .nm-logo {
@@ -191,7 +186,7 @@ i.fa-regular {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background: var(--accent-primary);
     color: white;
     display: flex;
     align-items: center;
@@ -1665,7 +1660,6 @@ input:checked+.slider:before {
 .accent-item:hover {
     transform: scale(1.1);
     box-shadow: var(--nm-shadow-out);
-    filter: brightness(1.1);
 }
 
 .accent-item.active {
@@ -2024,7 +2018,7 @@ input:checked+.slider:before {
     width: 3px;
     border-radius: 0 var(--radius-full) var(--radius-full) 0;
     background: var(--accent-primary);
-    box-shadow: 2px 0 8px var(--aura-1);
+    box-shadow: none;
     opacity: 0;
     transform: scaleY(0);
     transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -2419,7 +2413,6 @@ input:checked+.slider:before {
     background: var(--accent-primary);
     flex-shrink: 0;
     margin-top: 6px;
-    box-shadow: 0 0 6px var(--aura-1);
 }
 
 .update-modal-footer {
@@ -4296,7 +4289,6 @@ body.vault-is-locked .main-app-content,
     border: 3px solid transparent;
     border-top-color: var(--accent-primary);
     border-right-color: var(--accent-primary);
-    box-shadow: 0 0 10px var(--aura-1);
     animation: nm-spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     z-index: 2;
 }
@@ -4538,7 +4530,6 @@ body.vault-is-locked .main-app-content,
     background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
     animation: qr-scan 2s ease-in-out infinite;
     border-radius: 2px;
-    box-shadow: 0 0 8px var(--accent-primary);
 }
 
 @keyframes qr-scan {
@@ -4577,7 +4568,6 @@ body.vault-is-locked .main-app-content,
 .qr-scanner-success i {
     font-size: 52px;
     color: #30d158;
-    filter: drop-shadow(0 0 12px #30d158);
 }
 
 .qr-scanner-success span {
@@ -4961,10 +4951,7 @@ body.vault-is-locked .main-app-content,
     font-weight: 950;
     letter-spacing: -2px;
     margin: 0;
-    background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
     line-height: 1;
 }
 

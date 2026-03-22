@@ -158,9 +158,7 @@ body:has(.settings-container:not(.hidden)) .main-content {
     width: 4px;
     border-radius: var(--radius-full);
     background: var(--accent-primary);
-    box-shadow:
-        2px 0 8px var(--aura-1),
-        -1px 0 0 var(--nm-shadow-light);
+    box-shadow: none;
 }
 
 .section-title {
@@ -170,10 +168,7 @@ body:has(.settings-container:not(.hidden)) .main-content {
     letter-spacing: -2px;
     line-height: 1.1;
     margin: 0 0 6px;
-    background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
 }
 
 .section-subtitle {
@@ -231,29 +226,19 @@ body:has(.settings-container:not(.hidden)) .main-content {
 }
 
 .auth-overlay {
-    background: radial-gradient(circle at 50% 50%, var(--bg-secondary) 0%, var(--bg-primary) 100%) !important;
+    background: var(--bg-primary) !important;
     z-index: 2500 !important;
     display: flex !important;
     justify-content: center !important;
     align-items: flex-start !important;
     padding: 20px !important;
-    /* Minimal padding to prevent clipping but keep breathing room */
     overflow-y: auto !important;
     overflow-x: hidden !important;
 }
 
 /* Dynamic light ray for auth screens */
 .auth-overlay::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, transparent 40%, hsla(var(--h), 100%, 80%, 0.03) 50%, transparent 60%);
-    background-size: 300% 300%;
-    animation: auroraFlow 15s linear infinite;
-    pointer-events: none;
+    display: none;
 }
 
 .auth-modal {

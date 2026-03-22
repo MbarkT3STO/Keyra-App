@@ -84,10 +84,7 @@ input, textarea {
         font-size: 20px;
         font-weight: 900;
         letter-spacing: -1px;
-        background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-primary);
     }
 
     .mobile-tab-actions {
@@ -266,7 +263,6 @@ input, textarea {
     .bottom-nav-tab.active i {
         transform: scale(1.15) translateY(-1px);
         color: var(--accent-primary);
-        filter: drop-shadow(0 0 6px var(--aura-1));
     }
 
     /* ── Active indicator: neumorphic inset pill at top of tab ── */
@@ -280,7 +276,6 @@ input, textarea {
         height: 3px;
         border-radius: 0 0 var(--radius-full) var(--radius-full);
         background: var(--accent-primary);
-        box-shadow: 0 2px 8px var(--aura-1);
     }
 
     /* ── Press feedback ── */
@@ -655,7 +650,6 @@ input, textarea {
         box-shadow:
             6px 6px 14px var(--nm-shadow-dark),
             -6px -6px 14px var(--nm-shadow-light) !important;
-        background-image: radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 70%) !important;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -667,7 +661,7 @@ input, textarea {
     }
 
     .modal-icon-vessel.danger {
-        background-image: radial-gradient(circle at 30% 30%, rgba(255,59,48,0.12), transparent 70%) !important;
+        background: var(--bg-primary) !important;
     }
 
     /* ── Brand icon (legacy large icon) — shrink on mobile ── */
@@ -681,7 +675,7 @@ input, textarea {
         box-shadow:
             6px 6px 14px var(--nm-shadow-dark),
             -6px -6px 14px var(--nm-shadow-light) !important;
-        background-image: radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 70%) !important;
+        background: var(--bg-primary) !important;
     }
 
     .modal-brand-icon i {
@@ -854,13 +848,11 @@ input, textarea {
     .pin-step.active .pin-step-number {
         background: var(--accent-primary);
         color: white;
-        box-shadow: 0 4px 12px var(--aura-1);
     }
 
     .pin-step.completed .pin-step-number {
         background: var(--accent-primary);
         color: white;
-        box-shadow: 0 4px 12px var(--aura-1);
     }
 
     .pin-step-label {
@@ -920,7 +912,6 @@ input, textarea {
         box-shadow:
             6px 6px 14px var(--nm-shadow-dark),
             -6px -6px 14px var(--nm-shadow-light) !important;
-        background-image: radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 70%) !important;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1647,7 +1638,6 @@ input, textarea {
 .pull-refresh-indicator.ready .pull-refresh-inner i {
     transform: rotate(180deg);
     color: var(--accent-primary);
-    filter: drop-shadow(0 0 6px var(--aura-1));
 }
 
 /* "loading" — icon spins while refreshing */
@@ -1854,21 +1844,13 @@ body.keyboard-open .auth-overlay {
         height: 80px !important;
         margin: 0 auto 0 !important;
         padding: 4px !important;
-        /* Accent gradient ring */
-        background: linear-gradient(
-            135deg,
-            var(--accent-primary),
-            var(--accent-secondary, hsl(calc(var(--h) + 40), var(--s), 65%))
-        ) !important;
-        box-shadow:
-            0 0 0 3px var(--bg-primary),
-            0 8px 24px var(--aura-1) !important;
-        animation: pinRingPulse 3s ease-in-out infinite !important;
+        background: var(--accent-primary) !important;
+        box-shadow: 0 0 0 3px var(--bg-primary) !important;
     }
 
     @keyframes pinRingPulse {
-        0%, 100% { box-shadow: 0 0 0 3px var(--bg-primary), 0 8px 24px var(--aura-1); }
-        50%       { box-shadow: 0 0 0 3px var(--bg-primary), 0 8px 32px var(--aura-1), 0 0 0 6px var(--accent-soft); }
+        0%, 100% { box-shadow: 0 0 0 3px var(--bg-primary); }
+        50%       { box-shadow: 0 0 0 3px var(--bg-primary); }
     }
 
     .pin-avatar-inner {
@@ -1929,7 +1911,6 @@ body.keyboard-open .auth-overlay {
 
     .pin-dot.filled {
         background: var(--accent-primary) !important;
-        box-shadow: 0 0 10px var(--aura-1) !important;
         transform: scale(1.15) !important;
     }
 
@@ -2082,17 +2063,7 @@ body.keyboard-open .auth-overlay {
 /* ── Decorative background blob ── */
 @media (max-width: 768px) {
     .pin-bg-blob {
-        position: absolute;
-        top: -80px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 320px;
-        height: 320px;
-        border-radius: 50%;
-        background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
-        pointer-events: none;
-        z-index: 0;
-        opacity: 0.6;
+        display: none;
     }
 
     /* Ensure all pin children sit above the blob */
@@ -2743,7 +2714,6 @@ body.keyboard-open .auth-overlay {
     box-shadow:
         6px 6px 14px var(--nm-shadow-dark),
         -6px -6px 14px var(--nm-shadow-light);
-    background-image: radial-gradient(circle at 0% 0%, rgba(255,59,48,0.10), transparent 70%);
     margin-bottom: 16px;
     color: #ff3b30;
 }
