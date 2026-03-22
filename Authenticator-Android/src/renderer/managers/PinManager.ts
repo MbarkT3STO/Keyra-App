@@ -541,39 +541,72 @@ export class PinManager {
 
     public showPinRemoval() {
         const content = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-icon-vessel danger">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </div>
-                    <div class="modal-title-vessel">
-                        <h2 class="danger">Deactivate Security?</h2>
-                        <p>VAULT WILL BE UNPROTECTED</p>
-                    </div>
-                </div>
-                <div class="modal-divider"></div>
-                <div class="modal-body">
-                    <div class="modal-entity-badge">
-                        <div class="entity-icon"><i class="fa-solid fa-lock"></i></div>
-                        <div class="entity-info">
-                            <span class="entity-name">Master PIN Policy</span>
-                            <span class="entity-label">Active Protection</span>
+            <div class="pin-steps-modal">
+                <div class="pin-step-content">
+                    <div class="pin-header">
+                        <div class="pin-brand-icon"><i class="fa-solid fa-shield-halved" style="color:#ff3b30;"></i></div>
+                        <div>
+                            <h2 class="pin-title" style="color:#ff3b30;">Deactivate Security</h2>
+                            <p class="pin-subtitle">ENTER CURRENT PIN TO CONFIRM</p>
                         </div>
                     </div>
-                    <p class="modal-help-text">Removing the PIN means anyone with access to this device can view your identities. This action is immediate.</p>
+                    <div class="pin-input-container">
+                        <div class="pin-input-vessel">
+                            <div class="pin-indicators">
+                                <div class="pin-dot" data-digit="1"></div>
+                                <div class="pin-dot" data-digit="2"></div>
+                                <div class="pin-dot" data-digit="3"></div>
+                                <div class="pin-dot" data-digit="4"></div>
+                            </div>
+                            <input type="password" id="pin-removal-input" maxlength="4" class="pin-input-hidden" autocomplete="off">
+                        </div>
+                        <div class="pin-helper">Enter your current 4-digit PIN</div>
+                    </div>
+                    ${this.numpadHTML()}
+                    <div class="pin-actions">
+                        <button class="btn-danger pin-continue-btn" id="confirm-remove-pin" disabled>
+                            <i class="fa-solid fa-trash-can"></i>
+                            Remove Security
+                        </button>
+                        <button class="user-button pin-cancel-btn" id="cancel-remove-pin">Cancel</button>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-danger" id="confirm-remove-pin">
-                    <i class="fa-solid fa-trash-can"></i>
-                    Remove Security
-                </button>
-                <button class="user-button" id="cancel-remove-pin">Keep PIN Active</button>
             </div>
         `;
         this.host.showModal(content);
 
-        document.getElementById('confirm-remove-pin')?.addEventListener('click', () => {
+        const confirmBtn = document.getElementById('confirm-remove-pin') as HTMLButtonElement;
+
+        const { getPin } = this.setupModalNumpad('pin-removal-input', (val) => {
+            if (confirmBtn) confirmBtn.disabled = val.length < 4;
+        });
+
+        confirmBtn?.addEventListener('click', async () => {
+            const storedPin = localStorage.getItem(this.host.getStorageKey('vault_pin'));
+            let isCorrect = false;
+            try {
+                if (storedPin && storedPin.length === 4 && /^\d+$/.test(storedPin)) {
+                    isCorrect = getPin() === storedPin;
+                } else if (storedPin) {
+                    const decrypted = await (window as any).api.decryptPIN(storedPin);
+                    isCorrect = getPin() === decrypted;
+                }
+            } catch { isCorrect = false; }
+
+            if (!isCorrect) {
+                const vessel = document.querySelector('.pin-input-vessel');
+                vessel?.classList.add('animate-shake');
+                const dots = document.querySelectorAll('.pin-input-vessel .pin-dot');
+                dots.forEach(d => { d.classList.remove('filled'); d.classList.add('error'); });
+                setTimeout(() => {
+                    vessel?.classList.remove('animate-shake');
+                    dots.forEach(d => d.classList.remove('error', 'filled'));
+                    confirmBtn.disabled = true;
+                }, 700);
+                this.host.showToast('Incorrect PIN', 'error');
+                return;
+            }
+
             localStorage.removeItem(this.host.getStorageKey('vault_pin'));
             localStorage.removeItem(this.host.getStorageKey('biometric_enabled'));
             this.host.pushSettings();
