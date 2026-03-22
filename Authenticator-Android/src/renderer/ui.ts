@@ -185,14 +185,63 @@ export class UIManager {
     public showToast(message: string, type: 'info' | 'success' | 'error' = 'info') {
         const container = document.getElementById('toast-container');
         if (!container) return;
-        const iconMap = { success: 'fa-solid fa-circle-check', error: 'fa-solid fa-circle-exclamation', info: 'fa-solid fa-circle-info' };
+
+        // Deduplicate — don't stack identical messages
+        const existing = container.querySelector(`.neumorphic-toast[data-msg="${CSS.escape(message)}"]`);
+        if (existing) {
+            existing.classList.remove('hiding');
+            (existing as any)._resetTimer?.();
+            return;
+        }
+
+        const iconMap = {
+            success: 'fa-solid fa-check',
+            error: 'fa-solid fa-xmark',
+            info: 'fa-solid fa-info'
+        };
+
         const toast = document.createElement('div');
         toast.className = `neumorphic-toast toast-${type}`;
-        toast.innerHTML = `<i class="${iconMap[type]} toast-icon"></i><span class="toast-message">${message}</span>`;
-        const dismiss = () => { toast.classList.add('hiding'); setTimeout(() => toast.remove(), 320); };
+        toast.setAttribute('data-msg', message);
+        toast.innerHTML = `
+            <div class="toast-icon-vessel">
+                <i class="${iconMap[type]}"></i>
+            </div>
+            <span class="toast-message">${message}</span>
+            <div class="toast-progress"><div class="toast-progress-bar"></div></div>
+        `;
+
+        let dismissTimer: any;
+        const dismiss = () => {
+            clearTimeout(dismissTimer);
+            toast.classList.add('hiding');
+            setTimeout(() => toast.remove(), 380);
+        };
+
+        // Reset timer (used for dedup)
+        (toast as any)._resetTimer = () => {
+            clearTimeout(dismissTimer);
+            const bar = toast.querySelector('.toast-progress-bar') as HTMLElement;
+            if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; requestAnimationFrame(() => { bar.style.transition = ''; }); }
+            dismissTimer = setTimeout(dismiss, 4000);
+        };
+
         toast.addEventListener('click', dismiss);
+
+        // Swipe down to dismiss
+        let touchStartY = 0;
+        toast.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+        toast.addEventListener('touchmove', (e) => {
+            const dy = e.touches[0].clientY - touchStartY;
+            if (dy > 0) toast.style.transform = `translateY(${dy}px)`;
+        }, { passive: true });
+        toast.addEventListener('touchend', (e) => {
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if (dy > 60) { dismiss(); } else { toast.style.transform = ''; }
+        }, { passive: true });
+
         container.appendChild(toast);
-        setTimeout(dismiss, 5000);
+        dismissTimer = setTimeout(dismiss, 4000);
     }
 
     // ─── Biometric ─────────────────────────────────────────────────────────────
