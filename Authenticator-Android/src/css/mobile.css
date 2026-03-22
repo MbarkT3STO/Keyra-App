@@ -307,6 +307,8 @@ input, textarea {
     /* ── Vault toolbar: wrap the whole search-add-group in a neumorphic tray ── */
     .search-add-group {
         flex: 1;
+        display: flex;
+        align-items: center;
         gap: 10px;
         background: var(--bg-primary);
         box-shadow:
@@ -314,7 +316,6 @@ input, textarea {
             -6px -6px 16px var(--nm-shadow-light);
         border-radius: 22px;
         padding: 10px 12px;
-        align-items: center;
     }
 
     /* View-style segmented control — compact pill inside the tray */
@@ -325,10 +326,11 @@ input, textarea {
         border-radius: var(--radius-full);
         box-shadow: var(--nm-shadow-in-sm);
         flex-shrink: 0;
+        flex: 1;
     }
 
     .vault-view-toggle .segment {
-        width: 34px;
+        flex: 1;
         min-height: 32px;
         font-size: 12px;
     }
@@ -348,24 +350,27 @@ input, textarea {
         display: none !important;
     }
 
-    /* Mobile search icon button inside the tray */
-    #mobile-search-btn {
-        width: 40px;
-        height: 40px;
-        flex-shrink: 0;
-    }
-
-    /* Add button — neumorphic raised square inside the tray */
+    /* Both action buttons — identical neumorphic circles */
+    #mobile-search-btn,
     .btn-primary#add-account-btn {
-        width: 40px;
-        height: 40px;
-        padding: 0;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 50%;
         flex-shrink: 0;
+        display: flex;
+        align-items: center;
         justify-content: center;
-        border-radius: 14px;
+        padding: 0;
         box-shadow:
             4px 4px 10px var(--nm-shadow-dark),
             -4px -4px 10px var(--nm-shadow-light);
+    }
+
+    #mobile-search-btn:active,
+    .btn-primary#add-account-btn:active {
+        box-shadow: var(--nm-shadow-in-sm);
+        transform: scale(0.91);
     }
 
     .btn-primary#add-account-btn span {
@@ -375,11 +380,6 @@ input, textarea {
     .btn-primary#add-account-btn i {
         font-size: 18px;
         margin: 0;
-    }
-
-    .btn-primary#add-account-btn:active {
-        box-shadow: var(--nm-shadow-in-sm);
-        transform: scale(0.91);
     }
 }
 
