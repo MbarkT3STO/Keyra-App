@@ -40,7 +40,7 @@ export async function cancelEmailChange(): Promise<{ success: boolean, message: 
     return { success: true, message: "Pending email change cancelled." };
 }
 
-export async function signup(username: string, email: string, password: string): Promise<{ success: boolean, message: string, code?: string }> {
+export async function signup(username: string, email: string, password: string): Promise<{ success: boolean, message: string }> {
     const users = await getUsers();
     if (users.find(u => u.username === username || u.email === email)) {
         return { success: false, message: "Username or email already exists." };
@@ -57,10 +57,10 @@ export async function signup(username: string, email: string, password: string):
     await saveUsers(users);
     await syncUserData(username, newUser);
     deliverActivationCode(email, activationCode);
-    return { success: true, message: "Account created. Check your email.", code: activationCode };
+    return { success: true, message: "Account created. Check your email." };
 }
 
-export async function resendCode(email: string): Promise<{ success: boolean, message: string, code?: string }> {
+export async function resendCode(email: string): Promise<{ success: boolean, message: string }> {
     const users = await getUsers();
     const userIndex = users.findIndex(u => u.email === email);
     if (userIndex === -1) return { success: false, message: "User not found." };
@@ -69,7 +69,7 @@ export async function resendCode(email: string): Promise<{ success: boolean, mes
     users[userIndex].activationCode = newCode;
     await saveUsers(users);
     deliverActivationCode(email, newCode);
-    return { success: true, message: "Verification code sent.", code: newCode };
+    return { success: true, message: "Verification code sent." };
 }
 
 export async function verifyEmail(email: string, code: string): Promise<{ success: boolean, message: string }> {

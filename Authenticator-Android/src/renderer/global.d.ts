@@ -12,8 +12,8 @@ declare global {
     interface Window {
         ui?: any;
         api: {
-            signup(user: string, email: string, pass: string): Promise<{ success: boolean, message: string, code?: string }>;
-            resendCode(email: string): Promise<{ success: boolean, message: string, code?: string }>;
+            signup(user: string, email: string, pass: string): Promise<{ success: boolean, message: string }>;
+            resendCode(email: string): Promise<{ success: boolean, message: string }>;
             verifyEmail(email: string, code: string): Promise<{ success: boolean, message: string }>;
             login(user: string, pass: string): Promise<{ success: boolean, message: string }>;
             checkSession(): Promise<{ success: boolean, message: string }>;

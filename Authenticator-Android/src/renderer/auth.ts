@@ -226,7 +226,6 @@ export async function setupAuthUI() {
             if (result.success) {
                 switchState(boxSignup, boxVerify);
                 (document.getElementById('verify-email-field') as HTMLInputElement).value = email;
-                if (result.code) showSimulationToast(result.code);
             } else {
                 rateLimiter.recordAttempt('signup', email);
                 err.textContent = result.message;
