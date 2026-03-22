@@ -89,18 +89,31 @@ export class PrivacyManager {
     private initAppStateListener() {
         import('@capacitor/app').then(({ App }) => {
             App.addListener('appStateChange', ({ isActive }) => {
-                if (!isActive && this.screenGuardian) {
-                    this.showOverlay();
-                } else if (isActive) {
+                if (!isActive) {
+                    if (this.screenGuardian) this.showOverlay();
+                    // Lock on background if setting is enabled and vault is not already locked
+                    const lockOnBg = localStorage.getItem(this.host.getStorageKey('lockOnBackground')) === 'true';
+                    const isLocked = document.body.classList.contains('vault-is-locked');
+                    const hasPin = !!localStorage.getItem(this.host.getStorageKey('vault_pin'));
+                    if (lockOnBg && hasPin && !isLocked) {
+                        (window as any).ui?.lockVault();
+                    }
+                } else {
                     this.hideOverlay();
                 }
             });
         }).catch(() => {
             // Browser fallback: Page Visibility API
             document.addEventListener('visibilitychange', () => {
-                if (document.hidden && this.screenGuardian) {
-                    this.showOverlay();
-                } else if (!document.hidden) {
+                if (document.hidden) {
+                    if (this.screenGuardian) this.showOverlay();
+                    const lockOnBg = localStorage.getItem(this.host.getStorageKey('lockOnBackground')) === 'true';
+                    const isLocked = document.body.classList.contains('vault-is-locked');
+                    const hasPin = !!localStorage.getItem(this.host.getStorageKey('vault_pin'));
+                    if (lockOnBg && hasPin && !isLocked) {
+                        (window as any).ui?.lockVault();
+                    }
+                } else {
                     this.hideOverlay();
                 }
             });

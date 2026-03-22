@@ -86,6 +86,18 @@ export class SettingsManager {
             if (s.biometricEnabled !== undefined) {
                 localStorage.setItem(this.host.getStorageKey('biometric_enabled'), String(s.biometricEnabled));
             }
+
+            if (s.lockOnBackground !== undefined) {
+                localStorage.setItem(this.host.getStorageKey('lockOnBackground'), String(s.lockOnBackground));
+                const toggle = document.getElementById('lock-on-background-toggle') as HTMLInputElement;
+                if (toggle) toggle.checked = !!s.lockOnBackground;
+            }
+
+            if (s.requirePinOnLaunch !== undefined) {
+                localStorage.setItem(this.host.getStorageKey('requirePinOnLaunch'), String(s.requirePinOnLaunch));
+                const toggle = document.getElementById('require-pin-launch-toggle') as HTMLInputElement;
+                if (toggle) toggle.checked = !!s.requirePinOnLaunch;
+            }
         }
 
         this.host.updateLockVaultVisibility();
@@ -98,6 +110,14 @@ export class SettingsManager {
         this.host.updateSegmentedUI('autolock-segmented', autolock);
         this.updateAutoLockState();
         this.host.updateSegmentedUI('vault-view-segmented', this.host.vaultViewStyle);
+
+        // Restore lock-on-background and require-pin-on-launch toggle states
+        const lockOnBg = localStorage.getItem(this.host.getStorageKey('lockOnBackground')) === 'true';
+        const requirePin = localStorage.getItem(this.host.getStorageKey('requirePinOnLaunch')) === 'true';
+        const lockOnBgToggle = document.getElementById('lock-on-background-toggle') as HTMLInputElement;
+        const requirePinToggle = document.getElementById('require-pin-launch-toggle') as HTMLInputElement;
+        if (lockOnBgToggle) lockOnBgToggle.checked = lockOnBg;
+        if (requirePinToggle) requirePinToggle.checked = requirePin;
     }
 
     public updateAutoLockState() {
@@ -132,6 +152,17 @@ export class SettingsManager {
             if (biometricToggle && biometricToggle.checked) {
                 biometricToggle.checked = false;
                 localStorage.removeItem(this.host.getStorageKey('biometric_enabled'));
+            }
+            // Disable lock-on-background and require-pin-on-launch if PIN is removed
+            const lockOnBgToggle = document.getElementById('lock-on-background-toggle') as HTMLInputElement;
+            if (lockOnBgToggle && lockOnBgToggle.checked) {
+                lockOnBgToggle.checked = false;
+                localStorage.removeItem(this.host.getStorageKey('lockOnBackground'));
+            }
+            const requirePinToggle = document.getElementById('require-pin-launch-toggle') as HTMLInputElement;
+            if (requirePinToggle && requirePinToggle.checked) {
+                requirePinToggle.checked = false;
+                localStorage.removeItem(this.host.getStorageKey('requirePinOnLaunch'));
             }
         }
     }
@@ -232,6 +263,34 @@ export class SettingsManager {
             }
         });
 
+        // Lock on Background toggle
+        document.getElementById('lock-on-background-toggle')?.addEventListener('change', (e) => {
+            const enabled = (e.target as HTMLInputElement).checked;
+            const hasPin = !!localStorage.getItem(this.host.getStorageKey('vault_pin'));
+            if (enabled && !hasPin) {
+                (e.target as HTMLInputElement).checked = false;
+                this.host.showToast('Set up a PIN first to enable this', 'error');
+                return;
+            }
+            localStorage.setItem(this.host.getStorageKey('lockOnBackground'), String(enabled));
+            this.pushWebSettings();
+            this.host.showToast(enabled ? 'Vault locks when app goes to background' : 'Background lock off', 'info');
+        });
+
+        // Require PIN on Launch toggle
+        document.getElementById('require-pin-launch-toggle')?.addEventListener('change', (e) => {
+            const enabled = (e.target as HTMLInputElement).checked;
+            const hasPin = !!localStorage.getItem(this.host.getStorageKey('vault_pin'));
+            if (enabled && !hasPin) {
+                (e.target as HTMLInputElement).checked = false;
+                this.host.showToast('Set up a PIN first to enable this', 'error');
+                return;
+            }
+            localStorage.setItem(this.host.getStorageKey('requirePinOnLaunch'), String(enabled));
+            this.pushWebSettings();
+            this.host.showToast(enabled ? 'PIN required on every launch' : 'PIN on launch off', 'info');
+        });
+
         // Check for updates
         document.getElementById('btn-check-updates')?.addEventListener('click', () => {
             (window as any).__updateManager?.checkManually();
@@ -253,7 +312,9 @@ export class SettingsManager {
                 vaultViewStyle: this.host.vaultViewStyle,
                 autolock: aLock,
                 vaultPin: vPin,
-                biometricEnabled: localStorage.getItem(this.host.getStorageKey('biometric_enabled')) === 'true'
+                biometricEnabled: localStorage.getItem(this.host.getStorageKey('biometric_enabled')) === 'true',
+                lockOnBackground: localStorage.getItem(this.host.getStorageKey('lockOnBackground')) === 'true',
+                requirePinOnLaunch: localStorage.getItem(this.host.getStorageKey('requirePinOnLaunch')) === 'true'
             }
         };
     }

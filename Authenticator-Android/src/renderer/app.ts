@@ -121,10 +121,11 @@ async function init() {
 
         const uid = (window as any).userId;
         const hasPin = !!localStorage.getItem(`${uid}_vault_pin`);
+        const requirePinOnLaunch = localStorage.getItem(`${uid}_requirePinOnLaunch`) === 'true';
 
         (window as any).ui = new UIManager(uid);
 
-        if (resumed && hasPin) {
+        if (hasPin && (resumed || requirePinOnLaunch)) {
             (window as any).ui.lockVault();
         } else {
             // Main UI is visible — allow connectivity indicator to show

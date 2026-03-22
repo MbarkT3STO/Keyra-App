@@ -553,6 +553,20 @@
                     </div>
                     <label class="switch"><input type="checkbox" id="screen-guardian-toggle"><span class="slider round"></span></label>
                 </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-name">Lock on Background</div>
+                        <div class="setting-desc">Lock vault when app goes to background</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="lock-on-background-toggle"><span class="slider round"></span></label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-name">Require PIN on Launch</div>
+                        <div class="setting-desc">Always ask for PIN on cold start</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="require-pin-launch-toggle"><span class="slider round"></span></label>
+                </div>
             </div>
         </div>
 
@@ -586,6 +600,13 @@
                         <div class="btn-maintenance-text">
                             <span class="btn-maintenance-label">Sync Now</span>
                             <span class="btn-maintenance-desc">Force cloud synchronization</span>
+                        </div>
+                    </button>
+                    <button class="btn-primary btn-maintenance" id="btn-check-updates">
+                        <div class="btn-maintenance-icon"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+                        <div class="btn-maintenance-text">
+                            <span class="btn-maintenance-label">Check for Updates</span>
+                            <span class="btn-maintenance-desc">Look for a newer version</span>
                         </div>
                     </button>
                 </div>
