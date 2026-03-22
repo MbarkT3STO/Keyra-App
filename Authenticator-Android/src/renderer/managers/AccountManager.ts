@@ -14,7 +14,7 @@ export interface AccountManagerHost {
     showOtpModal(account: any): void;
     showAddModal(): void;
     privacyMode: boolean;
-    vaultViewStyle: 'unified' | 'compact' | 'secure';
+    vaultViewStyle: 'unified' | 'compact' | 'focus' | 'secure';
     accounts: any[];
     searchQuery: string;
     timerInterval: any;
@@ -96,7 +96,12 @@ export class AccountManager {
             emptyState.classList.add('hidden');
             searchEmptyState.classList.add('hidden');
             grid.innerHTML = '';
-            filtered.forEach((acc, index) => grid.appendChild(this.createAccountCard(acc, index)));
+
+            if (this.host.vaultViewStyle === 'focus') {
+                this.renderFocusView(grid, filtered);
+            } else {
+                filtered.forEach((acc, index) => grid.appendChild(this.createAccountCard(acc, index)));
+            }
         }
 
         if (document.body.classList.contains('vault-is-locked')) {
@@ -110,14 +115,24 @@ export class AccountManager {
             // Skip tick when app is backgrounded — saves CPU/battery
             if ((window as any).__appInBackground) return;
             const remaining = await (window as any).api.getRemainingSeconds();
-            document.querySelectorAll<HTMLElement>('.account-card').forEach((card, i) => {
-                if (this.host.accounts[i]) this.updateCardOTP(card, this.host.accounts[i].secret, remaining);
-            });
+
+            if (this.host.vaultViewStyle === 'focus') {
+                // Update focus card
+                const focusCard = document.getElementById('focus-main-card');
+                if (focusCard) {
+                    const secret = focusCard.dataset.secret;
+                    if (secret) this.updateFocusCardOTP(focusCard, secret, remaining);
+                }
+            } else {
+                document.querySelectorAll<HTMLElement>('.account-card').forEach((card, i) => {
+                    if (this.host.accounts[i]) this.updateCardOTP(card, this.host.accounts[i].secret, remaining);
+                });
+            }
         }, 1000);
     }
 
     public clearAllOTPCodes() {
-        document.querySelectorAll('.otp-code').forEach(el => { el.textContent = '••••••'; });
+        document.querySelectorAll('.otp-code, .focus-card-otp').forEach(el => { el.textContent = '••••••'; });
     }
 
     // ─── Private helpers ───────────────────────────────────────────────────────
@@ -150,6 +165,170 @@ export class AccountManager {
             <div class="skeleton-button skeleton-shimmer"></div>
         `;
         return card;
+    }
+
+    // ─── Focus View ────────────────────────────────────────────────────────────
+
+    private focusIndex: number = 0;
+
+    private renderFocusView(grid: HTMLElement, accounts: any[]) {
+        this.focusIndex = Math.min(this.focusIndex, accounts.length - 1);
+        const active = accounts[this.focusIndex];
+
+        // ── Big focus card ──
+        const ringCircumference = 113.1; // r=18: 2π×18
+        const focusCard = document.createElement('div');
+        focusCard.id = 'focus-main-card';
+        focusCard.className = 'focus-main-card';
+        focusCard.dataset.secret = active.secret;
+        focusCard.dataset.index = String(this.focusIndex);
+        focusCard.innerHTML = `
+            <div class="focus-card-header">
+                <div class="focus-card-icon">
+                    <i class="${this.getIcon(active.issuer)}"></i>
+                </div>
+                <div class="focus-card-identity">
+                    <div class="focus-card-name">${active.issuer}</div>
+                    <div class="focus-card-account">${active.account}</div>
+                </div>
+                <div class="focus-card-timer">
+                    <svg class="focus-timer-ring" viewBox="0 0 44 44">
+                        <circle cx="22" cy="22" r="18" fill="none" stroke="var(--bg-secondary)" stroke-width="3.5"></circle>
+                        <circle class="focus-timer-progress" cx="22" cy="22" r="18" fill="none"
+                            stroke="var(--accent-primary)" stroke-width="3.5" stroke-linecap="round"
+                            stroke-dasharray="${ringCircumference}" stroke-dashoffset="0"
+                            transform="rotate(-90 22 22)"
+                            style="transition: stroke-dashoffset 1s linear, stroke 0.3s ease;"></circle>
+                    </svg>
+                    <span class="focus-timer-seconds">30</span>
+                </div>
+            </div>
+            <div class="focus-card-otp ${this.host.privacyMode ? 'privacy-hidden' : ''}" data-id="${active.id}">
+                ${this.host.privacyMode ? '•••  •••' : '---  ---'}
+            </div>
+            <div class="focus-card-actions">
+                <button class="focus-action-btn focus-copy-btn">
+                    <i class="fa-solid fa-copy"></i>
+                    <span>Copy</span>
+                </button>
+                <button class="focus-action-btn focus-edit-btn">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Edit</span>
+                </button>
+                <button class="focus-action-btn focus-delete-btn danger">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Delete</span>
+                </button>
+            </div>
+        `;
+
+        // Copy
+        focusCard.querySelector('.focus-copy-btn')?.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (document.body.classList.contains('vault-is-locked')) {
+                this.host.showToast('Vault Locked - Enter PIN to Access', 'error'); return;
+            }
+            const otp = await (window as any).api.generateTOTP(active.secret);
+            await navigator.clipboard.writeText(otp);
+            Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+            const btn = focusCard.querySelector('.focus-copy-btn') as HTMLElement;
+            const icon = btn.querySelector('i') as HTMLElement;
+            const label = btn.querySelector('span') as HTMLElement;
+            icon.className = 'fa-solid fa-check';
+            label.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                icon.className = 'fa-solid fa-copy';
+                label.textContent = 'Copy';
+                btn.classList.remove('copied');
+            }, 1500);
+            this.host.showToast('Code copied!', 'success');
+            this.host.updateLastActivity('OTP copied');
+        });
+
+        // Tap OTP to copy
+        focusCard.querySelector('.focus-card-otp')?.addEventListener('click', async () => {
+            if (document.body.classList.contains('vault-is-locked')) return;
+            const otp = await (window as any).api.generateTOTP(active.secret);
+            this.copyOTPToClipboard(otp, focusCard.querySelector('.focus-card-otp') as HTMLElement);
+        });
+
+        // Edit
+        focusCard.querySelector('.focus-edit-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (document.body.classList.contains('vault-is-locked')) {
+                this.host.showToast('Vault Locked - Enter PIN to Access', 'error'); return;
+            }
+            this.host.showEditModal(active);
+        });
+
+        // Delete
+        focusCard.querySelector('.focus-delete-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (document.body.classList.contains('vault-is-locked')) {
+                this.host.showToast('Vault Locked - Enter PIN to Access', 'error'); return;
+            }
+            this.host.showDeleteConfirm(active);
+        });
+
+        grid.appendChild(focusCard);
+        this.updateFocusCardOTP(focusCard, active.secret, 30);
+
+        // ── Mini grid ──
+        if (accounts.length > 1) {
+            const miniGrid = document.createElement('div');
+            miniGrid.className = 'focus-mini-grid';
+
+            accounts.forEach((acc, idx) => {
+                const chip = document.createElement('button');
+                chip.className = `focus-chip${idx === this.focusIndex ? ' active' : ''}`;
+                chip.innerHTML = `
+                    <div class="focus-chip-icon"><i class="${this.getIcon(acc.issuer)}"></i></div>
+                    <div class="focus-chip-name">${acc.issuer}</div>
+                    <div class="focus-chip-account">${acc.account}</div>
+                `;
+                chip.addEventListener('click', () => {
+                    this.focusIndex = idx;
+                    this.renderAccounts();
+                });
+                miniGrid.appendChild(chip);
+            });
+
+            grid.appendChild(miniGrid);
+        }
+    }
+
+    private async updateFocusCardOTP(card: HTMLElement, secret: string, remainingSeconds: number) {
+        if (document.body.classList.contains('vault-is-locked')) return;
+
+        const codeEl = card.querySelector('.focus-card-otp') as HTMLElement;
+        if (codeEl) {
+            if (this.host.privacyMode) {
+                if (codeEl.textContent?.trim() !== '•••  •••') codeEl.textContent = '•••  •••';
+            } else {
+                const otp = await (window as any).api.generateTOTP(secret);
+                const display = otp.substring(0, 3) + '  ' + otp.substring(3);
+                if (codeEl.textContent?.trim() !== display) codeEl.textContent = display;
+            }
+        }
+
+        const isWarning = remainingSeconds <= 10 && remainingSeconds > 5;
+        const isDanger = remainingSeconds <= 5;
+        const strokeColor = isDanger ? '#ff3b30' : isWarning ? '#ff9500' : 'var(--accent-primary)';
+        const ringCircumference = 113.1;
+
+        const progressCircle = card.querySelector('.focus-timer-progress') as SVGCircleElement;
+        if (progressCircle) {
+            progressCircle.style.strokeDashoffset = (ringCircumference * (1 - remainingSeconds / 30)).toString();
+            progressCircle.style.stroke = strokeColor;
+        }
+        const secondsEl = card.querySelector('.focus-timer-seconds') as HTMLElement;
+        if (secondsEl) secondsEl.textContent = remainingSeconds.toString();
+
+        // Pulse the OTP on danger
+        if (codeEl) {
+            codeEl.classList.toggle('timer-danger', isDanger);
+        }
     }
 
     private createAccountCard(account: any, index: number): HTMLElement {

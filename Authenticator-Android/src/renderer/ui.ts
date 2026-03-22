@@ -14,7 +14,7 @@ export class UIManager {
     public accounts: any[] = [];
     public timerInterval: any = null;
     public searchQuery: string = '';
-    public vaultViewStyle: 'unified' | 'compact' | 'secure' = 'compact';
+    public vaultViewStyle: 'unified' | 'compact' | 'focus' | 'secure' = 'compact';
     public userId: string;
 
     // Privacy state — backed by PrivacyManager, exposed as pass-through for host interfaces

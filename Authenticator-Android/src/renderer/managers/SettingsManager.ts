@@ -21,7 +21,7 @@ export interface SettingsManagerHost {
     privacyMode: boolean;
     screenGuardian: boolean;
     privacyManager: { applyPrivacyMode(v: boolean, save?: boolean): void; applyScreenGuardian(v: boolean, save?: boolean): void; };
-    vaultViewStyle: 'unified' | 'compact' | 'secure';
+    vaultViewStyle: 'unified' | 'compact' | 'focus' | 'secure';
     currentTheme: 'light' | 'dark';
     themeMode: 'light' | 'dark' | 'auto';
     oledMode: boolean;
@@ -63,7 +63,7 @@ export class SettingsManager {
 
         if (s.oledMode !== undefined) this.host.applyOledMode(!!s.oledMode, true);
 
-        if (s.vaultViewStyle && ['unified', 'compact', 'secure'].includes(s.vaultViewStyle)) {
+        if (s.vaultViewStyle && ['unified', 'compact', 'focus', 'secure'].includes(s.vaultViewStyle)) {
             this.host.vaultViewStyle = s.vaultViewStyle;
         }
 
@@ -169,7 +169,7 @@ export class SettingsManager {
 
     public initVaultViewStyle() {
         const saved = localStorage.getItem(this.host.getStorageKey('vault_view_style')) as any;
-        if (saved && ['unified', 'compact', 'secure'].includes(saved)) {
+        if (saved && ['unified', 'compact', 'focus', 'secure'].includes(saved)) {
             this.host.vaultViewStyle = saved;
         }
         const globalVessel = document.getElementById('global-timer-vessel');
@@ -196,7 +196,7 @@ export class SettingsManager {
         // Vault view style
         document.querySelectorAll('#vault-view-segmented .segment').forEach(btn => {
             btn.addEventListener('click', () => {
-                const val = btn.getAttribute('data-val') as 'unified' | 'compact' | 'secure';
+                const val = btn.getAttribute('data-val') as 'unified' | 'compact' | 'focus' | 'secure';
                 if (!val) return;
                 this.host.vaultViewStyle = val;
                 localStorage.setItem(this.host.getStorageKey('vault_view_style'), val);
@@ -205,7 +205,7 @@ export class SettingsManager {
                 const globalVessel = document.getElementById('global-timer-vessel');
                 if (globalVessel) globalVessel.classList.toggle('hidden', val !== 'unified');
                 this.host.renderAccounts();
-                const labels: Record<string, string> = { unified: 'Unified', compact: 'Compact', secure: 'Secure' };
+                const labels: Record<string, string> = { unified: 'Unified', compact: 'Compact', focus: 'Focus', secure: 'Secure' };
                 this.host.showToast(`View: ${labels[val]}`, 'info');
             });
         });
