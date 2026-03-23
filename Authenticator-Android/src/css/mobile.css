@@ -141,16 +141,23 @@ input, textarea {
     /* ── Vault floating header panel ── */
     .vault-header-panel {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        flex-direction: column;
         margin: 12px 0 16px;
-        padding: 12px 14px 12px 16px;
         border-radius: 22px;
         background: var(--bg-primary);
         box-shadow:
             8px 8px 20px var(--nm-shadow-dark),
             -8px -8px 20px var(--nm-shadow-light);
         flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    /* Top row: brand + actions */
+    .vault-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px 12px 16px;
     }
 
     /* Brand side */
@@ -246,9 +253,38 @@ input, textarea {
         display: none !important;
     }
 
-    /* Accent variant — lock button */
+    /* Accent variant */
     .vault-header-btn--accent {
         color: var(--accent-primary);
+    }
+
+    /* Collapse toggle chevron */
+    .vault-header-collapse-btn {
+        font-size: 12px;
+        color: var(--text-tertiary);
+    }
+
+    .vault-header-collapse-btn i {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .vault-header-panel.collapsed .vault-header-collapse-btn i {
+        transform: rotate(180deg);
+    }
+
+    /* Add button accent */
+    .vault-add-btn {
+        color: var(--accent-primary);
+    }
+
+    /* Override components.css height on #add-account-btn when inside vault toolbar */
+    .vault-toolbar-inner #add-account-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+        font-size: 15px;
+        padding: 0;
     }
 
     /* Sync spin */
@@ -304,6 +340,69 @@ input, textarea {
             inset 2px 2px 5px var(--nm-shadow-dark),
             inset -2px -2px 5px var(--nm-shadow-light);
         border: none;
+    }
+
+    /* Inset divider between rows */
+    .vault-header-divider {
+        height: 3px;
+        margin: 0 14px;
+        border-radius: 99px;
+        background: var(--bg-primary);
+        box-shadow:
+            inset 2px 2px 4px var(--nm-shadow-dark),
+            inset -2px -2px 4px var(--nm-shadow-light);
+        transition: opacity 0.25s ease, margin 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .vault-header-panel.collapsed .vault-header-divider {
+        opacity: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    /* Collapsible toolbar row */
+    .vault-header-toolbar {
+        overflow: hidden;
+        max-height: 72px;
+        transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.25s ease,
+                    padding 0.3s ease;
+        opacity: 1;
+    }
+
+    .vault-header-panel.collapsed .vault-header-toolbar {
+        max-height: 0;
+        opacity: 0;
+    }
+
+    .vault-toolbar-inner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px 14px;
+    }
+
+    /* View style segmented inside panel */
+    .vault-header-toolbar .vault-view-toggle {
+        flex: 1;
+        height: 40px;
+        min-width: unset;
+        padding: 4px;
+        border-radius: 99px;
+        box-shadow: var(--nm-shadow-in-sm);
+    }
+
+    .vault-header-toolbar .vault-view-toggle .segment {
+        flex: 1;
+        min-height: 32px;
+        font-size: 12px;
+    }
+
+    .vault-header-toolbar .vault-view-toggle .segment-indicator {
+        box-shadow:
+            4px 4px 8px var(--nm-shadow-dark),
+            -4px -4px 8px var(--nm-shadow-light);
     }
 
     /* Avatar button */
@@ -669,50 +768,13 @@ input, textarea {
         padding-right: 14px;
     }
 
-    /* Section header — hide large title, keep tools row */
+    /* Section header — hide entirely on mobile (toolbar is in vault-header-panel) */
     .header-main {
         display: none;
     }
 
     .section-header {
-        margin-bottom: 12px;
-    }
-
-    /* ── Vault toolbar: wrap the whole search-add-group in a neumorphic tray ── */
-    .search-add-group {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: var(--bg-primary);
-        box-shadow:
-            7px 7px 18px var(--nm-shadow-dark),
-            -7px -7px 18px var(--nm-shadow-light);
-        border-radius: 24px;
-        padding: 10px 12px;
-    }
-
-    /* View-style segmented control — compact pill inside the tray */
-    .vault-view-toggle {
-        height: 40px;
-        min-width: unset;
-        padding: 4px;
-        border-radius: var(--radius-full);
-        box-shadow: var(--nm-shadow-in-sm);
-        flex-shrink: 0;
-        flex: 1;
-    }
-
-    .vault-view-toggle .segment {
-        flex: 1;
-        min-height: 32px;
-        font-size: 12px;
-    }
-
-    .vault-view-toggle .segment-indicator {
-        box-shadow:
-            4px 4px 8px var(--nm-shadow-dark),
-            -4px -4px 8px var(--nm-shadow-light);
+        display: none;
     }
 
     /* Search vessel — hidden on mobile (overlay handles search) */
@@ -722,38 +784,6 @@ input, textarea {
     .search-vessel.search-focused .search-input,
     .search-vessel.search-focused .search-icon {
         display: none !important;
-    }
-
-    /* Both action buttons — identical neumorphic circles */
-    #mobile-search-btn,
-    .btn-primary#add-account-btn {
-        width: 46px;
-        height: 46px;
-        min-width: 46px;
-        border-radius: 50%;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        box-shadow:
-            5px 5px 12px var(--nm-shadow-dark),
-            -5px -5px 12px var(--nm-shadow-light);
-    }
-
-    #mobile-search-btn:active,
-    .btn-primary#add-account-btn:active {
-        box-shadow: var(--nm-shadow-in-sm);
-        transform: scale(0.91);
-    }
-
-    .btn-primary#add-account-btn span {
-        display: none;
-    }
-
-    .btn-primary#add-account-btn i {
-        font-size: 18px;
-        margin: 0;
     }
 }
 
@@ -1161,25 +1191,6 @@ input, textarea {
     .btn-primary:active {
         box-shadow: var(--nm-shadow-in-sm);
         transform: scale(0.97);
-    }
-
-    /* Add account button — icon only on small screens */
-    .btn-primary#add-account-btn {
-        width: var(--mobile-btn-h);
-        height: var(--mobile-btn-h);
-        padding: 0;
-        flex-shrink: 0;
-        justify-content: center;
-        border-radius: 16px;
-    }
-
-    .btn-primary#add-account-btn span {
-        display: none;
-    }
-
-    .btn-primary#add-account-btn i {
-        font-size: 20px;
-        margin: 0;
     }
 }
 

@@ -438,6 +438,23 @@ export class NavigationManager {
             if (e.target === e.currentTarget) closeAbout();
         });
 
+        // Vault toolbar collapse toggle
+        const vaultPanel = document.getElementById('vault-header-panel');
+        const toolbarToggle = document.getElementById('vault-toolbar-toggle');
+        const TOOLBAR_KEY = 'vault_toolbar_collapsed';
+        if (vaultPanel && toolbarToggle) {
+            const isCollapsed = localStorage.getItem(TOOLBAR_KEY) === '1';
+            if (isCollapsed) {
+                vaultPanel.classList.add('collapsed');
+                toolbarToggle.setAttribute('aria-expanded', 'false');
+            }
+            toolbarToggle.addEventListener('click', () => {
+                const collapsed = vaultPanel.classList.toggle('collapsed');
+                toolbarToggle.setAttribute('aria-expanded', String(!collapsed));
+                localStorage.setItem(TOOLBAR_KEY, collapsed ? '1' : '0');
+            });
+        }
+
         document.getElementById('about-website-row')?.addEventListener('click', async () => {
             try {
                 const { Browser } = await import('@capacitor/browser');

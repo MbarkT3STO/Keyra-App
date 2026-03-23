@@ -317,36 +317,68 @@
     </div>
 
     <!-- Floating vault header panel -->
-    <div class="vault-header-panel">
-        <!-- Brand left -->
-        <div class="vault-header-brand">
-            <div class="vault-header-logo-vessel">
-                <img src="/logo.png" class="app-logo-small nm-logo">
+    <div class="vault-header-panel" id="vault-header-panel">
+        <!-- Row 1: Brand + Actions -->
+        <div class="vault-header-row">
+            <!-- Brand left -->
+            <div class="vault-header-brand">
+                <div class="vault-header-logo-vessel">
+                    <img src="/logo.png" class="app-logo-small nm-logo">
+                </div>
+                <div class="vault-header-brand-text">
+                    <span class="vault-header-title">Keyra</span>
+                    <span class="vault-header-sub">YOUR VAULT</span>
+                </div>
             </div>
-            <div class="vault-header-brand-text">
-                <span class="vault-header-title">Keyra</span>
-                <span class="vault-header-sub">YOUR VAULT</span>
+            <!-- Actions right -->
+            <div class="vault-header-actions">
+                <!-- Sync indicator -->
+                <div class="vault-header-btn sync-btn hidden" id="mobile-sync-indicator" aria-label="Syncing">
+                    <i class="fa-solid fa-rotate"></i>
+                </div>
+                <!-- Lock -->
+                <button class="vault-header-btn vault-header-btn--accent" id="mobile-lock-btn" title="Lock Vault">
+                    <i class="fa-solid fa-lock"></i>
+                </button>
+                <!-- Toolbar toggle -->
+                <button class="vault-header-btn vault-header-collapse-btn" id="vault-toolbar-toggle" title="Toggle toolbar" aria-expanded="true">
+                    <i class="fa-solid fa-chevron-up"></i>
+                </button>
+                <!-- Avatar -->
+                <button class="vault-header-avatar-btn" id="mobile-avatar-btn">
+                    <div class="vault-header-avatar-ring">
+                        <div class="user-avatar" id="mobile-user-avatar">
+                            <img id="mobile-avatar-img" class="hidden">
+                            <span id="mobile-avatar-initials">?</span>
+                        </div>
+                    </div>
+                </button>
             </div>
         </div>
-        <!-- Actions right -->
-        <div class="vault-header-actions">
-            <!-- Sync indicator -->
-            <div class="vault-header-btn sync-btn hidden" id="mobile-sync-indicator" aria-label="Syncing">
-                <i class="fa-solid fa-rotate"></i>
-            </div>
-            <!-- Lock -->
-            <button class="vault-header-btn vault-header-btn--accent" id="mobile-lock-btn" title="Lock Vault">
-                <i class="fa-solid fa-lock"></i>
-            </button>
-            <!-- Avatar -->
-            <button class="vault-header-avatar-btn" id="mobile-avatar-btn">
-                <div class="vault-header-avatar-ring">
-                    <div class="user-avatar" id="mobile-user-avatar">
-                        <img id="mobile-avatar-img" class="hidden">
-                        <span id="mobile-avatar-initials">?</span>
-                    </div>
+
+        <!-- Inset divider -->
+        <div class="vault-header-divider" id="vault-header-divider"></div>
+
+        <!-- Row 2: Toolbar (collapsible) -->
+        <div class="vault-header-toolbar" id="vault-header-toolbar">
+            <div class="vault-toolbar-inner">
+                <!-- View style segmented -->
+                <div class="segmented-control vault-view-toggle" id="vault-view-segmented">
+                    <button class="segment" data-val="unified" title="Unified"><i class="fa-solid fa-grip-lines"></i></button>
+                    <button class="segment active" data-val="compact" title="Compact"><i class="fa-solid fa-grip"></i></button>
+                    <button class="segment" data-val="focus" title="Focus"><i class="fa-solid fa-table-cells-large"></i></button>
+                    <button class="segment" data-val="secure" title="Secure"><i class="fa-solid fa-shield-halved"></i></button>
+                    <div class="segment-indicator"></div>
                 </div>
-            </button>
+                <!-- Search -->
+                <button class="vault-header-btn" id="mobile-search-btn" title="Search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <!-- Add -->
+                <button class="vault-header-btn vault-header-btn--accent vault-add-btn" id="add-account-btn" title="Add Account">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -401,28 +433,10 @@
         </div>
     </div>
 
-    <div class="section-header">
-        <div class="header-main">
-            <h1 class="section-title">My Vault</h1>
-            <p class="section-subtitle">YOUR SAVED ACCOUNTS</p>
-        </div>
-        <div class="search-add-group">
-            <div class="segmented-control vault-view-toggle" id="vault-view-segmented">
-                <button class="segment" data-val="unified" title="Unified"><i class="fa-solid fa-grip-lines"></i></button>
-                <button class="segment active" data-val="compact" title="Compact"><i class="fa-solid fa-grip"></i></button>
-                <button class="segment" data-val="focus" title="Focus"><i class="fa-solid fa-table-cells-large"></i></button>
-                <button class="segment" data-val="secure" title="Secure"><i class="fa-solid fa-shield-halved"></i></button>
-                <div class="segment-indicator"></div>
-            </div>
-            <button class="mobile-action-btn" id="mobile-search-btn" title="Search">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
-            <div class="search-vessel" style="display:none;">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="vault-search" class="form-input search-input" placeholder="Search your accounts...">
-            </div>
-            <button class="btn-primary" id="add-account-btn"><i class="fa-solid fa-plus"></i><span>Add Account</span></button>
-        </div>
+    <!-- Search vessel (hidden, used by search overlay) -->
+    <div class="search-vessel" style="display:none;">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="vault-search" class="form-input search-input" placeholder="Search your accounts...">
     </div>
 
     <div class="global-timer-vessel hidden" id="global-timer-vessel">
