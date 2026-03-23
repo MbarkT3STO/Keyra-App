@@ -49,13 +49,13 @@ input, textarea {
 
 @media (max-width: 768px) {
     :root {
-        --mobile-navbar-h: 60px;
-        --mobile-bottom-nav-h: 64px;
-        --mobile-card-radius: 20px;
-        --mobile-card-pad: 14px 16px;
-        --mobile-icon-size: 42px;
-        --mobile-otp-size: 1.6rem;
-        --mobile-btn-h: 52px;
+        --mobile-navbar-h: 58px;
+        --mobile-bottom-nav-h: 68px;
+        --mobile-card-radius: 22px;
+        --mobile-card-pad: 16px 18px;
+        --mobile-icon-size: 44px;
+        --mobile-otp-size: 1.65rem;
+        --mobile-btn-h: 54px;
     }
 }
 
@@ -77,25 +77,25 @@ input, textarea {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 14px 16px 10px;
+        padding: 12px 16px 8px;
         flex-shrink: 0;
     }
 
     .mobile-tab-brand {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 9px;
     }
 
     .mobile-brand-logo {
-        width: 28px !important;
-        height: 28px !important;
+        width: 30px !important;
+        height: 30px !important;
     }
 
     .mobile-brand-name {
-        font-size: 20px;
+        font-size: 22px;
         font-weight: 900;
-        letter-spacing: -1px;
+        letter-spacing: -1.2px;
         color: var(--text-primary);
     }
 
@@ -106,13 +106,13 @@ input, textarea {
     }
 
     .mobile-action-btn {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
         border-radius: 14px;
         background: var(--bg-primary);
         box-shadow:
-            4px 4px 10px var(--nm-shadow-dark),
-            -4px -4px 10px var(--nm-shadow-light);
+            5px 5px 12px var(--nm-shadow-dark),
+            -5px -5px 12px var(--nm-shadow-light);
         border: none;
         color: var(--text-secondary);
         font-size: 16px;
@@ -151,7 +151,7 @@ input, textarea {
         font-size: 14px;
         font-weight: 800;
         box-shadow: none;
-        border: 2px solid var(--accent-soft);
+        border: 2.5px solid var(--accent-primary);
     }
 
     /* Mobile user menu — bottom sheet */
@@ -172,9 +172,9 @@ input, textarea {
     .mobile-user-sheet-backdrop {
         position: absolute;
         inset: 0;
-        background: hsla(var(--h), 20%, 5%, 0.5);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        background: hsla(var(--h), 20%, 5%, 0.6);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
         opacity: 0;
         transition: opacity 0.3s ease;
     }
@@ -186,12 +186,12 @@ input, textarea {
     .mobile-user-sheet-panel {
         position: relative;
         background: var(--bg-primary);
-        border-radius: 28px 28px 0 0;
-        padding: 12px 16px calc(env(safe-area-inset-bottom) + 20px);
+        border-radius: 32px 32px 0 0;
+        padding: 12px 16px calc(env(safe-area-inset-bottom) + 24px);
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        box-shadow: 0 -12px 40px var(--nm-shadow-dark);
+        gap: 8px;
+        box-shadow: 0 -16px 48px var(--nm-shadow-dark);
         transform: translateY(100%);
         transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
@@ -220,8 +220,8 @@ input, textarea {
         border-radius: 20px;
         background: var(--bg-primary);
         box-shadow:
-            inset 4px 4px 10px var(--nm-shadow-dark),
-            inset -4px -4px 10px var(--nm-shadow-light);
+            inset 5px 5px 12px var(--nm-shadow-dark),
+            inset -5px -5px 12px var(--nm-shadow-light);
         margin-bottom: 4px;
     }
 
@@ -309,11 +309,11 @@ input, textarea {
         align-items: center;
         gap: 14px;
         padding: 14px 16px;
-        border-radius: 18px;
+        border-radius: 20px;
         background: var(--bg-primary);
         box-shadow:
-            5px 5px 12px var(--nm-shadow-dark),
-            -5px -5px 12px var(--nm-shadow-light);
+            6px 6px 14px var(--nm-shadow-dark),
+            -6px -6px 14px var(--nm-shadow-light);
         border: none;
         cursor: pointer;
         width: 100%;
@@ -324,7 +324,7 @@ input, textarea {
         font-weight: 700;
         transition: box-shadow 0.12s ease, transform 0.12s ease;
         -webkit-tap-highlight-color: transparent;
-        min-height: 56px;
+        min-height: 58px;
     }
 
     .sheet-action-btn:active {
@@ -393,18 +393,18 @@ input, textarea {
     .bottom-nav {
         display: flex;
         position: fixed;
-        bottom: calc(env(safe-area-inset-bottom) + 12px);
-        left: 16px;
-        right: 16px;
-        height: 68px;
+        bottom: calc(env(safe-area-inset-bottom) + 14px);
+        left: 14px;
+        right: 14px;
+        height: 70px;
         background: var(--bg-primary);
         box-shadow:
-            8px 8px 20px var(--nm-shadow-dark),
-            -8px -8px 20px var(--nm-shadow-light);
-        border-radius: 26px;
+            10px 10px 24px var(--nm-shadow-dark),
+            -10px -10px 24px var(--nm-shadow-light);
+        border-radius: 28px;
         z-index: 200;
         align-items: center;
-        padding: 6px 8px;
+        padding: 6px 10px;
         gap: 4px;
     }
 
@@ -415,28 +415,28 @@ input, textarea {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 3px;
+        gap: 4px;
         background: none;
         border: none;
         color: var(--text-tertiary);
-        font-size: 9.5px;
+        font-size: 9px;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
         cursor: pointer;
         transition: color var(--transition-fast);
         padding: 0;
         height: 100%;
-        border-radius: 20px;
+        border-radius: 22px;
         position: relative;
         -webkit-tap-highlight-color: transparent;
     }
 
     /* ── Icon vessel ── */
     .bottom-nav-tab-icon {
-        width: 40px;
-        height: 28px;
-        border-radius: 10px;
+        width: 44px;
+        height: 30px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -446,7 +446,7 @@ input, textarea {
     }
 
     .bottom-nav-tab i {
-        font-size: 19px;
+        font-size: 20px;
         line-height: 1;
         transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.18s ease;
         position: relative;
@@ -465,12 +465,12 @@ input, textarea {
     .bottom-nav-tab.active .bottom-nav-tab-icon {
         background: var(--bg-primary);
         box-shadow:
-            4px 4px 10px var(--nm-shadow-dark),
-            -4px -4px 10px var(--nm-shadow-light);
+            5px 5px 12px var(--nm-shadow-dark),
+            -5px -5px 12px var(--nm-shadow-light);
     }
 
     .bottom-nav-tab.active i {
-        transform: scale(1.12) translateY(-1px);
+        transform: scale(1.15) translateY(-1px);
         color: var(--accent-primary);
     }
 
@@ -488,7 +488,7 @@ input, textarea {
 
     /* Content clearance */
     .main-content {
-        padding-bottom: calc(68px + env(safe-area-inset-bottom) + 28px);
+        padding-bottom: calc(70px + env(safe-area-inset-bottom) + 28px);
     }
 }
 
@@ -496,7 +496,7 @@ input, textarea {
 
 @media (max-width: 768px) {
     .main-content {
-        padding-top: 8px;
+        padding-top: 6px;
         padding-left: 14px;
         padding-right: 14px;
     }
@@ -507,7 +507,7 @@ input, textarea {
     }
 
     .section-header {
-        margin-bottom: 14px;
+        margin-bottom: 12px;
     }
 
     /* ── Vault toolbar: wrap the whole search-add-group in a neumorphic tray ── */
@@ -518,9 +518,9 @@ input, textarea {
         gap: 10px;
         background: var(--bg-primary);
         box-shadow:
-            6px 6px 16px var(--nm-shadow-dark),
-            -6px -6px 16px var(--nm-shadow-light);
-        border-radius: 22px;
+            7px 7px 18px var(--nm-shadow-dark),
+            -7px -7px 18px var(--nm-shadow-light);
+        border-radius: 24px;
         padding: 10px 12px;
     }
 
@@ -559,9 +559,9 @@ input, textarea {
     /* Both action buttons — identical neumorphic circles */
     #mobile-search-btn,
     .btn-primary#add-account-btn {
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
+        width: 46px;
+        height: 46px;
+        min-width: 46px;
         border-radius: 50%;
         flex-shrink: 0;
         display: flex;
@@ -569,8 +569,8 @@ input, textarea {
         justify-content: center;
         padding: 0;
         box-shadow:
-            4px 4px 10px var(--nm-shadow-dark),
-            -4px -4px 10px var(--nm-shadow-light);
+            5px 5px 12px var(--nm-shadow-dark),
+            -5px -5px 12px var(--nm-shadow-light);
     }
 
     #mobile-search-btn:active,
@@ -600,23 +600,23 @@ input, textarea {
     .account-card {
         padding: var(--mobile-card-pad);
         border-radius: var(--mobile-card-radius);
-        gap: 10px;
-        /* Slightly softer shadow on mobile for performance */
+        gap: 12px;
+        /* Crisper shadow on mobile */
         box-shadow:
-            8px 8px 18px var(--nm-shadow-dark),
-            -8px -8px 18px var(--nm-shadow-light);
+            9px 9px 20px var(--nm-shadow-dark),
+            -9px -9px 20px var(--nm-shadow-light);
     }
 
     /* Disable hover lift on touch — use active press instead */
     .account-card:hover {
         transform: none;
         box-shadow:
-            8px 8px 18px var(--nm-shadow-dark),
-            -8px -8px 18px var(--nm-shadow-light);
+            9px 9px 20px var(--nm-shadow-dark),
+            -9px -9px 20px var(--nm-shadow-light);
     }
 
     .account-card:active {
-        transform: scale(0.985);
+        transform: scale(0.984);
         box-shadow: var(--nm-shadow-in-sm);
     }
 
@@ -633,12 +633,12 @@ input, textarea {
         flex-direction: column;
         align-items: center;
         gap: 0;
-        padding: 28px 20px 24px;
+        padding: 30px 22px 26px;
         background: var(--bg-primary);
-        border-radius: 32px;
+        border-radius: 34px;
         box-shadow:
-            10px 10px 28px var(--nm-shadow-dark),
-            -10px -10px 28px var(--nm-shadow-light);
+            12px 12px 30px var(--nm-shadow-dark),
+            -12px -12px 30px var(--nm-shadow-light);
         animation: fvIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) both;
         transition: opacity 0.16s ease, transform 0.16s ease;
     }
@@ -779,12 +779,12 @@ input, textarea {
     /* Primary copy button */
     .fv-copy-btn {
         width: 100%;
-        height: 56px;
-        border-radius: 20px;
+        height: 58px;
+        border-radius: 22px;
         background: var(--bg-primary);
         box-shadow:
-            6px 6px 16px var(--nm-shadow-dark),
-            -6px -6px 16px var(--nm-shadow-light);
+            7px 7px 18px var(--nm-shadow-dark),
+            -7px -7px 18px var(--nm-shadow-light);
         border: none;
         cursor: pointer;
         display: flex;
@@ -913,23 +913,23 @@ input, textarea {
     .account-icon {
         width: var(--mobile-icon-size);
         height: var(--mobile-icon-size);
-        border-radius: 14px;
+        border-radius: 15px;
         box-shadow:
-            inset 4px 4px 8px var(--nm-shadow-dark),
-            inset -4px -4px 8px var(--nm-shadow-light);
+            inset 4px 4px 9px var(--nm-shadow-dark),
+            inset -4px -4px 9px var(--nm-shadow-light);
     }
 
     .account-icon i {
-        font-size: 18px;
+        font-size: 19px;
     }
 
     .service-name {
-        font-size: 14px;
-        letter-spacing: -0.2px;
+        font-size: 15px;
+        letter-spacing: -0.3px;
     }
 
     .account-identity {
-        font-size: 11.5px;
+        font-size: 11px;
     }
 
     /* OTP row: code centered, timer overlaid on the right */
@@ -937,19 +937,19 @@ input, textarea {
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        padding: 10px 14px;
-        min-height: 46px;
+        padding: 12px 16px;
+        min-height: 50px;
         gap: 8px;
-        border-radius: 14px;
+        border-radius: 16px;
         box-shadow:
-            inset 5px 5px 10px var(--nm-shadow-dark),
-            inset -5px -5px 10px var(--nm-shadow-light);
+            inset 6px 6px 12px var(--nm-shadow-dark),
+            inset -6px -6px 12px var(--nm-shadow-light);
         position: relative;
     }
 
     .otp-code {
         font-size: var(--mobile-otp-size);
-        letter-spacing: 3px;
+        letter-spacing: 4px;
         text-align: center;
         flex: 1;
     }
@@ -1018,32 +1018,30 @@ input, textarea {
 /* ── 9. MODALS — BOTTOM SHEET ──────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-    /* Backdrop: blur + dim */
+    /* Backdrop: dim only */
     .modal-overlay {
         align-items: flex-end;
         padding: 0;
-        background: hsla(var(--h), 20%, 5%, 0.55);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        background: hsla(var(--h), 20%, 5%, 0.72);
     }
 
     /* Sheet */
     .modal {
         max-width: 100%;
         width: 100%;
-        border-radius: 28px 28px 0 0;
+        border-radius: 32px 32px 0 0;
         position: relative;
         bottom: auto;
         margin: 0;
-        max-height: 92dvh;
+        max-height: 94dvh;
         transform: translateY(100%);
         opacity: 1;
         transition:
             transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
             opacity 0.25s ease;
-        padding-bottom: calc(env(safe-area-inset-bottom) + 28px);
+        padding-bottom: calc(env(safe-area-inset-bottom) + 32px);
         box-shadow:
-            0 -12px 48px var(--nm-shadow-dark),
+            0 -16px 56px var(--nm-shadow-dark),
             0 -1px 0 var(--nm-shadow-light);
         display: flex;
         flex-direction: column;
@@ -1209,8 +1207,8 @@ input, textarea {
         flex: 1;
         justify-content: center;
         box-shadow:
-            6px 6px 14px var(--nm-shadow-dark),
-            -6px -6px 14px var(--nm-shadow-light);
+            7px 7px 16px var(--nm-shadow-dark),
+            -7px -7px 16px var(--nm-shadow-light);
     }
 
     .modal-footer .btn-primary {
@@ -1222,8 +1220,8 @@ input, textarea {
     .modal-footer .btn-danger:hover {
         transform: none;
         box-shadow:
-            6px 6px 14px var(--nm-shadow-dark),
-            -6px -6px 14px var(--nm-shadow-light);
+            7px 7px 16px var(--nm-shadow-dark),
+            -7px -7px 16px var(--nm-shadow-light);
     }
 
     .modal-footer .btn-primary:active,
@@ -1508,7 +1506,6 @@ input, textarea {
         box-shadow:
             6px 6px 14px var(--nm-shadow-dark),
             -6px -6px 14px var(--nm-shadow-light);
-        background-image: radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 70%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1573,14 +1570,14 @@ input, textarea {
     .auth-modal {
         max-width: 100% !important;
         width: 100% !important;
-        border-radius: 32px 32px 0 0 !important;
-        padding: 0 24px calc(env(safe-area-inset-bottom) + 36px) !important;
+        border-radius: 36px 36px 0 0 !important;
+        padding: 0 24px calc(env(safe-area-inset-bottom) + 40px) !important;
         margin: 0 !important;
         max-height: 96dvh !important;
         overflow-y: auto !important;
         animation: authMobileEntry 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
         box-shadow:
-            0 -12px 48px var(--nm-shadow-dark),
+            0 -16px 56px var(--nm-shadow-dark),
             0 -1px 0 var(--nm-shadow-light) !important;
     }
 
@@ -1603,28 +1600,28 @@ input, textarea {
 
     /* Brand header */
     .auth-brand {
-        padding-top: 20px;
-        margin-bottom: 28px;
-        gap: 8px;
+        padding-top: 24px;
+        margin-bottom: 32px;
+        gap: 10px;
     }
 
     .auth-logo-vessel {
-        width: 68px;
-        height: 68px;
-        border-radius: 22px;
+        width: 72px;
+        height: 72px;
+        border-radius: 24px;
         box-shadow:
-            8px 8px 18px var(--nm-shadow-dark),
-            -8px -8px 18px var(--nm-shadow-light);
+            9px 9px 20px var(--nm-shadow-dark),
+            -9px -9px 20px var(--nm-shadow-light);
     }
 
     .auth-logo-vessel img {
-        width: 44px;
-        height: 44px;
+        width: 46px;
+        height: 46px;
     }
 
     .auth-title {
-        font-size: 32px !important;
-        letter-spacing: -1.5px !important;
+        font-size: 34px !important;
+        letter-spacing: -1.8px !important;
     }
 
     /* Form inputs */
@@ -1682,7 +1679,7 @@ input, textarea {
         top: 0 !important;
         bottom: 0 !important;
         background: transparent !important;
-        padding: 0 14px calc(68px + env(safe-area-inset-bottom) + 28px);
+        padding: 0 14px calc(70px + env(safe-area-inset-bottom) + 28px);
     }
 
     /* ── Inline tab header for settings/account tabs ── */
@@ -1694,26 +1691,26 @@ input, textarea {
     /* ── Grid: single column, tighter gap ── */
     .settings-grid {
         grid-template-columns: 1fr;
-        gap: 14px;
-        padding-top: 8px;
+        gap: 12px;
+        padding-top: 6px;
     }
 
     /* ── Bento card: neumorphic raised, no hover lift ── */
     .bento-card {
         border-radius: var(--mobile-card-radius);
-        padding: 18px 16px;
+        padding: 20px 18px;
         gap: 14px;
         box-shadow:
-            8px 8px 20px var(--nm-shadow-dark),
-            -8px -8px 20px var(--nm-shadow-light);
+            9px 9px 22px var(--nm-shadow-dark),
+            -9px -9px 22px var(--nm-shadow-light);
         transition: box-shadow var(--transition-fast);
     }
 
     .bento-card:hover {
         transform: none;
         box-shadow:
-            8px 8px 20px var(--nm-shadow-dark),
-            -8px -8px 20px var(--nm-shadow-light);
+            9px 9px 22px var(--nm-shadow-dark),
+            -9px -9px 22px var(--nm-shadow-light);
     }
 
     .bento-card:active {
@@ -1939,8 +1936,8 @@ input, textarea {
     border-radius: var(--radius-full);
     background: var(--bg-primary);
     box-shadow:
-        6px 6px 14px var(--nm-shadow-dark),
-        -6px -6px 14px var(--nm-shadow-light);
+        8px 8px 18px var(--nm-shadow-dark),
+        -8px -8px 18px var(--nm-shadow-light);
     border: none;
     color: var(--accent-primary);
     font-size: 15px;
@@ -1999,9 +1996,9 @@ input, textarea {
 
 .toast-container {
     position: fixed;
-    bottom: calc(var(--mobile-bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 16px);
-    left: 16px;
-    right: 16px;
+    bottom: calc(var(--mobile-bottom-nav-h, 68px) + env(safe-area-inset-bottom) + 18px);
+    left: 14px;
+    right: 14px;
     top: auto;
     transform: none;
     z-index: 99999;
@@ -2014,17 +2011,17 @@ input, textarea {
 
 @media (max-width: 768px) {
     .toast-container {
-        bottom: calc(var(--mobile-bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 16px);
+        bottom: calc(var(--mobile-bottom-nav-h, 68px) + env(safe-area-inset-bottom) + 18px);
         top: auto;
-        left: 16px;
-        right: 16px;
+        left: 14px;
+        right: 14px;
         transform: none;
     }
 
     .neumorphic-toast {
         width: 100%;
         max-width: 100%;
-        border-radius: 22px;
+        border-radius: 24px;
         padding: 0;
         font-size: 14px;
         font-weight: 700;
@@ -2035,8 +2032,8 @@ input, textarea {
         overflow: hidden;
         background: var(--bg-primary);
         box-shadow:
-            10px 10px 24px var(--nm-shadow-dark),
-            -10px -10px 24px var(--nm-shadow-light);
+            12px 12px 28px var(--nm-shadow-dark),
+            -12px -12px 28px var(--nm-shadow-light);
         pointer-events: auto;
         cursor: pointer;
         position: relative;
@@ -2048,14 +2045,14 @@ input, textarea {
 
     /* Coloured icon vessel */
     .toast-icon-vessel {
-        width: 52px;
-        min-width: 52px;
+        width: 56px;
+        min-width: 56px;
         align-self: stretch;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 17px;
-        border-radius: 22px 0 0 22px;
+        font-size: 18px;
+        border-radius: 24px 0 0 24px;
     }
 
     .toast-success .toast-icon-vessel {
@@ -2158,8 +2155,8 @@ input, textarea {
         padding: 0 18px 0 7px;
         gap: 10px;
         box-shadow:
-            6px 6px 16px var(--nm-shadow-dark),
-            -6px -6px 16px var(--nm-shadow-light);
+            8px 8px 20px var(--nm-shadow-dark),
+            -8px -8px 20px var(--nm-shadow-light);
     }
 
     .sync-icon-vessel {
@@ -2462,13 +2459,13 @@ body.keyboard-open .auth-overlay {
     }
 
     .pin-indicators {
-        gap: 20px !important;
+        gap: 22px !important;
         padding: 8px 0 !important;
     }
 
     .pin-dot {
-        width: 14px !important;
-        height: 14px !important;
+        width: 16px !important;
+        height: 16px !important;
         border-radius: 50% !important;
         background: var(--bg-secondary) !important;
         box-shadow:
@@ -2484,13 +2481,17 @@ body.keyboard-open .auth-overlay {
 
     .pin-dot.success {
         background: #28a745 !important;
-        box-shadow: 0 0 12px rgba(40, 167, 69, 0.6) !important;
+        box-shadow:
+            inset 3px 3px 6px var(--nm-shadow-dark),
+            inset -3px -3px 6px var(--nm-shadow-light) !important;
         transform: scale(1.2) !important;
     }
 
     .pin-dot.error {
         background: #ff3b30 !important;
-        box-shadow: 0 0 12px rgba(255, 59, 48, 0.5) !important;
+        box-shadow:
+            inset 3px 3px 6px var(--nm-shadow-dark),
+            inset -3px -3px 6px var(--nm-shadow-light) !important;
     }
 
     .pin-helper {
@@ -2514,9 +2515,9 @@ body.keyboard-open .auth-overlay {
     .pin-numpad {
         display: grid !important;
         grid-template-columns: repeat(3, 1fr) !important;
-        gap: 12px !important;
+        gap: 14px !important;
         width: 100% !important;
-        max-width: 300px !important;
+        max-width: 310px !important;
         padding: 0 !important;
         flex-shrink: 0;
     }
@@ -2527,12 +2528,12 @@ body.keyboard-open .auth-overlay {
         align-items: center !important;
         justify-content: center !important;
         aspect-ratio: 1 / 1 !important;
-        max-height: 76px !important;
-        border-radius: 22px !important;
+        max-height: 80px !important;
+        border-radius: 24px !important;
         background: var(--bg-primary) !important;
         box-shadow:
-            6px 6px 14px var(--nm-shadow-dark),
-            -6px -6px 14px var(--nm-shadow-light) !important;
+            7px 7px 16px var(--nm-shadow-dark),
+            -7px -7px 16px var(--nm-shadow-light) !important;
         border: none !important;
         cursor: pointer !important;
         transition: box-shadow 0.1s ease, transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
@@ -2544,7 +2545,7 @@ body.keyboard-open .auth-overlay {
     }
 
     .pin-key span {
-        font-size: 26px !important;
+        font-size: 28px !important;
         font-weight: 700 !important;
         line-height: 1 !important;
         font-family: 'Outfit', sans-serif !important;
@@ -2712,13 +2713,13 @@ body.keyboard-open .auth-overlay {
 }
 
 .search-overlay-back {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 46px;
+    height: 46px;
+    border-radius: 15px;
     background: var(--bg-primary);
     box-shadow:
-        4px 4px 10px var(--nm-shadow-dark),
-        -4px -4px 10px var(--nm-shadow-light);
+        5px 5px 12px var(--nm-shadow-dark),
+        -5px -5px 12px var(--nm-shadow-light);
     border: none;
     color: var(--text-primary);
     font-size: 18px;
@@ -2740,8 +2741,8 @@ body.keyboard-open .auth-overlay {
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 48px;
-    padding: 0 16px;
+    height: 50px;
+    padding: 0 18px;
     border-radius: var(--radius-full);
     background: var(--bg-primary);
     box-shadow: var(--nm-shadow-in);
@@ -2804,12 +2805,12 @@ body.keyboard-open .auth-overlay {
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 14px 16px 16px;
-    border-radius: 20px;
+    padding: 16px 18px 18px;
+    border-radius: 22px;
     background: var(--bg-primary);
     box-shadow:
-        6px 6px 14px var(--nm-shadow-dark),
-        -6px -6px 14px var(--nm-shadow-light);
+        7px 7px 16px var(--nm-shadow-dark),
+        -7px -7px 16px var(--nm-shadow-light);
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -2998,8 +2999,8 @@ body.keyboard-open .auth-overlay {
 .otp-modal-code-hero {
     background: var(--bg-primary);
     box-shadow: var(--nm-shadow-in);
-    border-radius: 20px;
-    padding: 28px 24px 20px;
+    border-radius: 22px;
+    padding: 30px 24px 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -3111,8 +3112,8 @@ body.keyboard-open .auth-overlay {
 
 .otp-modal-copy-btn {
     flex: 1;
-    height: 56px;
-    border-radius: 16px;
+    height: 58px;
+    border-radius: 18px;
     background: var(--bg-primary);
     box-shadow: var(--nm-shadow-out);
     color: var(--accent-primary);
@@ -3136,9 +3137,9 @@ body.keyboard-open .auth-overlay {
 }
 
 .otp-modal-close-btn {
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
     background: var(--bg-primary);
     box-shadow: var(--nm-shadow-out);
     color: var(--text-tertiary);
@@ -3502,17 +3503,17 @@ body.keyboard-open .auth-overlay {
 
 @media (max-width: 768px) {
     .card-dropdown {
-        min-width: 180px;
-        border-radius: 18px;
+        min-width: 190px;
+        border-radius: 20px;
         padding: 8px;
         box-shadow:
-            12px 12px 28px var(--nm-shadow-dark),
-            -12px -12px 28px var(--nm-shadow-light);
+            14px 14px 32px var(--nm-shadow-dark),
+            -14px -14px 32px var(--nm-shadow-light);
     }
 
     .card-dropdown-item {
         padding: 14px 16px;
-        border-radius: 12px;
+        border-radius: 14px;
         font-size: 14px;
         font-weight: 800;
         min-height: 52px;
@@ -3633,10 +3634,10 @@ body.keyboard-open .auth-overlay {
 @media (max-width: 768px) {
     /* ── Avatar hero ── */
     .acc-identity-hero {
-        padding: 14px;
-        border-radius: 18px;
+        padding: 16px;
+        border-radius: 20px;
         gap: 14px;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
     }
 
     /* Gradient ring — slightly larger on mobile */
@@ -3696,7 +3697,7 @@ body.keyboard-open .auth-overlay {
 
     /* ── Forms ── */
     .acc-form .form-input {
-        height: 52px;
+        height: 54px;
         border-radius: 16px;
         font-size: 15px;
     }
@@ -3706,8 +3707,8 @@ body.keyboard-open .auth-overlay {
         font-size: 15px !important;
         border-radius: var(--radius-full) !important;
         box-shadow:
-            6px 6px 14px var(--nm-shadow-dark),
-            -6px -6px 14px var(--nm-shadow-light) !important;
+            8px 8px 18px var(--nm-shadow-dark),
+            -8px -8px 18px var(--nm-shadow-light) !important;
     }
 
     .acc-form-submit:active {
@@ -3782,7 +3783,6 @@ body.keyboard-open .auth-overlay {
 /* ── Online ── */
 .connectivity-indicator.online .connectivity-dot {
     background: #34c759;
-    box-shadow: 0 0 6px rgba(52, 199, 89, 0.7);
 }
 
 .connectivity-indicator.online .connectivity-label {
@@ -3798,7 +3798,6 @@ body.keyboard-open .auth-overlay {
 
 .connectivity-indicator.offline .connectivity-dot {
     background: #ff3b30;
-    box-shadow: 0 0 6px rgba(255, 59, 48, 0.6);
     animation: connectivity-pulse 1.6s ease-in-out infinite;
 }
 

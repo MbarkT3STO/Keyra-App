@@ -29,20 +29,20 @@
     /* Spacing System */
     --space-2xs: 4px;
     --space-xs: 8px;
-    --space-sm: 16px;
-    --space-md: 24px;
-    --space-lg: 32px;
-    --space-xl: 48px;
-    --space-2xl: 64px;
-    --space-3xl: 80px;
-    --space-4xl: 120px;
+    --space-sm: 14px;
+    --space-md: 20px;
+    --space-lg: 28px;
+    --space-xl: 40px;
+    --space-2xl: 56px;
+    --space-3xl: 72px;
+    --space-4xl: 100px;
 
     /* Radii */
-    --radius-sm: 8px;
+    --radius-sm: 10px;
     --radius-md: 16px;
-    --radius-lg: 24px;
-    --radius-xl: 32px;
-    --radius-auth: 40px;
+    --radius-lg: 22px;
+    --radius-xl: 28px;
+    --radius-auth: 36px;
     --radius-full: 999px;
 
     /* Transitions */

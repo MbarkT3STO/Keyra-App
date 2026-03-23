@@ -5,27 +5,27 @@
 :root {
     /* Neumorphic Shadow Tokens - Light Mode */
     --nm-shadow-light: #ffffff;
-    --nm-shadow-dark: rgba(163, 177, 198, 0.65);
+    --nm-shadow-dark: rgba(163, 177, 198, 0.75);
 
     --nm-shadow-out:
-        14px 14px 28px var(--nm-shadow-dark),
-        -14px -14px 28px var(--nm-shadow-light);
+        12px 12px 24px var(--nm-shadow-dark),
+        -12px -12px 24px var(--nm-shadow-light);
     --nm-shadow-in:
-        inset 12px 12px 24px var(--nm-shadow-dark),
-        inset -12px -12px 24px var(--nm-shadow-light);
+        inset 10px 10px 20px var(--nm-shadow-dark),
+        inset -10px -10px 20px var(--nm-shadow-light);
     --nm-shadow-out-sm:
-        7px 7px 16px var(--nm-shadow-dark),
-        -7px -7px 16px var(--nm-shadow-light);
+        6px 6px 14px var(--nm-shadow-dark),
+        -6px -6px 14px var(--nm-shadow-light);
     --nm-shadow-in-sm:
-        inset 7px 7px 14px var(--nm-shadow-dark),
-        inset -7px -7px 14px var(--nm-shadow-light);
+        inset 5px 5px 12px var(--nm-shadow-dark),
+        inset -5px -5px 12px var(--nm-shadow-light);
 
     /* Backward-compat aliases */
     --nm-raised: var(--nm-shadow-out);
     --nm-pressed: var(--nm-shadow-in);
     --nm-raised-hover: 16px 16px 32px var(--nm-shadow-dark), -16px -16px 32px var(--nm-shadow-light);
-    --nm-inner-top: inset -7px -7px 14px var(--nm-shadow-light);
-    --nm-inner-bottom: inset 7px 7px 14px var(--nm-shadow-dark);
+    --nm-inner-top: inset -6px -6px 14px var(--nm-shadow-light);
+    --nm-inner-bottom: inset 6px 6px 14px var(--nm-shadow-dark);
 }
 
 [data-theme="dark"] {
@@ -128,14 +128,14 @@ body.dark-theme.oled-optimized {
 }
 
 .nm-convex {
-    background: linear-gradient(145deg, var(--bg-secondary), var(--bg-primary));
+    background: var(--bg-primary);
     box-shadow: var(--nm-raised);
     border-radius: var(--radius-md);
     border: none;
 }
 
 .nm-concave {
-    background: linear-gradient(145deg, var(--bg-primary), var(--bg-secondary));
+    background: var(--bg-primary);
     box-shadow: var(--nm-pressed);
     border-radius: var(--radius-md);
     border: none;

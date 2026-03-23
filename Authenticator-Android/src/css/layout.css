@@ -44,7 +44,9 @@ body {
 .navbar {
     height: clamp(64px, 10vh, 88px);
     background: var(--bg-primary);
-    box-shadow: var(--nm-shadow-out-sm);
+    box-shadow:
+        0 4px 12px var(--nm-shadow-dark),
+        0 -2px 6px var(--nm-shadow-light);
     z-index: 100;
     position: sticky;
     top: 0;
@@ -204,9 +206,9 @@ body:has(.settings-container:not(.hidden)) .main-content {
     left: 0;
     right: 0;
     bottom: 0;
-    background: hsla(var(--h), 20%, 5%, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: hsla(var(--h), 20%, 5%, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -281,7 +283,9 @@ body:has(.settings-container:not(.hidden)) .main-content {
 
 .modal {
     background: var(--bg-primary);
-    box-shadow: none;
+    box-shadow:
+        20px 20px 48px var(--nm-shadow-dark),
+        -20px -20px 48px var(--nm-shadow-light);
     border-radius: var(--radius-xl);
     width: 100%;
     max-width: 540px;
@@ -311,7 +315,7 @@ body:has(.settings-container:not(.hidden)) .main-content {
 .accounts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    gap: 16px;
     width: 100%;
     max-width: 100%;
 }
