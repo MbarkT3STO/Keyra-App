@@ -466,11 +466,18 @@ input, textarea {
         gap: 8px;
         box-shadow: 0 -16px 48px var(--nm-shadow-dark);
         transform: translateY(100%);
-        transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
+        visibility: hidden;
+        transition:
+            transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+            visibility 0s linear 0.38s;
     }
 
     .mobile-user-sheet.show .mobile-user-sheet-panel {
         transform: translateY(0);
+        visibility: visible;
+        transition:
+            transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+            visibility 0s linear 0s;
     }
 
     /* Drag handle */
