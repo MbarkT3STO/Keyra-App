@@ -33,6 +33,33 @@ export class AccountManager {
         this.host = host;
     }
 
+    // ─── Field validation helpers ──────────────────────────────────────────────
+
+    private showFieldError(inputId: string, msg: string) {
+        const input = document.getElementById(inputId) as HTMLInputElement;
+        if (!input) return;
+        input.classList.add('invalid');
+        let errEl = input.parentElement?.querySelector('.form-error') as HTMLElement | null;
+        if (errEl) {
+            const span = errEl.querySelector('span');
+            if (span) span.textContent = msg;
+            errEl.classList.add('visible');
+        }
+        input.focus();
+    }
+
+    private clearFieldError(inputId: string) {
+        const input = document.getElementById(inputId) as HTMLInputElement;
+        if (!input) return;
+        input.classList.remove('invalid');
+        const errEl = input.parentElement?.querySelector('.form-error') as HTMLElement | null;
+        if (errEl) errEl.classList.remove('visible');
+    }
+
+    private isValidBase32(s: string): boolean {
+        return /^[A-Z2-7]+=*$/.test(s.toUpperCase().replace(/\s/g, ''));
+    }
+
     // ─── Public API ────────────────────────────────────────────────────────────
 
     public async loadInitialData(): Promise<void> {
@@ -661,6 +688,7 @@ export class AccountManager {
                         <div class="form-group">
                             <label class="form-label">Service</label>
                             <input type="text" id="new-issuer" class="form-input" placeholder="e.g. GitHub, Google">
+                            <div class="form-error" id="err-new-issuer"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Account</label>
@@ -669,6 +697,7 @@ export class AccountManager {
                         <div class="form-group">
                             <label class="form-label">TOTP Secret</label>
                             <input type="text" id="new-secret" class="form-input" placeholder="Enter secret key" autocomplete="off">
+                            <div class="form-error" id="err-new-secret"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                         </div>
                     </div>
                 </div>
@@ -793,10 +822,17 @@ export class AccountManager {
             const issuer = (document.getElementById('new-issuer') as HTMLInputElement).value.trim();
             const account = (document.getElementById('new-account') as HTMLInputElement).value.trim();
             const secret = (document.getElementById('new-secret') as HTMLInputElement).value.replace(/\s/g, '').toUpperCase();
-            if (!issuer || !secret) {
-                this.host.showToast('Service and Secret are required', 'error');
-                return;
-            }
+
+            // Clear previous errors
+            this.clearFieldError('new-issuer');
+            this.clearFieldError('new-secret');
+
+            let hasError = false;
+            if (!issuer) { this.showFieldError('new-issuer', 'Service name is required'); hasError = true; }
+            if (!secret) { this.showFieldError('new-secret', 'TOTP secret is required'); hasError = true; }
+            else if (!this.isValidBase32(secret)) { this.showFieldError('new-secret', 'Invalid secret — must be Base32 encoded'); hasError = true; }
+            if (hasError) return;
+
             const res = await (window as any).api.saveAccount({ id: Date.now().toString(), issuer, account, secret });
             this.host.accounts = res || [];
             this.renderAccounts();
@@ -808,6 +844,7 @@ export class AccountManager {
         document.getElementById('save-new-account')?.addEventListener('click', saveAction);
         ['new-issuer', 'new-account', 'new-secret'].forEach(id => {
             document.getElementById(id)?.addEventListener('keypress', (e) => { if (e.key === 'Enter') saveAction(); });
+            document.getElementById(id)?.addEventListener('input', () => this.clearFieldError(id));
         });
 
         document.getElementById('cancel-add-btn')?.addEventListener('click', () => {
@@ -852,6 +889,7 @@ export class AccountManager {
                     <div class="form-group">
                         <label class="form-label">Service</label>
                         <input type="text" id="edit-issuer" class="form-input" value="${account.issuer}">
+                        <div class="form-error" id="err-edit-issuer"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Account</label>
@@ -872,7 +910,8 @@ export class AccountManager {
         const updateAction = async () => {
             const issuer = (document.getElementById('edit-issuer') as HTMLInputElement).value.trim();
             const accName = (document.getElementById('edit-account') as HTMLInputElement).value.trim();
-            if (!issuer) return;
+            this.clearFieldError('edit-issuer');
+            if (!issuer) { this.showFieldError('edit-issuer', 'Service name is required'); return; }
             const res = await (window as any).api.saveAccount({ ...account, issuer, account: accName });
             this.host.accounts = res || [];
             this.renderAccounts();
@@ -884,6 +923,7 @@ export class AccountManager {
         document.getElementById('update-account')?.addEventListener('click', updateAction);
         ['edit-issuer', 'edit-account'].forEach(id => {
             document.getElementById(id)?.addEventListener('keypress', (e) => { if (e.key === 'Enter') updateAction(); });
+            document.getElementById(id)?.addEventListener('input', () => this.clearFieldError(id));
         });
         document.getElementById('cancel-edit-btn')?.addEventListener('click', () => this.host.hideModal());
     }

@@ -736,10 +736,11 @@
                 <div class="bento-title-vessel"><h3 class="bento-title">Display Name</h3><div class="bento-subtitle">Personalize your vault profile</div></div>
             </div>
             <div class="bento-content">
-                <form id="form-change-name" class="acc-form">
+                <form id="form-change-name" class="acc-form" novalidate>
                     <div class="form-group">
                         <label class="form-label">New Full Name</label>
-                        <input type="text" id="change-name-input" class="form-input" placeholder="Enter new name" required>
+                        <input type="text" id="change-name-input" class="form-input" placeholder="Enter new name">
+                        <div class="form-error" id="err-change-name"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                     </div>
                     <button type="submit" class="btn-primary acc-form-submit">
                         <i class="fa-solid fa-check"></i><span>Update Name</span>
@@ -755,10 +756,11 @@
                 <div class="bento-title-vessel"><h3 class="bento-title">Change Email</h3><div class="bento-subtitle">For notifications & recovery</div></div>
             </div>
             <div class="bento-content">
-                <form id="form-change-email" class="acc-form">
+                <form id="form-change-email" class="acc-form" novalidate>
                     <div class="form-group">
                         <label class="form-label">New Email Address</label>
-                        <input type="email" id="change-email-input" class="form-input" placeholder="new@domain.com" required>
+                        <input type="email" id="change-email-input" class="form-input" placeholder="new@domain.com">
+                        <div class="form-error" id="err-change-email"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                     </div>
                     <button type="submit" class="btn-primary acc-form-submit">
                         <i class="fa-solid fa-paper-plane"></i><span>Change Email</span>
@@ -774,14 +776,16 @@
                 <div class="bento-title-vessel"><h3 class="bento-title">Master Password</h3><div class="bento-subtitle">Security zone</div></div>
             </div>
             <div class="bento-content">
-                <form id="form-change-password" class="acc-form">
+                <form id="form-change-password" class="acc-form" novalidate>
                     <div class="form-group">
                         <label class="form-label">New Master Password</label>
-                        <input type="password" id="change-pass-input" class="form-input" placeholder="Min 8 characters" required>
+                        <input type="password" id="change-pass-input" class="form-input" placeholder="Min 8 characters">
+                        <div class="form-error" id="err-change-pass"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Confirm New Password</label>
-                        <input type="password" id="change-pass-confirm" class="form-input" placeholder="Repeat password" required>
+                        <input type="password" id="change-pass-confirm" class="form-input" placeholder="Repeat password">
+                        <div class="form-error" id="err-change-pass-confirm"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                     </div>
                     <button type="submit" class="btn-primary acc-form-submit acc-form-submit--danger">
                         <i class="fa-solid fa-lock"></i><span>Update Master Key</span>

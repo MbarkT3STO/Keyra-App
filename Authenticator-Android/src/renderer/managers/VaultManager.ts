@@ -268,6 +268,7 @@ export class VaultManager {
                     <div class="form-group">
                         <label class="form-label">Backup Master Password</label>
                         <input type="password" id="import-pass" class="form-input" placeholder="Enter your master password" ${!verification.valid ? 'disabled' : ''}>
+                        <div class="form-error" id="err-import-pass"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                         <p class="modal-help-text">Enter the master password used when this backup was created.</p>
                     </div>
                 </div>
@@ -283,11 +284,29 @@ export class VaultManager {
         this.host.showModal(content);
 
         document.getElementById('cancel-import')?.addEventListener('click', () => this.host.hideModal());
+        document.getElementById('import-pass')?.addEventListener('input', () => {
+            const p = document.getElementById('import-pass') as HTMLInputElement;
+            p?.classList.remove('invalid');
+            document.getElementById('err-import-pass')?.classList.remove('visible');
+        });
 
         if (verification.valid) {
             document.getElementById('confirm-import')?.addEventListener('click', async () => {
-                const pass = (document.getElementById('import-pass') as HTMLInputElement).value;
-                if (!pass) { this.host.showToast('Password required', 'error'); return; }
+                const passInput = document.getElementById('import-pass') as HTMLInputElement;
+                const pass = passInput.value;
+
+                // Inline validation
+                if (!pass) {
+                    passInput.classList.add('invalid');
+                    const errEl = document.getElementById('err-import-pass');
+                    if (errEl) { const s = errEl.querySelector('span'); if (s) s.textContent = 'Password is required'; errEl.classList.add('visible'); }
+                    passInput.focus();
+                    return;
+                }
+
+                // Clear error on retry
+                passInput.classList.remove('invalid');
+                document.getElementById('err-import-pass')?.classList.remove('visible');
 
                 // Replace window.confirm (blocked in Capacitor WebView) with inline warning
                 if (verification.hasChecksum && !verification.checksumValid) {
@@ -309,7 +328,6 @@ export class VaultManager {
                 // Show loading state
                 const btn = document.getElementById('confirm-import') as HTMLButtonElement;
                 const cancelBtn = document.getElementById('cancel-import') as HTMLButtonElement;
-                const passInput = document.getElementById('import-pass') as HTMLInputElement;
                 btn.disabled = true;
                 cancelBtn.disabled = true;
                 passInput.disabled = true;
@@ -337,9 +355,11 @@ export class VaultManager {
                     cancelBtn.disabled = false;
                     passInput.disabled = false;
                     passInput.value = '';
+                    passInput.classList.add('invalid');
+                    const errEl = document.getElementById('err-import-pass');
+                    if (errEl) { const s = errEl.querySelector('span'); if (s) s.textContent = res.message || 'Incorrect password — try again'; errEl.classList.add('visible'); }
                     passInput.focus();
                     btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> <span>Restore Vault</span>';
-                    this.host.showToast(res.message || 'Incorrect password. Try again.', 'error');
                 }
             });
         }

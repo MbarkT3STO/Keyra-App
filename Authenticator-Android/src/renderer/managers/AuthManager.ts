@@ -15,6 +15,41 @@ export class AuthManager {
         this.host = host;
     }
 
+    // ─── Field validation helpers ──────────────────────────────────────────────
+
+    private fieldError(inputId: string, msg: string) {
+        const input = document.getElementById(inputId) as HTMLInputElement;
+        const errId = 'err-' + inputId.replace(/-input$/, '').replace(/-confirm$/, '-confirm');
+        // Try the explicit err- id first, then look for .form-error sibling
+        let errEl = document.getElementById(errId) as HTMLElement | null;
+        if (!errEl && input) errEl = input.parentElement?.querySelector('.form-error') as HTMLElement | null;
+        if (input) input.classList.add('invalid');
+        if (errEl) {
+            const span = errEl.querySelector('span');
+            if (span) span.textContent = msg;
+            errEl.classList.add('visible');
+        }
+        input?.focus();
+    }
+
+    private clearFieldError(inputId: string) {
+        const input = document.getElementById(inputId) as HTMLInputElement;
+        let errEl: HTMLElement | null = null;
+        if (input) errEl = input.parentElement?.querySelector('.form-error') as HTMLElement | null;
+        if (input) input.classList.remove('invalid');
+        if (errEl) errEl.classList.remove('visible');
+    }
+
+    private clearFormErrors(formId: string) {
+        const form = document.getElementById(formId);
+        form?.querySelectorAll('.form-input').forEach(el => el.classList.remove('invalid'));
+        form?.querySelectorAll('.form-error').forEach(el => el.classList.remove('visible'));
+    }
+
+    private isValidEmail(email: string): boolean {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
     // ─── Init ──────────────────────────────────────────────────────────────────
 
     public async initFromCloud() {
@@ -160,35 +195,44 @@ export class AuthManager {
 
         document.getElementById('form-change-name')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const newName = (document.getElementById('change-name-input') as HTMLInputElement).value;
+            this.clearFormErrors('form-change-name');
+            const newName = (document.getElementById('change-name-input') as HTMLInputElement).value.trim();
+            if (!newName) { this.fieldError('change-name-input', 'Name cannot be empty'); return; }
+            if (newName.length < 2) { this.fieldError('change-name-input', 'Name must be at least 2 characters'); return; }
             const res = await (window as any).api.changeUsername(newName);
             if (res.success) {
                 this.host.showToast(res.message, 'success');
                 (e.target as HTMLFormElement).reset();
                 this.loadAccountInfo();
             } else {
-                this.host.showToast(res.message, 'error');
+                this.fieldError('change-name-input', res.message || 'Failed to update name');
             }
         });
 
         document.getElementById('form-change-password')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            this.clearFormErrors('form-change-password');
             const pass = (document.getElementById('change-pass-input') as HTMLInputElement).value;
             const confirm = (document.getElementById('change-pass-confirm') as HTMLInputElement).value;
-            if (pass !== confirm) { this.host.showToast('Passwords do not match.', 'error'); return; }
-            if (pass.length < 8) { this.host.showToast('Password must be at least 8 characters.', 'error'); return; }
+            if (!pass) { this.fieldError('change-pass-input', 'Password cannot be empty'); return; }
+            if (pass.length < 8) { this.fieldError('change-pass-input', 'Must be at least 8 characters'); return; }
+            if (!confirm) { this.fieldError('change-pass-confirm', 'Please confirm your password'); return; }
+            if (pass !== confirm) { this.fieldError('change-pass-confirm', 'Passwords do not match'); return; }
             const res = await (window as any).api.changePassword(pass);
             if (res.success) {
                 this.host.showToast(res.message, 'success');
                 (e.target as HTMLFormElement).reset();
             } else {
-                this.host.showToast(res.message, 'error');
+                this.fieldError('change-pass-input', res.message || 'Failed to update password');
             }
         });
 
         document.getElementById('form-change-email')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = (document.getElementById('change-email-input') as HTMLInputElement).value;
+            this.clearFormErrors('form-change-email');
+            const email = (document.getElementById('change-email-input') as HTMLInputElement).value.trim();
+            if (!email) { this.fieldError('change-email-input', 'Email cannot be empty'); return; }
+            if (!this.isValidEmail(email)) { this.fieldError('change-email-input', 'Enter a valid email address'); return; }
             const res = await (window as any).api.requestEmailChange(email);
             if (res.success) {
                 this.host.showToast(res.message, 'success');
@@ -196,7 +240,7 @@ export class AuthManager {
                 this.loadAccountInfo();
                 this.showEmailVerificationModal(email);
             } else {
-                this.host.showToast(res.message, 'error');
+                this.fieldError('change-email-input', res.message || 'Failed to request email change');
             }
         });
 
@@ -215,6 +259,11 @@ export class AuthManager {
                     this.host.showToast(res.message, 'error');
                 }
             }
+        });
+
+        // Clear field errors on input
+        ['change-name-input', 'change-email-input', 'change-pass-input', 'change-pass-confirm'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', () => this.clearFieldError(id));
         });
     }
 
@@ -247,6 +296,7 @@ export class AuthManager {
                     <div style="position: relative;">
                         <input type="text" id="email-verify-code" class="form-input" placeholder="000000" maxlength="6"
                                style="text-align: center; font-size: 36px; letter-spacing: 12px; font-family: 'Outfit'; height: 84px; border-radius: var(--radius-lg); box-shadow: var(--nm-pressed); border: none; width: 100%; color: var(--accent-primary); font-weight: 900;">
+                        <div class="form-error" id="err-email-verify-code" style="text-align:left;"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 48px;">
@@ -278,8 +328,14 @@ export class AuthManager {
         }, 1000);
 
         document.getElementById('btn-submit-email-verify')?.addEventListener('click', async () => {
-            const code = (document.getElementById('email-verify-code') as HTMLInputElement).value;
-            if (code.length !== 6) { this.host.showToast('Enter 6-digit code.', 'error'); return; }
+            const codeInput = document.getElementById('email-verify-code') as HTMLInputElement;
+            const code = codeInput.value.replace(/\D/g, '');
+            if (code.length !== 6) {
+                codeInput.classList.add('invalid');
+                const errEl = document.getElementById('err-email-verify-code');
+                if (errEl) { const s = errEl.querySelector('span'); if (s) s.textContent = 'Enter the 6-digit code'; errEl.classList.add('visible'); }
+                return;
+            }
             const res = await (window as any).api.confirmEmailChange(code);
             if (res.success) {
                 this.host.showToast(res.message, 'success');
@@ -287,8 +343,18 @@ export class AuthManager {
                 this.loadAccountInfo();
                 clearInterval(timerInterval);
             } else {
-                this.host.showToast(res.message, 'error');
+                codeInput.classList.add('invalid');
+                const errEl = document.getElementById('err-email-verify-code');
+                if (errEl) { const s = errEl.querySelector('span'); if (s) s.textContent = res.message || 'Invalid code'; errEl.classList.add('visible'); }
+                codeInput.value = '';
+                codeInput.focus();
             }
+        });
+
+        document.getElementById('email-verify-code')?.addEventListener('input', () => {
+            const codeInput = document.getElementById('email-verify-code') as HTMLInputElement;
+            codeInput?.classList.remove('invalid');
+            document.getElementById('err-email-verify-code')?.classList.remove('visible');
         });
 
         document.getElementById('btn-resend-verify-email')?.addEventListener('click', async () => {
