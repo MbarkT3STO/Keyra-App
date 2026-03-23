@@ -1,8 +1,19 @@
 import nodemailer from 'nodemailer';
 
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+};
+
 export async function handler(event: any) {
+    // Handle CORS preflight (Capacitor WebView sends this before POST)
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+    }
+
     if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
+        return { statusCode: 405, headers: CORS_HEADERS, body: 'Method Not Allowed' };
     }
 
     try {
@@ -17,6 +28,7 @@ export async function handler(event: any) {
         if (!user || !pass) {
             return {
                 statusCode: 500,
+                headers: CORS_HEADERS,
                 body: JSON.stringify({ success: false, message: "SMTP credentials not configured on server." })
             };
         }
@@ -71,12 +83,14 @@ export async function handler(event: any) {
 
         return {
             statusCode: 200,
+            headers: CORS_HEADERS,
             body: JSON.stringify({ success: true, message: "Email sent successfully." })
         };
     } catch (error: any) {
         console.error('SMTP Error:', error);
         return {
             statusCode: 500,
+            headers: CORS_HEADERS,
             body: JSON.stringify({ success: false, message: error.message })
         };
     }

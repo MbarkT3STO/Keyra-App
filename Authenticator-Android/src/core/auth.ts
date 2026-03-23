@@ -56,7 +56,7 @@ export async function signup(username: string, email: string, password: string):
     users.push(newUser);
     await saveUsers(users);
     await syncUserData(username, newUser);
-    deliverActivationCode(email, activationCode);
+    await deliverActivationCode(email, activationCode);
     return { success: true, message: "Account created. Check your email." };
 }
 
@@ -68,7 +68,7 @@ export async function resendCode(email: string): Promise<{ success: boolean, mes
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     users[userIndex].activationCode = newCode;
     await saveUsers(users);
-    deliverActivationCode(email, newCode);
+    await deliverActivationCode(email, newCode);
     return { success: true, message: "Verification code sent." };
 }
 
