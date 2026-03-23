@@ -4,25 +4,25 @@
     --s: 85%;
 
     /* Neumorphic Light Mode Palette */
-    --bg-primary: #e0e5ec;
-    --bg-secondary: #d1d9e6;
-    --bg-tertiary: #c2cbd8;
+    --bg-primary: #e8edf3;
+    --bg-secondary: #dde3ec;
+    --bg-tertiary: #d0d8e4;
 
-    --text-primary: #2d3436;
-    --text-secondary: #636e72;
-    --text-tertiary: #b2bec3;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-tertiary: #7c8fa6;
 
     --accent-primary: hsl(var(--h), var(--s), 55%);
     --accent-secondary: hsl(calc(var(--h) + 40), var(--s), 65%);
     --accent-hover: hsl(var(--h), var(--s), 45%);
-    --accent-soft: hsla(var(--h), var(--s), 55%, 0.1);
+    --accent-soft: hsla(var(--h), var(--s), 55%, 0.12);
 
     /* Dynamic Accent Support */
     --dynamic-accent-hue: var(--h);
     --dynamic-accent-primary: hsl(var(--dynamic-accent-hue), var(--s), 55%);
 
     /* Border & Glass Legacy Support */
-    --border-color: rgba(0, 0, 0, 0.05);
+    --border-color: rgba(0, 0, 0, 0.06);
     --glass-bg: rgba(255, 255, 255, 0.9);
     --glass-border: none;
 
@@ -110,20 +110,20 @@
 
 /* ── Enhanced Light Theme (Arctic Palette) ── */
 body.light-theme {
-    --bg-primary: #f0f4f8;
-    --bg-secondary: #e6edf4;
-    --bg-tertiary: #dbe4ee;
+    --bg-primary: #e8edf3;
+    --bg-secondary: #dde3ec;
+    --bg-tertiary: #d0d8e4;
 
     --text-primary: #1e293b;
     --text-secondary: #475569;
-    --text-tertiary: #94a3b8;
+    --text-tertiary: #7c8fa6;
 
-    --accent-primary: hsl(var(--dynamic-accent-hue, 258), 85%, 58%);
+    --accent-primary: hsl(var(--dynamic-accent-hue, 258), 85%, 55%);
     --accent-secondary: hsl(calc(var(--dynamic-accent-hue, 258) + 20), 85%, 65%);
-    --accent-hover: hsl(var(--dynamic-accent-hue, 258), 85%, 52%);
-    --accent-soft: hsla(var(--dynamic-accent-hue, 258), 85%, 58%, 0.1);
+    --accent-hover: hsl(var(--dynamic-accent-hue, 258), 85%, 45%);
+    --accent-soft: hsla(var(--dynamic-accent-hue, 258), 85%, 55%, 0.12);
 
-    --border-color: rgba(203, 213, 225, 0.4);
+    --border-color: rgba(0, 0, 0, 0.06);
     --aura-1: hsla(var(--dynamic-accent-hue, 258), 80%, 55%, 0.22);
 }
 

@@ -5,7 +5,7 @@
 :root {
     /* Neumorphic Shadow Tokens - Light Mode */
     --nm-shadow-light: #ffffff;
-    --nm-shadow-dark: rgba(163, 177, 198, 0.75);
+    --nm-shadow-dark: rgba(166, 180, 200, 0.8);
 
     --nm-shadow-out:
         12px 12px 24px var(--nm-shadow-dark),
@@ -55,7 +55,7 @@
 /* Light theme override */
 body.light-theme {
     --nm-shadow-light: #ffffff;
-    --nm-shadow-dark: rgba(203, 213, 225, 0.7);
+    --nm-shadow-dark: rgba(166, 180, 200, 0.8);
 
     --nm-shadow-out:
         12px 12px 24px var(--nm-shadow-dark),
@@ -67,11 +67,12 @@ body.light-theme {
         6px 6px 14px var(--nm-shadow-dark),
         -6px -6px 14px var(--nm-shadow-light);
     --nm-shadow-in-sm:
-        inset 6px 6px 12px var(--nm-shadow-dark),
-        inset -6px -6px 12px var(--nm-shadow-light);
+        inset 5px 5px 12px var(--nm-shadow-dark),
+        inset -5px -5px 12px var(--nm-shadow-light);
 
     --nm-raised: var(--nm-shadow-out);
     --nm-pressed: var(--nm-shadow-in);
+    --nm-raised-hover: 16px 16px 32px var(--nm-shadow-dark), -16px -16px 32px var(--nm-shadow-light);
 }
 
 /* Dark theme override */
