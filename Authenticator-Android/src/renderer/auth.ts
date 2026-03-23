@@ -13,6 +13,29 @@ export async function setupAuthUI() {
     const boxSignup = document.getElementById('auth-signup-box')!;
     const boxVerify = document.getElementById('auth-verify-box')!;
 
+    // Resend cooldown state — declared early so signup handler can call startResendCooldown
+    const resendBtn = document.getElementById('btn-resend-code') as HTMLButtonElement | null;
+    const resendTimerSpan = document.getElementById('resend-timer');
+    let resendCooldown = 0;
+    let resendInterval: any = null;
+
+    function startResendCooldown(seconds: number) {
+        resendCooldown = seconds;
+        if (resendBtn) resendBtn.disabled = true;
+        if (resendInterval) clearInterval(resendInterval);
+        resendInterval = setInterval(() => {
+            resendCooldown--;
+            if (resendTimerSpan) resendTimerSpan.textContent = resendCooldown > 0 ? `(${resendCooldown}s)` : '';
+            if (resendCooldown <= 0) {
+                clearInterval(resendInterval);
+                resendInterval = null;
+                if (resendBtn) resendBtn.disabled = false;
+                if (resendTimerSpan) resendTimerSpan.textContent = '';
+            }
+        }, 1000);
+        if (resendTimerSpan) resendTimerSpan.textContent = `(${resendCooldown}s)`;
+    }
+
     // 0. Auto-Login Sequence
     try {
         const auto = await window.api.checkSession();
@@ -226,6 +249,7 @@ export async function setupAuthUI() {
             if (result.success) {
                 switchState(boxSignup, boxVerify);
                 (document.getElementById('verify-email-field') as HTMLInputElement).value = email;
+                startResendCooldown(30);
             } else {
                 rateLimiter.recordAttempt('signup', email);
                 err.textContent = result.message;
@@ -316,11 +340,51 @@ export async function setupAuthUI() {
         handleVerification();
     });
 
-    function showSimulationToast(code: string) {
-        const toast = document.getElementById('simulation-toast')!;
-        const codeLabel = document.getElementById('sim-code')!;
-        codeLabel.textContent = code;
-        toast.classList.remove('hidden');
-        setTimeout(() => toast.classList.add('hidden'), 8000);
-    }
+    // Resend Code — 30s cooldown
+    document.getElementById('btn-show-signup')?.addEventListener('click', () => {
+        // reset timer state when entering signup
+        if (resendBtn) resendBtn.disabled = false;
+        if (resendTimerSpan) resendTimerSpan.textContent = '';
+        if (resendInterval) { clearInterval(resendInterval); resendInterval = null; }
+    });
+
+    resendBtn?.addEventListener('click', async () => {
+        const email = (document.getElementById('verify-email-field') as HTMLInputElement).value;
+        if (!email) return;
+
+        const err = document.getElementById('verify-error')!;
+
+        // Rate limit check
+        const rlCheck = rateLimiter.isAllowed('signup', email);
+        if (!rlCheck.allowed) {
+            err.textContent = rlCheck.message || 'Too many attempts. Try again later.';
+            err.style.opacity = '1';
+            return;
+        }
+
+        setAuthLoading(true, "Resending Code...");
+        try {
+            const result = await window.api.resendCode(email);
+            if (result.success) {
+                err.style.opacity = '0';
+                startResendCooldown(30);
+                // Clear digit inputs so user can enter the new code
+                digitInputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
+                digitInputs[0].focus();
+            } else {
+                err.textContent = result.message || 'Failed to resend code.';
+                err.style.opacity = '1';
+                void (err as HTMLElement).offsetWidth;
+                err.classList.remove('animate-shake');
+                void (err as HTMLElement).offsetWidth;
+                err.classList.add('animate-shake');
+            }
+        } catch {
+            err.textContent = 'Network error. Please try again.';
+            err.style.opacity = '1';
+            err.classList.add('animate-shake');
+        } finally {
+            setAuthLoading(false);
+        }
+    });
 }
