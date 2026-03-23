@@ -880,7 +880,7 @@ export class AccountManager {
                 <div class="modal-divider"></div>
                 <div class="modal-body">
                     <div class="modal-entity-badge">
-                        <div class="entity-icon"><i class="fa-solid fa-shield"></i></div>
+                        <div class="entity-icon"><i class="${this.getIcon(account.issuer)}"></i></div>
                         <div class="entity-info">
                             <span class="entity-name">${account.issuer}</span>
                             <span class="entity-label">${account.account || 'Vault Token'}</span>
