@@ -566,3 +566,4 @@ export class VaultManager {
             URL.revokeObjectURL(url);
         }
     }
+}
