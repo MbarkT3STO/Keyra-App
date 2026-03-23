@@ -678,3 +678,4 @@ body.performance-mode .slider:before {
     background-image:
         repeating-linear-gradient(45deg, transparent, transparent 10px, hsla(var(--h), 100%, 20%, 0.02) 10px, hsla(var(--h), 100%, 20%, 0.02) 11px) !important;
 }
+

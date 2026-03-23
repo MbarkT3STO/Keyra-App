@@ -9,15 +9,16 @@
   "scripts": {
     "build:html": "node scripts/build-html.js",
     "build:main": "tsc -p tsconfig.json",
-    "build:renderer": "npm run build:html && tsc -p tsconfig.renderer.json && copy src\\renderer\\index.html dist\\renderer\\renderer\\index.html && copy src\\renderer\\capture.html dist\\renderer\\renderer\\capture.html && xcopy /E /Y /I src\\renderer\\css dist\\renderer\\renderer\\css && xcopy /E /Y /I src\\renderer\\fonts dist\\renderer\\renderer\\fonts && xcopy /E /Y /I src\\renderer\\webfonts dist\\renderer\\renderer\\webfonts && xcopy /E /Y /I src\\renderer\\assets dist\\renderer\\renderer\\assets",
+    "build:renderer": "npm run build:html && tsc -p tsconfig.renderer.json && cp src/renderer/index.html dist/renderer/renderer/index.html && cp src/renderer/capture.html dist/renderer/renderer/capture.html && cp -R src/renderer/css dist/renderer/renderer/ && cp -R src/renderer/fonts dist/renderer/renderer/ && cp -R src/renderer/webfonts dist/renderer/renderer/ && cp -R src/renderer/assets dist/renderer/renderer/",
     "build": "npm run build:main && npm run build:renderer",
     "start": "npm run build && electron .",
     "cbs": "cls && npm run build && electron .",
     "dist": "npm run build && electron-builder --windows --publish never",
     "release": "npm run build && electron-builder --windows --publish always",
     "dist:win64": "electron-builder --win --x64",
-    "dist:mac-intel": "electron-builder --mac --x64",
-    "dist:mac-arm": "electron-builder --mac --arm64",
+    "dist:mac-intel": "npm run build && electron-builder --mac --x64 --publish never",
+    "dist:mac-arm": "npm run build && electron-builder --mac --arm64 --publish never",
+    "dist:mac-all": "npm run build && electron-builder --mac --x64 --arm64 --publish never",
     "dist:linux-x64": "electron-builder --linux --x64",
     "dist:linux-arm64": "electron-builder --linux --arm64"
   },
@@ -27,6 +28,39 @@
     "icon": "assets/icon.png",
     "directories": {
       "output": "dist/build"
+    },
+    "mac": {
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "title": "Keyra Authenticator",
+      "icon": "assets/icon.icns",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
     },
     "win": {
       "icon": "assets/icon.png",
@@ -62,7 +96,7 @@
     "@types/nodemailer": "^7.0.11",
     "@types/qrcode": "^1.5.6",
     "electron": "^28.0.0",
-    "electron-builder": "^26.8.1",
+    "electron-builder": "^25.1.8",
     "jsqr": "^1.4.0",
     "typescript": "^5.0.0"
   },
