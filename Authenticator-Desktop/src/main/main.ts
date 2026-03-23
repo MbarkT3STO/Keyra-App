@@ -42,6 +42,7 @@ function createWindow() {
         resizable: false,
         icon: path.join(__dirname, '../../assets/icon.png'),
         titleBarStyle: 'hidden', // Apple style clean top
+        trafficLightPosition: { x: -100, y: -100 }, // Hide macOS traffic lights
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
